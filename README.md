@@ -136,10 +136,3 @@ Kora intentionally does **not** aim to be:
 Kora focuses on doing **one thing extremely well**:
 **building safe, expressive, reloadable web servers in Kotlin.**
 
-## One-Line Taglines (pick one 😄)
-
-* *“Kora — Typed Web Servers for Kotlin.”*
-* *“Kora — Web APIs as Programs.”*
-* *“Kora — Compile-Time First Web Framework.”*
-* *“Kora — A Language-Shaped Web Server.”*
-
