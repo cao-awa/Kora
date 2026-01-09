@@ -1,0 +1,26 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+}
+
+group = 'org.github.cao.awa'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
+    implementation 'com.google.guava:guava:33.5.0-jre'
+    implementation 'io.netty:netty-all:4.2.9.Final'
+
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+}
+
+kotlin {
+    jvmToolchain(21)
+}
+
+test {
+    useJUnitPlatform()
+}
