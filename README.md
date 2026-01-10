@@ -3,8 +3,11 @@
 
 It is a modern, Kotlin-first web server framework built on Netty, designed to treat HTTP APIs as **typed programs**, not runtime configurations.
 
-Kora provides a powerful expression-based DSL for defining HTTP, RESTful, and WebSocket servers with **compile-time safety**, **using only descriptive annotations**, and **minimize reflection**.
+Kora provides a **powerful expression-based DSL** for defining HTTP, RESTful, and WebSocket servers with **compile-time safety**, relying on **descriptive annotations only where necessary** and **minimizing runtime reflection**.
 It embraces Kotlin’s language features—coroutines, inline functions, and type inference—to deliver an expressive, predictable, and reload-friendly development experience.
+
+> In Kora, annotations never control routing, execution, or lifecycle.
+When present, they serve purely as descriptive schema at data boundaries.
 
 Kora intentionally avoids low-level concerns and focuses on **API expressiveness, correctness, and developer experience**.
 
