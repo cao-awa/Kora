@@ -69,7 +69,7 @@ Because routes are values:
 * They can be replaced at runtime
 * They can be reloaded without restarting the server
 
-### 4. Zero Annotations, Zero Reflection
+### 4. Minimize Annotations and Reflection
 
 Annotations hide logic.
 Reflection hides cost.
