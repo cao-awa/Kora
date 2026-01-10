@@ -49,7 +49,7 @@ class KoraHttpServer {
                             addLast(HttpResponseEncoder())
                             // Only aggregate 1MB http request.
                             addLast(HttpObjectAggregator(1048576))
-                            addLast(SimpleHttpServerHandler())
+                            addLast(SimpleHttpServerHandler(this@KoraHttpServer.builder))
                         }
                     }
                 })

@@ -1,9 +1,9 @@
 # Kora
-**Kora** is a compile-time, type-safe Kotlin web server framework built on Netty.
+**Kora** is a high performance, compile-time, type-safe Kotlin web server framework built on Netty, with out-and-out descriptive DSL.
 
 It is a modern, Kotlin-first web server framework built on Netty, designed to treat HTTP APIs as **typed programs**, not runtime configurations.
 
-Kora provides a powerful expression-based DSL for defining HTTP, RESTful, and WebSocket servers with **compile-time safety**, **zero annotations**, and **no reflection**.
+Kora provides a powerful expression-based DSL for defining HTTP, RESTful, and WebSocket servers with **compile-time safety**, **using only descriptive annotations**, and **minimize reflection**.
 It embraces Kotlin’s language features—coroutines, inline functions, and type inference—to deliver an expressive, predictable, and reload-friendly development experience.
 
 Kora intentionally avoids low-level concerns and focuses on **API expressiveness, correctness, and developer experience**.
