@@ -82,7 +82,7 @@ class KoraHttpRequestHandler {
     private fun responseJSON(handlerContext: ChannelHandlerContext, koraContext: KoraContext, responser: KoraContext.() -> JSONObject) {
         val msg: JSONObject = responser(koraContext).instruct {
             if (KoraHttpServer.instructHttpStatusCode) {
-                "status" set koraContext.status.code()
+                "http_status" set koraContext.status.code()
             }
         }
 
