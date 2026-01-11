@@ -12,41 +12,15 @@ import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.se
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.FullHttpRequest
+import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import java.nio.charset.StandardCharsets
 
-class KoraContext(private val context: ChannelHandlerContext, private val msg: FullHttpRequest) {
+class KoraContext(private val msg: FullHttpRequest) {
     var promiseClose: Boolean = false
     var status: HttpResponseStatus = HttpResponseStatus.OK
     var contentType: HttpContentType = HttpContentTypes.PLAIN
-
-    fun response(response: KoraContext.() -> String) {
-        val msg: String = response(this)
-
-        this.context.writeAndFlush(
-            KoraHttpResponses.createDefaultResponse(
-                HttpVersion.HTTP_1_1,
-                this.status,
-                msg
-            ).setContentType(this.contentType)
-                .setLength()
-        ).also {
-            if (this.promiseClose) {
-                it.addListener(ChannelFutureListener.CLOSE)
-            }
-        }
-    }
-
-    fun responseJSON(response: KoraContext.() -> JSONObject) {
-        val msg: JSONObject = response(this)
-
-        this.contentType = HttpContentTypes.JSON
-
-        response {
-            JSONEncoder.encodeJSON(msg)
-        }
-    }
 
     fun content(): ByteArray {
         return this.msg.content().let { content ->
@@ -62,5 +36,19 @@ class KoraContext(private val context: ChannelHandlerContext, private val msg: F
 
     fun jsonContent(): JSONObject {
         return StrictJSONParser.parseObject(stringContent())
+    }
+
+    fun path(): String {
+        return this.msg.uri().let {
+            if (it.endsWith("/")) {
+                it.substring(0, it.length - 1)
+            } else{
+                it
+            }
+        }
+    }
+
+    fun method(): HttpMethod {
+        return this.msg.method()
     }
 }

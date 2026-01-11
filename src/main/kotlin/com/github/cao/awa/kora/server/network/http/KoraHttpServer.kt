@@ -3,6 +3,7 @@ package com.github.cao.awa.kora.server.network.http
 import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
+import com.github.cao.awa.kora.server.network.http.builder.server
 import com.github.cao.awa.kora.server.network.http.handler.KoraHttpInboundHandlerAdapter
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
@@ -15,10 +16,14 @@ import io.netty.handler.codec.http.HttpResponseEncoder
 
 
 class KoraHttpServer {
-    private val builder: KoraHttpServerBuilder.() -> Unit
+    companion object {
+        var instructHttpStatusCode: Boolean = true
+    }
 
-    constructor(builder: KoraHttpServerBuilder.() -> Unit) {
-        this.builder = builder
+    private val serverBuilder: KoraHttpServerBuilder
+
+    constructor(builder: KoraHttpServerBuilder) {
+        this.serverBuilder = builder
     }
 
     fun start(port: Int, useEpoll: Boolean = true) {
@@ -50,7 +55,7 @@ class KoraHttpServer {
                             addLast(HttpResponseEncoder())
                             // Only aggregate 2MB http request.
                             addLast(HttpObjectAggregator(KoraInformation.MB * 2))
-                            addLast(KoraHttpInboundHandlerAdapter(this@KoraHttpServer.builder))
+                            addLast(KoraHttpInboundHandlerAdapter(this@KoraHttpServer.serverBuilder))
                         }
                     }
                 })

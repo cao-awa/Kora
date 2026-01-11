@@ -1,15 +1,20 @@
 # Kora
-**Kora** is a high performance, compile-time, type-safe Kotlin web server framework built on Netty, with out-and-out descriptive DSL.
 
-It is a modern, Kotlin-first web server framework built on Netty, designed to treat HTTP APIs as **typed programs**, not runtime configurations.
+**Kora** is a high performance, compile-time, type-safe Kotlin web server framework built on Netty, with out-and-out
+descriptive DSL.
 
-Kora provides a **powerful expression-based DSL** for defining HTTP, RESTful, and WebSocket servers with **compile-time safety**, relying on **descriptive annotations only where necessary** and **minimizing runtime reflection**.
-It embraces Kotlin’s language features—coroutines, inline functions, and type inference—to deliver an expressive, predictable, and reload-friendly development experience.
+It is a modern, Kotlin-first web server framework built on Netty, designed to treat HTTP APIs as **typed programs**, not
+runtime configurations.
+
+Kora provides a **powerful expression-based DSL** for defining HTTP, RESTful, and WebSocket servers with **compile-time
+safety**, relying on **descriptive annotations only where necessary** and **minimizing runtime reflection**.
+It embraces Kotlin’s language features ```coroutines```, ```inline``` functions, and type inference to deliver an
+expressive, predictable, and reload-friendly development experience.
 
 > In Kora, annotations never control routing, execution, or lifecycle.
-When present, they serve purely as descriptive schema at data boundaries.
+> When present, they serve purely as descriptive schema at data boundaries.
 
-Kora intentionally avoids low-level concerns and focuses on **API expressiveness, correctness, and developer experience**.
+Kora intentionally avoids low-level concerns and focuses on API expressiveness, correctness, and developer experience.
 
 ## What Makes Kora Different
 
@@ -24,7 +29,75 @@ Kora optimizes for **correctness at compile time**.
 Kora is not a general-purpose container framework.
 It is a **language-shaped web framework**.
 
-## Core Design Philosophy
+## Quick start
+Build and run a simple HTTP server with two routes:
+
+```kotlin
+import com.github.cao.awa.kora.server.network.http.KoraHttpServer
+import com.github.cao.awa.kora.server.network.http.builder.server
+import io.netty.handler.codec.http.HttpResponseStatus
+
+fun main() {
+    val api = server {
+        route("/test") {
+            post {
+                KoraResponse(
+                    type = "post",
+                    timestamp = System.currentTimeMillis()
+                )
+            }
+
+            get {
+                status = HttpResponseStatus.INTERNAL_SERVER_ERROR
+
+                KoraResponse(
+                    type = "get",
+                    timestamp = System.currentTimeMillis()
+                )
+            }
+        }
+    }
+
+    KoraHttpServer(api).start(
+        port = 12345,
+        useEpoll = true
+    )
+}
+
+data class KoraResponse(
+    val type: String,
+    val timestamp: Long
+)
+```
+
+When run, this starts an HTTP server on port `12345` with two routes:
+1. ```post``` get 200 OK
+2. ```get``` got 500 Internal server error).
+
+Kora will auto do serializes for data class via [Cason](https://github.com/cao-awa/Cason).
+
+And the HTTP client will get data that like:
+
+```json
+{
+  "type": "post",
+  "timestamp": 1700000000000,
+  "http_status": 200
+}
+```
+
+By default, Kora treats HTTP responses as structured data.
+When returning a Kotlin object from a handler, Kora serializes it using Cason and injects the HTTP status code into the serialized output.
+
+This behavior provides a unified and debuggable response model and can be disabled via configuration for stricter HTTP/body separation:
+
+```kotlin
+fun main() {
+    KoraHttpServer.instructHttpStatusCode = false
+}
+```
+
+## Design Philosophy
 
 ### 1. Kotlin Is the Framework
 
@@ -55,10 +128,19 @@ Your handler signature *is* your contract.
 Routing in Kora produces a **route graph**, not side effects.
 
 ```kotlin
-val api = routes {
-    route("users", path<Int>("id")) {
-        get { id -> User(id) }
+fun main() {
+    val api = server {
+        route("/test") {
+            post { /* */ }
+
+            get { /* */ }
+        }
     }
+
+    KoraHttpServer(api).start(
+        port = 12345,
+        useEpoll = true
+    )
 }
 ```
 
@@ -87,7 +169,8 @@ This makes behavior:
 * Tool-friendly
 * Reload-safe
 
-### 5. Hot Reload Is a First-Class Feature
+### 5. Hot Reload
+> Not done yet.
 
 Kora does not restart the JVM on code changes.
 

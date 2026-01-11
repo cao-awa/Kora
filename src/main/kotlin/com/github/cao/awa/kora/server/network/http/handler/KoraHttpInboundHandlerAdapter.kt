@@ -9,15 +9,15 @@ import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.handler.codec.http.*
 
 
-class KoraHttpInboundHandlerAdapter(private val handler: KoraHttpRequestHandler) : ChannelInboundHandlerAdapter() {
-    constructor(body: KoraHttpServerBuilder.() -> Unit) : this(
-        KoraHttpServerBuilder(body).build()
-    )
+class KoraHttpInboundHandlerAdapter(val handler: KoraHttpRequestHandler) : ChannelInboundHandlerAdapter() {
+    constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestHandler()) {
+        builder.applyRoute(this)
+    }
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         when (msg) {
             is FullHttpRequest -> {
-                this.handler.handleFull(KoraContext(ctx, msg))
+                this.handler.handleFull(ctx, KoraContext(msg))
             }
             is HttpRequest -> {
                 ctx.writeAndFlush(
