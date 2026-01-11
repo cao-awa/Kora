@@ -1,36 +1,58 @@
 # Kora
 
-**Kora** is a high performance, compile-time, type-safe Kotlin web server framework built on Netty, with out-and-out
-descriptive DSL.
+**Kora** is a high-performance, type-safe Kotlin web server framework built on Netty.
 
-It is a modern, Kotlin-first web server framework built on Netty, designed to treat HTTP APIs as **typed programs**, not
-runtime configurations.
+Kora treats HTTP APIs as **typed programs**, not runtime configurations.
 
-Kora provides a **powerful expression-based DSL** for defining HTTP, RESTful, and WebSocket servers with **compile-time
-safety**, relying on **descriptive annotations only where necessary** and **minimizing runtime reflection**.
-It embraces Kotlin’s language features ```coroutines```, ```inline``` functions, and type inference to deliver an
-expressive, predictable, and reload-friendly development experience.
+Instead of assembling routing tables, annotations, and containers at runtime, Kora encourages developers to **describe APIs as values**, composed through Kotlin expressions and verified as early as possible—preferably at compile time.
 
-> In Kora, annotations never control routing, execution, or lifecycle.
-> When present, they serve purely as descriptive schema at data boundaries.
+Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic.
 
-Kora intentionally avoids low-level concerns and focuses on API expressiveness, correctness, and developer experience.
+---
+
+# What Kora Is
+
+Kora is a **Kotlin-first**, expression-based web framework that emphasizes:
+
+* Compile-time structure over runtime mutation
+* Typed APIs over string-based routing
+* Explicit control flow over annotation-driven behavior
+* Reloadable graphs over global state
+
+It is built on Netty for performance and IO efficiency, and uses Kotlin coroutines as its execution model.
+
+> In Kora, annotations never control routing, execution order, or lifecycle.
+> When present, they are used only as **descriptive schema at data boundaries**.
+>
+> This guarantees that routing behavior and execution logic are always visible in code.
+
+---
 
 ## What Makes Kora Different
 
-Most web frameworks optimize for flexibility at runtime.
-Kora optimizes for **correctness at compile time**.
+Most web frameworks optimize for **runtime flexibility**.
+
+Kora also can be flexible, but it primarily optimizes for **compile-time correctness** and **semantic clarity**.
 
 * Routes are **values**, not side effects
 * Parameters are **typed**, not string-based
 * Handlers are **functions**, not magic containers
-* Reloading means **replacing graphs**, not restarting JVMs
+* **Reloading** in Kora is a **graph replacement**, not class redefinition. Code is recompiled. The JVM is not mutated.
 
-Kora is not a general-purpose container framework.
+Kora is not a general-purpose application container.\
+It does not manage object lifecycles or dependency graphs.\
+Application structure is defined by Kotlin code, not framework containers.
+
 It is a **language-shaped web framework**.
 
-## Quick start
-Build and run a simple HTTP server with two routes:
+> In Ktor, routing mutates a global pipeline.\
+> In Spring, routing is discovered via annotations.\
+> In Kora, routing is an expression that produces a value.
+---
+
+# Quick Start
+
+Define and run a simple HTTP server with two routes:
 
 ```kotlin
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
@@ -70,72 +92,80 @@ data class KoraResponse(
 )
 ```
 
-When run, this starts an HTTP server on port `12345` with two routes:
-1. ```post``` get 200 OK
-2. ```get``` got 500 Internal server error).
+This starts an HTTP server on port `12345` with two routes:
 
-Kora will auto do serializes for data class via [Cason](https://github.com/cao-awa/Cason).
+* `POST /test` → `200 OK`
+* `GET /test` → `500 Internal Server Error`
 
-And the HTTP client will get data that like:
+Kora automatically serializes Kotlin data classes using
+[Cason](https://github.com/cao-awa/Cason), a lightweight, type-safe JSON/JSON5 library.
+
+---
+
+## Structured Responses and HTTP Metadata
+
+By default, Kora treats HTTP responses as **structured data**.
+
+When a handler returns a Kotlin object, Kora serializes it and **instructs HTTP metadata** into the response payload:
+
+But Kora does not encourage embedding transport concerns into domain models.\
+HTTP metadata instruction is a transport-level concern and is configurable.
 
 ```json
 {
   "type": "post",
   "timestamp": 1700000000000,
-  "http_status": 200
+  "http_meta": {
+    "http_version": "HTTP/1.1",
+    "http_status": 200
+  }
 }
 ```
 
-By default, Kora treats HTTP responses as structured data.
-When returning a Kotlin object from a handler, Kora serializes it using Cason and injects the HTTP status code into the serialized output.
+This unified response model allows:
 
-The response body is the returned value, optionally augmented with HTTP metadata by the runtime.
+* Non-HTTP clients (CLI tools, MQ consumers, test harnesses) to consume responses directly
+* Easier debugging and inspection
+* Transport-agnostic result handling
 
-This behavior provides a unified and debuggable response model and can be disabled via configuration for stricter HTTP/body separation:
+Transport metadata is always derived from the response description.\
+It never influences handler semantics.
+
+HTTP metadata instruction is configurable and can be disabled for stricter HTTP/body separation:
 
 ```kotlin
 fun main() {
+    // NOTE: Disable HTTP metadata instruct ('instructHttpMetadata')
+    // will auto disabled status code and version instruction.
+    KoraHttpServer.instructHttpMetadata = false
     KoraHttpServer.instructHttpStatusCode = false
+    KoraHttpServer.instructHttpVersionCode = false
 }
 ```
 
-## Design Philosophy
+## Total Handlers and 204 No Content
 
-### 1. Kotlin Is the Framework
+A handler in Kora is a total function from request scope to a single response value.\
+There is no such thing as a “partially constructed response” in Kora.\
+It may describe response metadata, but it cannot partially construct a response.
 
-Kora does not “support Kotlin.”
-Kora is **designed for Kotlin**.
+A handler must always produce an explicit response.
+Missing return values or “status-only” handlers are rejected.
 
-* Expression-based DSL instead of annotation metadata
-* Inline and reified generics instead of reflection
-* Coroutines as the default execution model
-* Type inference as the primary API documentation
-
-If an API cannot be expressed naturally in Kotlin syntax, it does not belong in Kora.
-
-### 2. APIs Are Typed Programs
-
-In Kora, an HTTP API is not a string-defined routing table.
-It is a **typed program** with a known structure.
-
-* Path segments carry types
-* Query and body extraction is explicit and safe
-* Handlers cannot access parameters that do not exist
-* Invalid routes fail at compile time, not at runtime
-
-Your handler signature *is* your contract.
-
-### 3. Routing Is a Value
-
-Routing in Kora produces a **route graph**, not side effects.
+To return `204 No Content`, use `NoContentResponse` explicitly:
 
 ```kotlin
+import com.github.cao.awa.kora.server.network.http.KoraHttpServer
+import com.github.cao.awa.kora.server.network.http.builder.server
+import io.netty.handler.codec.http.HttpResponseStatus
+
 fun main() {
     val api = server {
         route("/test") {
-            post { /* */ }
-
-            get { /* */ }
+            get {
+                status = HttpResponseStatus.NO_CONTENT
+                NoContentResponse
+            }
         }
     }
 
@@ -146,19 +176,68 @@ fun main() {
 }
 ```
 
+This design ensures:
+
+* Every handler has a clear, explicit outcome
+* No ambiguous or partially-defined responses
+* Stronger guarantees about API behavior
+
+---
+
+# Design Philosophy
+
+## 1. Kotlin Is the Framework
+
+Kora does not “support Kotlin”.
+
+Kora is **designed for Kotlin**.
+
+* Expression-based DSLs instead of annotation metadata
+* Inline and reified generics instead of reflection
+* Coroutines as the default execution model
+* Type inference as primary documentation
+
+If an API cannot be expressed naturally in Kotlin syntax, it does not belong in Kora.
+
+## 2. APIs Are Typed Programs
+
+In Kora, an HTTP API is not a string-defined routing table.
+
+It is a **typed program** with a known structure.
+
+* Path segments carry types
+* Parameters are explicitly declared
+* Handlers cannot access data that does not exist
+* Invalid routes fail early, not silently at runtime
+
+Your handler signature **is** your contract.
+
+## 3. Routing Is a Value
+
+Routing in Kora produces a **route graph**, not side effects.
+
+```kotlin
+val api = server {
+    route("/test") {
+        post { /* ... */ }
+        get { /* ... */ }
+    }
+}
+```
+
 Because routes are values:
 
 * They can be composed
 * They can be tested
-* They can be replaced at runtime
-* They can be reloaded without restarting the server
+* They can be replaced
+* They can be reloaded without restarting the JVM
 
-### 4. Minimize Annotations and Reflection
+## 4. Minimize Annotations and Reflection
 
 Annotations hide logic.
 Reflection hides cost.
 
-Kora uses:
+Kora relies on:
 
 * Explicit DSLs
 * Compile-time types
@@ -171,10 +250,11 @@ This makes behavior:
 * Tool-friendly
 * Reload-safe
 
-### 5. Hot Reload
-> Not done yet.
+## 5. Hot Reload
 
-Kora does not restart the JVM on code changes.
+> *Planned*
+
+Kora does not reload by restarting the JVM.
 
 Instead:
 
@@ -182,9 +262,12 @@ Instead:
 * New requests use the new graph
 * Existing requests complete normally
 
-Hot reload is not a plugin—it is a natural consequence of the architecture.
+Hot reload is not a plugin—it is a consequence of treating routes as values.
 
-### 6. Netty as a Foundation, Not a Surface
+The initial implementation focuses on fast graph replacement without JVM restart.\
+More advanced class-level reloading is intentionally out of scope.
+
+## 6. Netty as a Foundation, Not a Surface
 
 Kora is built on Netty, but Netty is not exposed.
 
@@ -203,7 +286,7 @@ Kora handles:
 
 You never write Netty code to use Kora.
 
-## Design Tenets
+# Design Tenets
 
 * **Compile-time over runtime**
 * **Explicit over implicit**
@@ -222,5 +305,6 @@ Kora intentionally does **not** aim to be:
 * A low-level networking toolkit
 
 Kora focuses on doing **one thing extremely well**:
-**building safe, expressive, reloadable web servers in Kotlin.**
+
+> **Building safe, expressive, reloadable web servers in Kotlin.**
 
