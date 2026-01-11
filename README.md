@@ -4,7 +4,8 @@
 
 Kora treats HTTP APIs as **typed programs**, not runtime configurations.
 
-Instead of assembling routing tables, annotations, and containers at runtime, Kora encourages developers to **describe APIs as values**, composed through Kotlin expressions and verified as early as possible—preferably at compile time.
+Instead of assembling routing tables, annotations, and containers at runtime, Kora encourages developers to **describe
+APIs as values**, composed through Kotlin expressions and verified as early as possible—preferably at compile time.
 
 Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic.
 
@@ -181,6 +182,69 @@ This design ensures:
 * Every handler has a clear, explicit outcome
 * No ambiguous or partially-defined responses
 * Stronger guarantees about API behavior
+
+## Abort
+
+Kora uses a scoped abort model where execution and error handling are strictly separated into non-overlapping lifetimes.
+
+In Kora, aborting execution is not an exceptional case.\
+It is a first-class, structured control flow with explicit scope boundaries.
+
+The ```abortWith()``` defines when to abort, and ```.abort {}``` defines how aborted execution is rendered into a
+response:
+
+```kotlin
+import com.github.cao.awa.kora.server.network.http.KoraHttpServer
+import com.github.cao.awa.kora.server.network.http.builder.server
+import io.netty.handler.codec.http.HttpResponseStatus
+
+fun main() {
+    val api = server {
+        route("/test") {
+            get {
+                // Abort this scope, into next scope 'abort'.
+                abortWith(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+            }.abort {
+                KoraErrorResponse(
+                    "Error details",
+                    status().code(),
+                    System.currentTimeMillis()
+                )
+            }
+        }
+    }
+
+    KoraHttpServer(api).start(
+        port = 12345,
+        useEpoll = true
+    )
+}
+
+data class KoraErrorResponse(
+    val error: String,
+    val code: Int,
+    val timestamp: Long
+)
+```
+
+Client will get data seems like:
+
+```json
+{
+  "code": 500,
+  "error": "Error details",
+  "timestamp": 1768148489124,
+  "http_meta": {
+    "http_version": "HTTP/1.1",
+    "http_status": 500
+  }
+}
+```
+
+All abort scope is readonly-scope from contexts Kora auto collecting.\
+Cannot modify the scope data in abort context.
+
+Response body is also required in abort scope, so that every abort has a clear, explicit outcome.
 
 ---
 

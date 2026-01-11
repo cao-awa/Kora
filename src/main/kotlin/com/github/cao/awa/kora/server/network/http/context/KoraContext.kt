@@ -26,15 +26,15 @@ open class KoraContext(val msg: FullHttpRequest) {
         this.contentType = contentType
     }
 
-    fun withProtocolVersion(protocolVersion: HttpVersion) {
+    open fun withProtocolVersion(protocolVersion: HttpVersion) {
         this.protocolVersion = protocolVersion
     }
 
-    fun promiseClose() {
+    open fun promiseClose() {
         this.promiseClose = true
     }
 
-    fun abortWith(errorCode: HttpResponseStatus, postHandler: () -> Unit) {
+    fun abortWith(errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
         when (errorCode) {
             HttpResponseStatus.OK -> error("Error response cannot use status '200 OK'")
         }

@@ -14,9 +14,8 @@ fun main() {
             }
 
             get {
-                abortWith(HttpResponseStatus.INTERNAL_SERVER_ERROR) {
+                abortWith(HttpResponseStatus.INTERNAL_SERVER_ERROR)
 
-                }
                 KoraResponse(
                     type = "get",
                     timestamp = System.currentTimeMillis()
