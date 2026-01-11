@@ -2,13 +2,14 @@ package com.github.cao.awa.kora.server.network.http.handler
 
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
+import com.github.cao.awa.kora.server.network.response.KoraContext
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.handler.codec.http.*
 
 
-class SimpleHttpServerHandler(private val Handler: KoraHttpRequestHandler) : ChannelInboundHandlerAdapter() {
+class KoraHttpInboundHandlerAdapter(private val handler: KoraHttpRequestHandler) : ChannelInboundHandlerAdapter() {
     constructor(body: KoraHttpServerBuilder.() -> Unit) : this(
         KoraHttpServerBuilder(body).build()
     )
@@ -16,7 +17,7 @@ class SimpleHttpServerHandler(private val Handler: KoraHttpRequestHandler) : Cha
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         when (msg) {
             is FullHttpRequest -> {
-                this.Handler.handleFull(msg)
+                this.handler.handleFull(KoraContext(ctx, msg))
             }
             is HttpRequest -> {
                 ctx.writeAndFlush(

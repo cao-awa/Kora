@@ -1,8 +1,9 @@
 package com.github.cao.awa.kora.server.network.http
 
+import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
-import com.github.cao.awa.kora.server.network.http.handler.SimpleHttpServerHandler
+import com.github.cao.awa.kora.server.network.http.handler.KoraHttpInboundHandlerAdapter
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
@@ -47,9 +48,9 @@ class KoraHttpServer {
                         channel.pipeline().apply {
                             addLast(HttpRequestDecoder())
                             addLast(HttpResponseEncoder())
-                            // Only aggregate 1MB http request.
-                            addLast(HttpObjectAggregator(1048576))
-                            addLast(SimpleHttpServerHandler(this@KoraHttpServer.builder))
+                            // Only aggregate 2MB http request.
+                            addLast(HttpObjectAggregator(KoraInformation.MB * 2))
+                            addLast(KoraHttpInboundHandlerAdapter(this@KoraHttpServer.builder))
                         }
                     }
                 })
@@ -57,7 +58,6 @@ class KoraHttpServer {
             val future = bootstrap.bind(
                 port
             ).sync()
-            println("Server started on port $port")
             future.channel().closeFuture().sync()
         } finally {
             bossGroup.shutdownGracefully()
