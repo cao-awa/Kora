@@ -14,11 +14,18 @@ fun main() {
             }
 
             get {
-                status = HttpResponseStatus.INTERNAL_SERVER_ERROR
+                abortWith(HttpResponseStatus.INTERNAL_SERVER_ERROR) {
 
+                }
                 KoraResponse(
                     type = "get",
                     timestamp = System.currentTimeMillis()
+                )
+            }.abort {
+                KoraErrorResponse(
+                    "Error awa",
+                    500,
+                    System.currentTimeMillis()
                 )
             }
         }
@@ -43,5 +50,11 @@ fun main() {
 
 data class KoraResponse(
     val type: String,
+    val timestamp: Long
+)
+
+data class KoraErrorResponse(
+    val error: String,
+    val code: Int,
     val timestamp: Long
 )

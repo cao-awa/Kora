@@ -4,23 +4,88 @@ import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
+import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
 import com.github.cao.awa.kora.server.network.http.metadata.HttpResponseMetadata
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setContentType
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
-import com.github.cao.awa.kora.server.network.response.KoraContext
+import com.github.cao.awa.kora.server.network.http.context.KoraContext
+import com.github.cao.awa.kora.server.network.http.context.abort.AbortKoraContext
+import com.github.cao.awa.kora.server.network.http.control.end.EndingEarlyException
 import com.github.cao.awa.kora.server.network.response.content.NoContentResponse
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
+import io.netty.handler.codec.http.HttpVersion
+import kotlin.reflect.KClass
 
 class KoraHttpRequestHandler {
+    companion object {
+        fun instructHttpMetadata(json: JSONObject, koraContext: KoraContext): JSONObject {
+            json.instruct {
+                if (KoraHttpServer.instructHttpMetadata) {
+                    nested("http_meta") {
+                        HttpResponseMetadata(
+                            if (KoraHttpServer.instructHttpStatusCode) {
+                                koraContext.status.code()
+                            } else null,
+                            if (KoraHttpServer.instructHttpVersionCode) {
+                                koraContext.protocolVersion.text()
+                            } else null
+                        )
+                    }
+                }
+            }
+
+            return json
+        }
+
+        fun instructHttpMetadata(
+            json: JSONObject,
+            status: HttpResponseStatus,
+            protocolVersion: HttpVersion
+        ): JSONObject {
+            json.instruct {
+                if (KoraHttpServer.instructHttpMetadata) {
+                    nested("http_meta") {
+                        HttpResponseMetadata(
+                            if (KoraHttpServer.instructHttpStatusCode) {
+                                status.code()
+                            } else null,
+                            if (KoraHttpServer.instructHttpVersionCode) {
+                                protocolVersion.text()
+                            } else null
+                        )
+                    }
+                }
+            }
+
+            return json
+        }
+    }
+
     private val postRoutes: MutableMap<String, KoraContext.() -> Any> = mutableMapOf()
+    private val postExceptionHandler: MutableMap<KClass<out Exception>, MutableMap<String, KoraContext.() -> Any>> =
+        mutableMapOf()
     private val getRoutes: MutableMap<String, KoraContext.() -> Any> = mutableMapOf()
+    private val getExceptionHandler: MutableMap<KClass<out Exception>, MutableMap<String, KoraContext.() -> Any>> =
+        mutableMapOf()
 
     fun routePost(path: String, handler: KoraContext.() -> Any): KoraHttpRequestHandler {
         this.postRoutes[path] = handler
+        return this
+    }
+
+    fun routePostException(
+        path: String,
+        type: KClass<out Exception>,
+        handler: KoraContext.() -> Any
+    ): KoraHttpRequestHandler {
+        if (this.postExceptionHandler[type] == null) {
+            this.postExceptionHandler[type] = mutableMapOf()
+        }
+        this.postExceptionHandler[type]?.put(path, handler)
         return this
     }
 
@@ -29,11 +94,50 @@ class KoraHttpRequestHandler {
         return this
     }
 
+    fun routeGetException(
+        path: String,
+        type: KClass<out Exception>,
+        handler: KoraContext.() -> Any
+    ): KoraHttpRequestHandler {
+        if (this.getExceptionHandler[type] == null) {
+            this.getExceptionHandler[type] = mutableMapOf()
+        }
+        this.getExceptionHandler[type]?.put(path, handler)
+        return this
+    }
+
+    fun handleExceptionCaught(handlerContext: ChannelHandlerContext, cause: Throwable) {
+        cause.printStackTrace()
+        // Response an error message.
+        handlerContext.writeAndFlush(
+            KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0)
+        ).addListener(ChannelFutureListener.CLOSE)
+    }
+
     fun handleFull(handlerContext: ChannelHandlerContext, koraContext: KoraContext) {
-        when (koraContext.method()) {
-            HttpMethod.POST -> handlePost(handlerContext, koraContext)
-            HttpMethod.GET -> handleGet(handlerContext, koraContext)
-            else -> {}
+        try {
+            when (koraContext.method()) {
+                HttpMethod.POST -> handlePost(handlerContext, koraContext)
+                HttpMethod.GET -> handleGet(handlerContext, koraContext)
+                else -> {}
+            }
+        } catch (exception: RuntimeException) {
+            val abortScope = AbortKoraContext(exception, koraContext.msg)
+            when (abortScope.method()) {
+                HttpMethod.POST -> {
+                    this.postExceptionHandler[exception::class]?.get(abortScope.path())?.let {
+                        response(handlerContext, abortScope, it(abortScope))
+                    }
+                }
+
+                HttpMethod.GET -> {
+                    this.getExceptionHandler[exception::class]?.get(abortScope.path())?.let {
+                        response(handlerContext, abortScope, it(abortScope))
+                    }
+                }
+
+                else -> {}
+            }
         }
     }
 
@@ -100,20 +204,7 @@ class KoraHttpRequestHandler {
         koraContext: KoraContext,
         responser: KoraContext.() -> JSONObject
     ) {
-        val msg: JSONObject = responser(koraContext).instruct {
-            if (KoraHttpServer.instructHttpMetadata) {
-                nested("http_meta") {
-                    HttpResponseMetadata(
-                        if (KoraHttpServer.instructHttpStatusCode) {
-                            koraContext.status.code()
-                        } else null,
-                        if (KoraHttpServer.instructHttpVersionCode) {
-                            koraContext.protocolVersion.text()
-                        } else null
-                    )
-                }
-            }
-        }
+        val msg: JSONObject = instructHttpMetadata(responser(koraContext), koraContext)
 
         koraContext.contentType = HttpContentTypes.JSON
 

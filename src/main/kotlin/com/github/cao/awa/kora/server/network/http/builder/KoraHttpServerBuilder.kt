@@ -1,7 +1,7 @@
 package com.github.cao.awa.kora.server.network.http.builder
 
-import com.github.cao.awa.kora.server.network.http.builder.post.KoraHttpServerRouteBuilder
-import com.github.cao.awa.kora.server.network.http.handler.KoraHttpInboundHandlerAdapter
+import com.github.cao.awa.kora.server.network.http.builder.route.KoraHttpServerRouteBuilder
+import com.github.cao.awa.kora.server.network.http.handler.adapter.KoraHttpInboundHandlerAdapter
 
 class KoraHttpServerBuilder {
     private val routes: MutableMap<String, MutableList<KoraHttpServerRouteBuilder>> = mutableMapOf()

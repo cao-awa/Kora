@@ -1,29 +1,35 @@
 package com.github.cao.awa.kora.server.network.http.error
 
+import com.github.cao.awa.cason.codec.encoder.JSONEncoder
+import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.constant.KoraInformation
+import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
+import com.github.cao.awa.kora.server.network.http.context.KoraContext
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 
 object KoraHttpError {
-    val FAILURE_NOT_FULL: (HttpVersion) -> FullHttpResponse = { httpVersion ->
+    val FAILURE_NOT_FULL: (HttpVersion) -> FullHttpResponse = { protocolVersion ->
         KoraHttpResponses.createDefaultResponse(
-            httpVersion,
+            protocolVersion,
             HttpResponseStatus.BAD_REQUEST,
-            """
-Server protocol (Kora/${KoraInformation.VERSION}, ${httpVersion}) error: Bad request
-Internal error name: Not full"""
+            KoraHttpRequestHandler.instructHttpMetadata(JSONObject {
+                "error" set "Server protocol (Kora/${KoraInformation.VERSION}, ${protocolVersion.text()}) error: Bad request"
+                "internal_error_name" set "Request is not full"
+            }, HttpResponseStatus.BAD_REQUEST, protocolVersion).toString(true, "    ", 0)
         )
     }
 
-    val INTERNAL_SERVER_ERROR: (HttpVersion) -> FullHttpResponse = { httpProtocolVersion ->
+    val INTERNAL_SERVER_ERROR: (HttpVersion) -> FullHttpResponse = { protocolVersion ->
         KoraHttpResponses.createDefaultResponse(
-            httpProtocolVersion,
+            protocolVersion,
             HttpResponseStatus.INTERNAL_SERVER_ERROR,
-            """
-Server protocol (Kora/${KoraInformation.VERSION}, ${httpProtocolVersion}) error: Internal server error
-Internal error name: Internal server error"""
+            KoraHttpRequestHandler.instructHttpMetadata(JSONObject {
+                "message" set "Server protocol (Kora/${KoraInformation.VERSION}, ${protocolVersion.text()}) error: Internal server error"
+                "internal_error_name" set "Internal server error"
+            }, HttpResponseStatus.INTERNAL_SERVER_ERROR, protocolVersion).toString(true, "    ", 0)
         )
     }
 }
