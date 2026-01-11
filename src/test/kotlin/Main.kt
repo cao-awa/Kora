@@ -24,7 +24,7 @@ fun main() {
             }.abort {
                 KoraErrorResponse(
                     "Error awa",
-                    500,
+                    status().code(),
                     System.currentTimeMillis()
                 )
             }

@@ -28,7 +28,7 @@ class KoraHttpRequestHandler {
                     nested("http_meta") {
                         HttpResponseMetadata(
                             if (KoraHttpServer.instructHttpStatusCode) {
-                                koraContext.status.code()
+                                koraContext.status().code()
                             } else null,
                             if (KoraHttpServer.instructHttpVersionCode) {
                                 koraContext.protocolVersion.text()
@@ -122,7 +122,7 @@ class KoraHttpRequestHandler {
                 else -> {}
             }
         } catch (exception: RuntimeException) {
-            val abortScope = AbortKoraContext(exception, koraContext.msg)
+            val abortScope = AbortKoraContext(exception, koraContext)
             when (abortScope.method()) {
                 HttpMethod.POST -> {
                     this.postExceptionHandler[exception::class]?.get(abortScope.path())?.let {
@@ -164,7 +164,7 @@ class KoraHttpRequestHandler {
             is NoContentResponse -> {
                 response(handlerContext, koraContext) {
                     // Force be no content status when response is no body response.
-                    koraContext.status = HttpResponseStatus.NO_CONTENT
+                    koraContext.withStatus(HttpResponseStatus.NO_CONTENT)
 
                     ""
                 }
@@ -188,9 +188,9 @@ class KoraHttpRequestHandler {
         handlerContext.writeAndFlush(
             KoraHttpResponses.createDefaultResponse(
                 koraContext.protocolVersion,
-                koraContext.status,
+                koraContext.status(),
                 msg
-            ).setContentType(koraContext.contentType)
+            ).setContentType(koraContext.contentType())
                 .setLength()
         ).also {
             if (koraContext.promiseClose) {
@@ -204,11 +204,13 @@ class KoraHttpRequestHandler {
         koraContext: KoraContext,
         responser: KoraContext.() -> JSONObject
     ) {
-        val msg: JSONObject = instructHttpMetadata(responser(koraContext), koraContext)
+        val sendingContext = koraContext.dump()
 
-        koraContext.contentType = HttpContentTypes.JSON
+        val msg: JSONObject = instructHttpMetadata(responser(sendingContext), sendingContext)
 
-        response(handlerContext, koraContext) {
+        sendingContext.withContentType(HttpContentTypes.JSON)
+
+        response(handlerContext, sendingContext) {
             JSONEncoder.encodeJSON(msg)
         }
     }

@@ -13,16 +13,16 @@ import java.nio.charset.StandardCharsets
 
 open class KoraContext(val msg: FullHttpRequest) {
     var promiseClose: Boolean = false
-    var status: HttpResponseStatus = HttpResponseStatus.OK
-    var contentType: HttpContentType = HttpContentTypes.PLAIN
+    private var status: HttpResponseStatus = HttpResponseStatus.OK
+    private var contentType: HttpContentType = HttpContentTypes.PLAIN
     var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
     var exception: Exception? = null
 
-    fun withStatus(status: HttpResponseStatus) {
+    open fun withStatus(status: HttpResponseStatus) {
         this.status = status
     }
 
-    fun withContentType(contentType: HttpContentType) {
+    open fun withContentType(contentType: HttpContentType) {
         this.contentType = contentType
     }
 
@@ -39,8 +39,9 @@ open class KoraContext(val msg: FullHttpRequest) {
             HttpResponseStatus.OK -> error("Error response cannot use status '200 OK'")
         }
         withStatus(errorCode)
+        withContentType(HttpContentTypes.JSON)
         postHandler()
-        throw EndingEarlyException(this).also {
+        throw EndingEarlyException().also {
             this.exception = it
         }
     }
@@ -71,11 +72,29 @@ open class KoraContext(val msg: FullHttpRequest) {
         }
     }
 
+    fun status(): HttpResponseStatus {
+        return this.status
+    }
+
+    fun contentType(): HttpContentType {
+        return this.contentType
+    }
+
     fun method(): HttpMethod {
         return this.msg.method()
     }
 
     fun protocolVersion(): HttpVersion {
         return this.msg.protocolVersion()
+    }
+
+    fun dump(): KoraContext {
+        return KoraContext(this.msg).also {
+            it.status = this.status
+            it.contentType = this.contentType
+            it.protocolVersion = this.protocolVersion
+            it.promiseClose = this.promiseClose
+            it.exception = this.exception
+        }
     }
 }
