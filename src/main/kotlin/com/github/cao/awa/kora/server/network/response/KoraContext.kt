@@ -21,6 +21,7 @@ class KoraContext(private val msg: FullHttpRequest) {
     var promiseClose: Boolean = false
     var status: HttpResponseStatus = HttpResponseStatus.OK
     var contentType: HttpContentType = HttpContentTypes.PLAIN
+    var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
 
     fun content(): ByteArray {
         return this.msg.content().let { content ->
@@ -50,5 +51,9 @@ class KoraContext(private val msg: FullHttpRequest) {
 
     fun method(): HttpMethod {
         return this.msg.method()
+    }
+
+    fun protocolVersion(): HttpVersion {
+        return this.msg.protocolVersion()
     }
 }

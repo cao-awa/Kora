@@ -4,14 +4,16 @@ import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
+import com.github.cao.awa.kora.server.network.http.metadata.HttpResponseMetadata
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setContentType
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
 import com.github.cao.awa.kora.server.network.response.KoraContext
+import com.github.cao.awa.kora.server.network.response.content.NoContentResponse
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.HttpMethod
-import io.netty.handler.codec.http.HttpVersion
+import io.netty.handler.codec.http.HttpResponseStatus
 
 class KoraHttpRequestHandler {
     private val postRoutes: MutableMap<String, KoraContext.() -> Any> = mutableMapOf()
@@ -41,7 +43,7 @@ class KoraHttpRequestHandler {
         }
     }
 
-    private fun handleGet(handlerContext: ChannelHandlerContext,context: KoraContext) {
+    private fun handleGet(handlerContext: ChannelHandlerContext, context: KoraContext) {
         this.getRoutes[context.path()]?.let {
             response(handlerContext, context, it(context))
         }
@@ -54,6 +56,16 @@ class KoraHttpRequestHandler {
                     response
                 }
             }
+
+            is NoContentResponse -> {
+                response(handlerContext, koraContext) {
+                    // Force be no content status when response is no body response.
+                    koraContext.status = HttpResponseStatus.NO_CONTENT
+
+                    ""
+                }
+            }
+
             else -> {
                 responseJSON(handlerContext, koraContext) {
                     JSONEncoder.encode(response)
@@ -62,12 +74,16 @@ class KoraHttpRequestHandler {
         }
     }
 
-    private fun response(handlerContext: ChannelHandlerContext, koraContext: KoraContext, response: KoraContext.() -> String) {
+    private fun response(
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraContext,
+        response: KoraContext.() -> String
+    ) {
         val msg: String = response(koraContext)
 
         handlerContext.writeAndFlush(
             KoraHttpResponses.createDefaultResponse(
-                HttpVersion.HTTP_1_1,
+                koraContext.protocolVersion,
                 koraContext.status,
                 msg
             ).setContentType(koraContext.contentType)
@@ -79,10 +95,23 @@ class KoraHttpRequestHandler {
         }
     }
 
-    private fun responseJSON(handlerContext: ChannelHandlerContext, koraContext: KoraContext, responser: KoraContext.() -> JSONObject) {
+    private fun responseJSON(
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraContext,
+        responser: KoraContext.() -> JSONObject
+    ) {
         val msg: JSONObject = responser(koraContext).instruct {
-            if (KoraHttpServer.instructHttpStatusCode) {
-                "http_status" set koraContext.status.code()
+            if (KoraHttpServer.instructHttpMetadata) {
+                nested("http_meta") {
+                    HttpResponseMetadata(
+                        if (KoraHttpServer.instructHttpStatusCode) {
+                            koraContext.status.code()
+                        } else null,
+                        if (KoraHttpServer.instructHttpVersionCode) {
+                            koraContext.protocolVersion.text()
+                        } else null
+                    )
+                }
             }
         }
 

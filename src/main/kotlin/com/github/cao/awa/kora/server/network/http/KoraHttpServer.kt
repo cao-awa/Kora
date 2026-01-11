@@ -17,7 +17,9 @@ import io.netty.handler.codec.http.HttpResponseEncoder
 
 class KoraHttpServer {
     companion object {
+        var instructHttpMetadata: Boolean = true
         var instructHttpStatusCode: Boolean = true
+        var instructHttpVersionCode: Boolean = true
     }
 
     private val serverBuilder: KoraHttpServerBuilder

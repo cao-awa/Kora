@@ -1,10 +1,9 @@
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.builder.server
+import com.github.cao.awa.kora.server.network.response.content.NoContentResponse
 import io.netty.handler.codec.http.HttpResponseStatus
 
 fun main() {
-    KoraHttpServer.instructHttpStatusCode = false
-
     val api = server {
         route("/test") {
             post {
@@ -21,6 +20,17 @@ fun main() {
                     type = "get",
                     timestamp = System.currentTimeMillis()
                 )
+            }
+        }
+
+        // Test no content response.
+        route("/fail") {
+            post {
+                NoContentResponse
+            }
+
+            get {
+                NoContentResponse
             }
         }
     }

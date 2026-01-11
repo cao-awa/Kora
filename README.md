@@ -89,6 +89,8 @@ And the HTTP client will get data that like:
 By default, Kora treats HTTP responses as structured data.
 When returning a Kotlin object from a handler, Kora serializes it using Cason and injects the HTTP status code into the serialized output.
 
+The response body is the returned value, optionally augmented with HTTP metadata by the runtime.
+
 This behavior provides a unified and debuggable response model and can be disabled via configuration for stricter HTTP/body separation:
 
 ```kotlin

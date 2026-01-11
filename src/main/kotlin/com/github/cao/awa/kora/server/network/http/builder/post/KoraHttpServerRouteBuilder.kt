@@ -6,18 +6,24 @@ import io.netty.handler.codec.http.HttpMethod
 
 class KoraHttpServerRouteBuilder {
     private val path: String
-    private val routes: MutableMap<HttpMethod, KoraContext.() -> Any> = mutableMapOf()
+    val routes: MutableMap<HttpMethod, KoraContext.() -> Any> = mutableMapOf()
 
     constructor(path: String, builder: KoraHttpServerRouteBuilder.() -> Unit) {
         this.path = path
         builder(this)
     }
 
-    fun post(handler: KoraContext.() -> Any) {
+    inline fun <reified T: Any> post(noinline handler: KoraContext.() -> T) {
+        if (T::class == Unit::class) {
+            error("HTTP method cannot missing response")
+        }
         this.routes[HttpMethod.POST] = handler
     }
 
-    fun get(handler: KoraContext.() -> Any) {
+    inline fun <reified T: Any> get(noinline handler: KoraContext.() -> T) {
+        if (T::class == Unit::class) {
+            error("HTTP method cannot missing response")
+        }
         this.routes[HttpMethod.GET] = handler
     }
 
