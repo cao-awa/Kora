@@ -190,7 +190,7 @@ Kora uses a scoped abort model where execution and error handling are strictly s
 In Kora, aborting execution is not an exceptional case.\
 It is a first-class, structured control flow with explicit scope boundaries.
 
-The ```abortWith()``` defines when to abort, and ```.abort {}``` defines how aborted execution is rendered into a
+The ```abortWith()``` or ```abortIf()``` defines when to abort, and ```.abort {}``` defines how aborted execution is rendered into a
 response:
 
 ```kotlin
@@ -242,7 +242,7 @@ Client will get data seems like:
 ```
 
 All abort scope is readonly-scope from contexts Kora auto collecting.\
-Cannot modify the scope data in abort context.
+Cannot modifying the scope data in abort context.
 
 Response body is also required in abort scope, so that every abort has a clear, explicit outcome.
 
