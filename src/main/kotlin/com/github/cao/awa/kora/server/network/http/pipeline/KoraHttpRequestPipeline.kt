@@ -179,7 +179,7 @@ class KoraHttpRequestPipeline {
         sendingContext.withContentType(HttpContentTypes.JSON)
 
         response(handlerContext, sendingContext) {
-            JSONEncoder.encodeJSON(msg)
+            JSONEncoder.renderJSON(msg)
         }
     }
 }
