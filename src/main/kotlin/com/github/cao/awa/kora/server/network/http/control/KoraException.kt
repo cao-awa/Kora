@@ -1,6 +1,4 @@
 package com.github.cao.awa.kora.server.network.http.control
 
-import com.github.cao.awa.kora.server.network.http.context.KoraContext
-
-abstract class KoraException(): RuntimeException() {
+abstract class KoraException(message: String? = null, cause: Throwable? = null): RuntimeException(message, cause) {
 }

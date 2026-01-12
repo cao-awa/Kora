@@ -5,9 +5,8 @@ import com.github.cao.awa.kora.server.network.http.context.KoraContext
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 
-class AbortKoraContext(err: Exception, context: KoraContext): KoraContext(context.msg) {
+class AbortKoraContext(context: KoraContext): KoraContext(context.msg) {
     init {
-        this.exception = err
         super.withStatus(context.status())
         super.withContentType(context.contentType())
         super.withProtocolVersion(context.protocolVersion())

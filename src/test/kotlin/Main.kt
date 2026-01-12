@@ -1,6 +1,6 @@
+import com.github.cao.awa.cason.annotation.Field
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.builder.server
-import com.github.cao.awa.kora.server.network.response.content.NoContentResponse
 import io.netty.handler.codec.http.HttpResponseStatus
 
 fun main() {
@@ -14,29 +14,19 @@ fun main() {
             }
 
             get {
-                abortWith(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                abortIf(!auth(), HttpResponseStatus.INTERNAL_SERVER_ERROR)
 
                 KoraResponse(
                     type = "get",
                     timestamp = System.currentTimeMillis()
                 )
-            }.abort {
-                KoraErrorResponse(
-                    "Error awa",
+            }.abort { (_, reason) ->
+                println("Abort with: $reason")
+                KoraNotAuthResponse(
+                    "Error not authed",
                     status().code(),
                     System.currentTimeMillis()
                 )
-            }
-        }
-
-        // Test no content response.
-        route("/fail") {
-            post {
-                NoContentResponse
-            }
-
-            get {
-                NoContentResponse
             }
         }
     }
@@ -47,13 +37,19 @@ fun main() {
     )
 }
 
+fun auth(): Boolean {
+    // Simulation auth step.
+    return false
+}
+
 data class KoraResponse(
     val type: String,
     val timestamp: Long
 )
 
-data class KoraErrorResponse(
-    val error: String,
+data class KoraNotAuthResponse(
+    @Field("error_details")
+    val errorDetails: String,
     val code: Int,
     val timestamp: Long
 )

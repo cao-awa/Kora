@@ -4,7 +4,7 @@ import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
-import com.github.cao.awa.kora.server.network.http.control.end.EndingEarlyException
+import com.github.cao.awa.kora.server.network.http.control.abort.EndingEarlyException
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -16,7 +16,6 @@ open class KoraContext(val msg: FullHttpRequest) {
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
     var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
-    var exception: Exception? = null
 
     open fun withStatus(status: HttpResponseStatus) {
         this.status = status
@@ -41,9 +40,17 @@ open class KoraContext(val msg: FullHttpRequest) {
         withStatus(errorCode)
         withContentType(HttpContentTypes.JSON)
         postHandler()
-        throw EndingEarlyException().also {
-            this.exception = it
+        throw EndingEarlyException()
+    }
+
+    fun abortIf(condition: Boolean, errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
+        when (errorCode) {
+            HttpResponseStatus.OK -> error("Error response cannot use status '200 OK'")
         }
+        withStatus(errorCode)
+        withContentType(HttpContentTypes.JSON)
+        postHandler()
+        throw EndingEarlyException("Control stream lifecycle aborting")
     }
 
     fun content(): ByteArray {
@@ -94,7 +101,6 @@ open class KoraContext(val msg: FullHttpRequest) {
             it.contentType = this.contentType
             it.protocolVersion = this.protocolVersion
             it.promiseClose = this.promiseClose
-            it.exception = this.exception
         }
     }
 }

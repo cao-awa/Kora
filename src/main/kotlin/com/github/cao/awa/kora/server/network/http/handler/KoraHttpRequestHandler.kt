@@ -11,7 +11,7 @@ import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.se
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
 import com.github.cao.awa.kora.server.network.http.context.KoraContext
 import com.github.cao.awa.kora.server.network.http.context.abort.AbortKoraContext
-import com.github.cao.awa.kora.server.network.http.control.end.EndingEarlyException
+import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.response.content.NoContentResponse
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
@@ -66,10 +66,10 @@ class KoraHttpRequestHandler {
     }
 
     private val postRoutes: MutableMap<String, KoraContext.() -> Any> = mutableMapOf()
-    private val postExceptionHandler: MutableMap<KClass<out Exception>, MutableMap<String, KoraContext.() -> Any>> =
+    private val postExceptionHandler: MutableMap<KClass<out Exception>, MutableMap<String, KoraContext.(AbortReason<out Exception>) -> Any>> =
         mutableMapOf()
     private val getRoutes: MutableMap<String, KoraContext.() -> Any> = mutableMapOf()
-    private val getExceptionHandler: MutableMap<KClass<out Exception>, MutableMap<String, KoraContext.() -> Any>> =
+    private val getExceptionHandler: MutableMap<KClass<out Exception>, MutableMap<String, KoraContext.(AbortReason<out Exception>) -> Any>> =
         mutableMapOf()
 
     fun routePost(path: String, handler: KoraContext.() -> Any): KoraHttpRequestHandler {
@@ -80,7 +80,7 @@ class KoraHttpRequestHandler {
     fun routePostException(
         path: String,
         type: KClass<out Exception>,
-        handler: KoraContext.() -> Any
+        handler: KoraContext.(AbortReason<out Exception>) -> Any
     ): KoraHttpRequestHandler {
         if (this.postExceptionHandler[type] == null) {
             this.postExceptionHandler[type] = mutableMapOf()
@@ -97,7 +97,7 @@ class KoraHttpRequestHandler {
     fun routeGetException(
         path: String,
         type: KClass<out Exception>,
-        handler: KoraContext.() -> Any
+        handler: KoraContext.(AbortReason<out Exception>) -> Any
     ): KoraHttpRequestHandler {
         if (this.getExceptionHandler[type] == null) {
             this.getExceptionHandler[type] = mutableMapOf()
@@ -122,17 +122,18 @@ class KoraHttpRequestHandler {
                 else -> {}
             }
         } catch (exception: RuntimeException) {
-            val abortScope = AbortKoraContext(exception, koraContext)
+            val abortScope = AbortKoraContext(koraContext)
+            val reason = exception.message ?: "Control stream lifecycle aborting"
             when (abortScope.method()) {
                 HttpMethod.POST -> {
                     this.postExceptionHandler[exception::class]?.get(abortScope.path())?.let {
-                        response(handlerContext, abortScope, it(abortScope))
+                        response(handlerContext, abortScope, it(abortScope, AbortReason(exception, reason)))
                     }
                 }
 
                 HttpMethod.GET -> {
                     this.getExceptionHandler[exception::class]?.get(abortScope.path())?.let {
-                        response(handlerContext, abortScope, it(abortScope))
+                        response(handlerContext, abortScope, it(abortScope, AbortReason(exception, reason)))
                     }
                 }
 
