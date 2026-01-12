@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:2.2.21'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
     implementation 'com.google.guava:guava:33.5.0-jre'
     implementation 'io.netty:netty-all:4.2.9.Final'
     implementation 'com.github.cao-awa:Cason:1.0.16'

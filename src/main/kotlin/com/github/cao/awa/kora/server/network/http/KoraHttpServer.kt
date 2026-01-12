@@ -3,8 +3,7 @@ package com.github.cao.awa.kora.server.network.http
 import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
-import com.github.cao.awa.kora.server.network.http.builder.server
-import com.github.cao.awa.kora.server.network.http.handler.adapter.KoraHttpInboundHandlerAdapter
+import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption

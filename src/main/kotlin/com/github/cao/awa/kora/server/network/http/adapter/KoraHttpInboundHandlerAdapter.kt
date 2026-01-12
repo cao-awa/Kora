@@ -1,8 +1,8 @@
-package com.github.cao.awa.kora.server.network.http.handler.adapter
+package com.github.cao.awa.kora.server.network.http.adapter
 
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
-import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
+import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.context.KoraContext
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
@@ -11,8 +11,8 @@ import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpRequest
 import io.netty.handler.codec.http.HttpVersion
 
-class KoraHttpInboundHandlerAdapter(val handler: KoraHttpRequestHandler) : ChannelInboundHandlerAdapter() {
-    constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestHandler()) {
+class KoraHttpInboundHandlerAdapter(val handler: KoraHttpRequestPipeline) : ChannelInboundHandlerAdapter() {
+    constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestPipeline()) {
         builder.applyRoute(this)
     }
 
@@ -21,11 +21,13 @@ class KoraHttpInboundHandlerAdapter(val handler: KoraHttpRequestHandler) : Chann
             is FullHttpRequest -> {
                 this.handler.handleFull(ctx, KoraContext(msg))
             }
+
             is HttpRequest -> {
                 ctx.writeAndFlush(
                     KoraHttpError.FAILURE_NOT_FULL(msg.protocolVersion())
                 ).addListener(ChannelFutureListener.CLOSE)
             }
+
             else -> {
                 ctx.writeAndFlush(
                     KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0)

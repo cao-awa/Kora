@@ -50,7 +50,7 @@ open class KoraContext(val msg: FullHttpRequest) {
         withStatus(errorCode)
         withContentType(HttpContentTypes.JSON)
         postHandler()
-        throw EndingEarlyException("Control stream lifecycle aborting")
+        EndingEarlyException.abort()
     }
 
     fun content(): ByteArray {
