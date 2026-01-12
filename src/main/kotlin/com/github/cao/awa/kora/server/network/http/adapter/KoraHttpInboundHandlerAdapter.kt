@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpRequest
 import io.netty.handler.codec.http.HttpVersion
 
-class KoraHttpInboundHandlerAdapter(val handler: KoraHttpRequestPipeline) : ChannelInboundHandlerAdapter() {
+class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : ChannelInboundHandlerAdapter() {
     constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestPipeline()) {
         builder.applyRoute(this)
     }
@@ -19,7 +19,7 @@ class KoraHttpInboundHandlerAdapter(val handler: KoraHttpRequestPipeline) : Chan
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         when (msg) {
             is FullHttpRequest -> {
-                this.handler.handleFull(ctx, KoraContext(msg))
+                this.pipeline.handleFull(ctx, KoraContext(msg))
             }
 
             is HttpRequest -> {
@@ -37,6 +37,6 @@ class KoraHttpInboundHandlerAdapter(val handler: KoraHttpRequestPipeline) : Chan
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-        this.handler.handleExceptionCaught(ctx, cause)
+        this.pipeline.handleExceptionCaught(ctx, cause)
     }
 }

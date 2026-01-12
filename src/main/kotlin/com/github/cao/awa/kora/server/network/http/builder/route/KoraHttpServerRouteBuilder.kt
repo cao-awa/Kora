@@ -10,7 +10,7 @@ import io.netty.handler.codec.http.HttpMethod
 class KoraHttpServerRouteBuilder {
     val path: String
     val routes: MutableMap<HttpMethod, KoraContext.() -> Any> = mutableMapOf()
-    val exceptionHandlers: MutableList<KoraHttpRouteExceptionBuilder> = mutableListOf()
+    val exceptionHandlers: MutableMap<HttpMethod, KoraHttpRouteExceptionBuilder> = mutableMapOf()
 
     constructor(path: String, builder: KoraHttpServerRouteBuilder.() -> Unit) {
         this.path = path
@@ -23,7 +23,7 @@ class KoraHttpServerRouteBuilder {
         }
         this.routes[HttpMethod.POST] = handler
         return KoraHttpRoutePostExceptionBuilder(this.path).also {
-            this.exceptionHandlers.add(it)
+            this.exceptionHandlers[HttpMethod.POST] = it
         }
     }
 
@@ -33,37 +33,46 @@ class KoraHttpServerRouteBuilder {
         }
         this.routes[HttpMethod.GET] = handler
         return KoraHttpRouteGetExceptionBuilder(this.path).also {
-            this.exceptionHandlers.add(it)
+            this.exceptionHandlers[HttpMethod.GET] = it
         }
     }
 
     fun applyRoute(adapter: KoraHttpInboundHandlerAdapter) {
         this.routes[HttpMethod.POST]?.let { route ->
-            routePost(adapter, this.path, route)
+            routePost(adapter, route)
         }
 
         this.routes[HttpMethod.GET]?.let { route ->
-            routeGet(adapter, this.path, route)
+            routeGet(adapter, route)
         }
 
-        for (builder in this.exceptionHandlers) {
-            builder.applyRoute(adapter)
+        this.exceptionHandlers[HttpMethod.POST]?.let { route ->
+            routeExceptionHandler(adapter, route)
+        }
+
+        this.exceptionHandlers[HttpMethod.GET]?.let { route ->
+            routeExceptionHandler(adapter, route)
         }
     }
 
     fun routePost(
         adapter: KoraHttpInboundHandlerAdapter,
-        path: String,
         handler: KoraContext.() -> Any
     ) {
-        adapter.handler.getHandler(HttpMethod.POST)?.route(path, handler)
+        adapter.pipeline.getHandler(HttpMethod.POST)?.route(this.path, handler)
+    }
+
+    fun routeExceptionHandler(
+        adapter: KoraHttpInboundHandlerAdapter,
+        handler: KoraHttpRouteExceptionBuilder
+    ) {
+        handler.applyRoute(adapter)
     }
 
     fun routeGet(
         adapter: KoraHttpInboundHandlerAdapter,
-        path: String,
         handler: KoraContext.() -> Any
     ) {
-        adapter.handler.getHandler(HttpMethod.GET)?.route(path, handler)
+        adapter.pipeline.getHandler(HttpMethod.GET)?.route(this.path, handler)
     }
 }

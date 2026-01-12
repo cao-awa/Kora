@@ -32,13 +32,13 @@ class KoraHttpRequestPipeline {
     companion object {
         fun instructHttpMetadata(json: JSONObject, koraContext: KoraContext): JSONObject {
             json.instruct {
-                if (KoraHttpServer.Companion.instructHttpMetadata) {
+                if (KoraHttpServer.instructHttpMetadata) {
                     nested("http_meta") {
                         HttpResponseMetadata(
-                            if (KoraHttpServer.Companion.instructHttpStatusCode) {
+                            if (KoraHttpServer.instructHttpStatusCode) {
                                 koraContext.status().code()
                             } else null,
-                            if (KoraHttpServer.Companion.instructHttpVersionCode) {
+                            if (KoraHttpServer.instructHttpVersionCode) {
                                 koraContext.protocolVersion.text()
                             } else null
                         )
@@ -55,13 +55,13 @@ class KoraHttpRequestPipeline {
             protocolVersion: HttpVersion
         ): JSONObject {
             json.instruct {
-                if (KoraHttpServer.Companion.instructHttpMetadata) {
+                if (KoraHttpServer.instructHttpMetadata) {
                     nested("http_meta") {
                         HttpResponseMetadata(
-                            if (KoraHttpServer.Companion.instructHttpStatusCode) {
+                            if (KoraHttpServer.instructHttpStatusCode) {
                                 status.code()
                             } else null,
-                            if (KoraHttpServer.Companion.instructHttpVersionCode) {
+                            if (KoraHttpServer.instructHttpVersionCode) {
                                 protocolVersion.text()
                             } else null
                         )
@@ -73,14 +73,13 @@ class KoraHttpRequestPipeline {
         }
     }
 
-    val handlers: MutableMap<HttpMethod, KoraHttpRequestHandler> =
-        mutableMapOf<HttpMethod, KoraHttpRequestHandler>().also {
-            put(HttpMethod.GET, KoraHttpGetHandler())
-            put(HttpMethod.POST, KoraHttpPostHandler())
-        }
+    private val handlers: Map<HttpMethod, KoraHttpRequestHandler> = buildMap {
+        put(HttpMethod.GET, KoraHttpGetHandler())
+        put(HttpMethod.POST, KoraHttpPostHandler())
+    }
     private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    fun getHandler(method: HttpMethod) = this.handlers[method]
+    fun getHandler(method: HttpMethod): KoraHttpRequestHandler? = this.handlers[method]
 
     fun handleFull(handlerContext: ChannelHandlerContext, koraContext: KoraContext) {
         // CoroutineScope.

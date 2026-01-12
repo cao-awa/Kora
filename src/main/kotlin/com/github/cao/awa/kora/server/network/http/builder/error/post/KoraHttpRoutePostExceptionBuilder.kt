@@ -31,7 +31,7 @@ class KoraHttpRoutePostExceptionBuilder: KoraHttpRouteExceptionBuilder {
 
     override fun applyRoute(adapter: KoraHttpInboundHandlerAdapter) {
         for ((type, handler) in this.routes) {
-            adapter.handler.getHandler(HttpMethod.POST)?.routeExceptionHandler(this.path, type, handler)
+            adapter.pipeline.getHandler(HttpMethod.POST)?.routeExceptionHandler(this.path, type, handler)
         }
     }
 }

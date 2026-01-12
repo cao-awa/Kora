@@ -21,7 +21,7 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) {
         type: KClass<out Exception>,
         handler: KoraContext.(AbortReason<out Exception>) -> Any
     ): KoraHttpRequestHandler {
-        if (this.exceptionHandler.containsKey(type)) {
+        if (!this.exceptionHandler.containsKey(type)) {
             this.exceptionHandler[type] = mutableMapOf()
         }
         this.exceptionHandler[type]?.put(path, handler)
