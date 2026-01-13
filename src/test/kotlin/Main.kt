@@ -1,13 +1,13 @@
 import com.github.cao.awa.cason.annotation.Field
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
-import com.github.cao.awa.kora.server.network.http.builder.server
+import com.github.cao.awa.kora.server.network.http.builder.http
 import io.netty.handler.codec.http.HttpResponseStatus
 
 fun main() {
     val testCondition = false
     val testCustomAbortCondition = true
 
-    val api = server {
+    val api = http {
         route("/test") {
             post {
                 if (testCondition) {

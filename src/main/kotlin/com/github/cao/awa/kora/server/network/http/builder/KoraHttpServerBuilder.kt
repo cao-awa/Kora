@@ -36,6 +36,6 @@ class KoraHttpServerBuilder {
     }
 }
 
-fun server(handler: KoraHttpServerBuilder.() -> Unit): KoraHttpServerBuilder {
+fun http(handler: KoraHttpServerBuilder.() -> Unit): KoraHttpServerBuilder {
     return KoraHttpServerBuilder(handler)
 }
