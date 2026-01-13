@@ -62,14 +62,22 @@ open class KoraContext(val msg: FullHttpRequest) {
         this.promiseClose = true
     }
 
-    fun abortWith(errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
+    fun abortWith(exception: Exception, errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
         when (errorCode) {
             HttpResponseStatus.OK -> error("Error response cannot use status '200 OK'")
         }
         withStatus(errorCode)
         withContentType(HttpContentTypes.JSON)
         postHandler()
-        throw EndingEarlyException()
+        throw exception
+    }
+
+    fun abortWith(errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
+        abortWith(
+            EndingEarlyException(),
+            errorCode,
+            postHandler
+        )
     }
 
     fun abortIf(condition: Boolean, errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {

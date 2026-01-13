@@ -4,26 +4,37 @@ import com.github.cao.awa.kora.server.network.http.builder.server
 import io.netty.handler.codec.http.HttpResponseStatus
 
 fun main() {
+    val testCondition = false
+    val testCustomAbortCondition = true
+
     val api = server {
         route("/test") {
             post {
-                KoraResponse(
-                    type = "post",
-                    timestamp = System.currentTimeMillis()
-                )
-            }
-
-            get {
-                abortIf(!auth(), HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                if (testCondition) {
+                    abortWith(HttpResponseStatus.UNAUTHORIZED)
+                } else if (testCustomAbortCondition) {
+                    abortWith(NullPointerException("Test NPE"), HttpResponseStatus.INTERNAL_SERVER_ERROR)
+                }
 
                 KoraResponse(
                     type = "get",
                     timestamp = System.currentTimeMillis()
                 )
-            }.abort { (_, reason) ->
+            }.abort { (exception, reason) ->
+                // Use logging in the future.
                 println("Abort with: $reason")
-                KoraNotAuthResponse(
-                    "Error not authed",
+                exception.printStackTrace()
+                KoraErrorResponse(
+                    "Error: controlled abort",
+                    status().code(),
+                    System.currentTimeMillis()
+                )
+            }.abort(NullPointerException::class) { (exception, reason) ->
+                // Use logging in the future.
+                println("Abort with: $reason")
+                exception.printStackTrace()
+                KoraErrorResponse(
+                    "Error: $reason",
                     status().code(),
                     System.currentTimeMillis()
                 )
@@ -37,19 +48,15 @@ fun main() {
     )
 }
 
-fun auth(): Boolean {
-    // Simulation auth step.
-    return false
-}
-
 data class KoraResponse(
     val type: String,
     val timestamp: Long
 )
 
-data class KoraNotAuthResponse(
+data class KoraErrorResponse(
     @Field("error_details")
     val errorDetails: String,
+    @Field("error_code")
     val code: Int,
     val timestamp: Long
 )

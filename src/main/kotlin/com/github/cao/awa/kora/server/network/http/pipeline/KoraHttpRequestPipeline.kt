@@ -39,7 +39,7 @@ class KoraHttpRequestPipeline {
                                 koraContext.status().code()
                             } else null,
                             if (KoraHttpServer.instructHttpVersionCode) {
-                                koraContext.protocolVersion.text()
+                                koraContext.protocolVersion().text()
                             } else null
                         )
                     }
@@ -155,7 +155,7 @@ class KoraHttpRequestPipeline {
 
         handlerContext.writeAndFlush(
             KoraHttpResponses.createDefaultResponse(
-                koraContext.protocolVersion,
+                koraContext.protocolVersion(),
                 koraContext.status(),
                 msg
             ).setContentType(koraContext.contentType())
