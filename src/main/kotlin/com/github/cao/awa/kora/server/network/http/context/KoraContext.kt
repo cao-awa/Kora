@@ -5,13 +5,38 @@ import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.control.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedFormParser
+import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
 import io.netty.handler.codec.http.FullHttpRequest
+import io.netty.handler.codec.http.HttpHeaderNames
+import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import java.nio.charset.StandardCharsets
 
 open class KoraContext(val msg: FullHttpRequest) {
+    companion object {
+        private fun produceParams(msg: FullHttpRequest): HttpRequestParams {
+            return when (msg.headers().get(HttpHeaderNames.CONTENT_TYPE)) {
+                HttpHeaderValues.APPLICATION_JSON.toString() -> {
+                    HttpRequestParams.build(
+                        StrictJSONParser.parseObject(msg.content().toString(StandardCharsets.UTF_8))
+                    )
+                }
+
+                HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString() -> {
+                    HttpRequestParams.build(
+                        UrlEncodedFormParser.parse(msg.content().toString(StandardCharsets.UTF_8))
+                    )
+                }
+
+                else -> HttpRequestParams()
+            }
+        }
+    }
+
+    val params: HttpRequestParams = produceParams(this.msg)
     var promiseClose: Boolean = false
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
