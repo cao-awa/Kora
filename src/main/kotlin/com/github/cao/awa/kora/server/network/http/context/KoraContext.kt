@@ -40,7 +40,7 @@ open class KoraContext(val msg: FullHttpRequest) {
     var promiseClose: Boolean = false
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
-    var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
+    private var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
 
     open fun withStatus(status: HttpResponseStatus) {
         this.status = status
@@ -52,6 +52,10 @@ open class KoraContext(val msg: FullHttpRequest) {
 
     open fun withProtocolVersion(protocolVersion: HttpVersion) {
         this.protocolVersion = protocolVersion
+    }
+
+    fun params(): HttpRequestParams {
+        return this.params
     }
 
     open fun promiseClose() {
@@ -69,13 +73,9 @@ open class KoraContext(val msg: FullHttpRequest) {
     }
 
     fun abortIf(condition: Boolean, errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
-        when (errorCode) {
-            HttpResponseStatus.OK -> error("Error response cannot use status '200 OK'")
+        if (condition) {
+            abortWith(errorCode, postHandler)
         }
-        withStatus(errorCode)
-        withContentType(HttpContentTypes.JSON)
-        postHandler()
-        EndingEarlyException.abort()
     }
 
     fun content(): ByteArray {
