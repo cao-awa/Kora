@@ -9,15 +9,22 @@ fun main() {
 
     val api = http {
         route("/test") {
-            post {
-                if (testCondition) {
-                    abortWith(HttpResponseStatus.UNAUTHORIZED)
-                } else if (testCustomAbortCondition) {
-                    abortWith(NullPointerException("Test NPE"), HttpResponseStatus.INTERNAL_SERVER_ERROR)
-                }
-
+            get {
                 KoraResponse(
                     type = "get",
+                    timestamp = System.currentTimeMillis()
+                )
+            }
+
+            post {
+//                if (testCondition) {
+//                    abortWith(HttpResponseStatus.UNAUTHORIZED)
+//                } else if (testCustomAbortCondition) {
+//                    abortWith(NullPointerException("Test NPE"), HttpResponseStatus.INTERNAL_SERVER_ERROR)
+//                }
+
+                KoraResponse(
+                    type = "post",
                     timestamp = System.currentTimeMillis()
                 )
             }.abort { (exception, reason) ->

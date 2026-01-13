@@ -128,7 +128,7 @@ open class KoraContext(val msg: FullHttpRequest) {
         return this.msg.protocolVersion()
     }
 
-    fun dump(): KoraContext {
+    fun createInherited(): KoraContext {
         return KoraContext(this.msg).also {
             it.status = this.status
             it.contentType = this.contentType

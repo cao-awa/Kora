@@ -26,7 +26,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import javax.swing.UIManager.put
 
 class KoraHttpRequestPipeline {
     companion object {
@@ -105,10 +104,19 @@ class KoraHttpRequestPipeline {
             val reason = exception.message ?: "Control stream lifecycle aborting"
             val abortReason = AbortReason(exception, reason)
             val handler: KoraHttpRequestHandler? = getHandler(koraContext.method())
-            if (handler != null) {
-                response(handlerContext, abortScope, handler.handleAbort(abortScope, abortReason))
-            } else {
-                throw NotSupportedMethodException(koraContext.method())
+            try {
+                if (handler != null) {
+                    response(handlerContext, abortScope, handler.handleAbort(abortScope, abortReason))
+                } else {
+                    error("Unprocessable handle in path ${koraContext.path()}")
+                }
+            } catch (exception: Exception) {
+                val endOfLifecycleScope = abortScope.createInherited()
+                response(
+                    handlerContext,
+                    endOfLifecycleScope,
+                    NoContentResponse
+                )
             }
         }
     }
@@ -172,7 +180,7 @@ class KoraHttpRequestPipeline {
         koraContext: KoraContext,
         responser: KoraContext.() -> JSONObject
     ) {
-        val sendingContext = koraContext.dump()
+        val sendingContext = koraContext.createInherited()
 
         val msg: JSONObject = instructHttpMetadata(responser(sendingContext), sendingContext)
 
