@@ -2,6 +2,7 @@ package com.github.cao.awa.kora.server.network.http.context
 
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
+import com.github.cao.awa.kora.server.network.http.argument.HttpRequestArguments
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.control.abort.EndingEarlyException
@@ -21,26 +22,50 @@ open class KoraContext(val msg: FullHttpRequest) {
             return when (msg.headers().get(HttpHeaderNames.CONTENT_TYPE)) {
                 HttpHeaderValues.APPLICATION_JSON.toString() -> {
                     HttpRequestParams.build(
-                        StrictJSONParser.parseObject(msg.content().toString(StandardCharsets.UTF_8))
+                        StrictJSONParser.parseObject(
+                            msg.content().toString(StandardCharsets.UTF_8)
+                        )
                     )
                 }
 
                 HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString() -> {
                     HttpRequestParams.build(
-                        UrlEncodedFormParser.parse(msg.content().toString(StandardCharsets.UTF_8))
+                        UrlEncodedFormParser.parse(
+                            msg.content().toString(StandardCharsets.UTF_8)
+                        )
                     )
                 }
 
                 else -> HttpRequestParams()
             }
         }
+
+        private fun produceArguments(msg: FullHttpRequest): HttpRequestArguments {
+            return HttpRequestArguments.build(
+                UrlEncodedFormParser.parse(
+                    msg.uri().substringAfter("?")
+                )
+            )
+        }
     }
 
+    val arguments: HttpRequestArguments = produceArguments(this.msg)
     val params: HttpRequestParams = produceParams(this.msg)
     var promiseClose: Boolean = false
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
     private var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
+    private var path: String = this.msg.uri().let {
+        var result = it
+        if (result.contains("?")) {
+            result = result.substringBefore("?")
+        }
+        if (result.endsWith("/")) {
+            result.substring(0, it.length - 1)
+        } else{
+            result
+        }
+    }
 
     open fun withStatus(status: HttpResponseStatus) {
         this.status = status
@@ -103,13 +128,7 @@ open class KoraContext(val msg: FullHttpRequest) {
     }
 
     fun path(): String {
-        return this.msg.uri().let {
-            if (it.endsWith("/")) {
-                it.substring(0, it.length - 1)
-            } else{
-                it
-            }
-        }
+        return this.path
     }
 
     fun status(): HttpResponseStatus {

@@ -10,6 +10,8 @@ fun main() {
     val api = http {
         route("/test") {
             get {
+                println(this.arguments["ax"])
+
                 KoraResponse(
                     type = "get",
                     timestamp = System.currentTimeMillis()
