@@ -154,7 +154,7 @@ import com.github.cao.awa.kora.server.network.http.builder.server
 import io.netty.handler.codec.http.HttpResponseStatus
 
 fun main() {
-    val api = server {
+    val api = http {
         route("/test") {
             get {
                 status = HttpResponseStatus.NO_CONTENT
@@ -192,7 +192,7 @@ import com.github.cao.awa.kora.server.network.http.builder.server
 import io.netty.handler.codec.http.HttpResponseStatus
 
 fun main() {
-    val api = server {
+    val api = http {
         route("/test") {
             get {
                 // Abort this scope, into next scope 'abort'.
@@ -275,7 +275,7 @@ Your handler signature **is** your contract.
 Routing in Kora produces a **route graph**, not side effects.
 
 ```kotlin
-val api = server {
+val api = http {
     route("/test") {
         post { /* ... */ }
         get { /* ... */ }
