@@ -240,7 +240,7 @@ Cannot modifying the scope data in abort context.
 Response body is also required in abort scope, so that every abort has a clear, explicit outcome.
 
 # Performance
-Test by JMeter on ```AMD Ryzen 7 8845HS w``` in Windows 10 with default settings, got 190000~210000 HTTP requests per second.
+Test by JMeter on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```190000```~```210000``` HTTP requests per second.
 
 # Design Philosophy
 
