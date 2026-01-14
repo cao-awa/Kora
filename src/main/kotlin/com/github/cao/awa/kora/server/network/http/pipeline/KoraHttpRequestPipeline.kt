@@ -72,10 +72,11 @@ class KoraHttpRequestPipeline {
         }
     }
 
-    private val handlers: Map<HttpMethod, KoraHttpRequestHandler> = buildMap {
-        put(HttpMethod.GET, KoraHttpGetHandler())
-        put(HttpMethod.POST, KoraHttpPostHandler())
-    }
+    private val handlers: Map<HttpMethod, KoraHttpRequestHandler> =
+        HashMap<HttpMethod, KoraHttpRequestHandler>().apply {
+            put(HttpMethod.GET, KoraHttpGetHandler())
+            put(HttpMethod.POST, KoraHttpPostHandler())
+        }
     private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun getHandler(method: HttpMethod): KoraHttpRequestHandler? = this.handlers[method]
@@ -83,27 +84,33 @@ class KoraHttpRequestPipeline {
     fun handleFull(handlerContext: ChannelHandlerContext, koraContext: KoraContext) {
         // CoroutineScope.
         this.executionScope.launch {
-            abortable(handlerContext, koraContext) {
-                response(
-                    handlerContext = handlerContext,
-                    koraContext = koraContext,
-                    response = run {
-                        val handler: KoraHttpRequestHandler? = getHandler(koraContext.method())
-                        handler?.handle(koraContext) ?: throw NotSupportedMethodException(koraContext.method())
-                    }
-                )
+            val handler: KoraHttpRequestHandler? = handlers[koraContext.method()]
+            abortable(handlerContext, koraContext, handler) {
+                if (handler != null) {
+                    response(
+                        handlerContext = handlerContext,
+                        koraContext = koraContext,
+                        response = handler.handle(koraContext)
+                    )
+                } else {
+                    throw NotSupportedMethodException(koraContext.method())
+                }
             }
         }
     }
 
-    private fun abortable(handlerContext: ChannelHandlerContext, koraContext: KoraContext, action: () -> Unit) {
+    private fun abortable(
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraContext,
+        handler: KoraHttpRequestHandler?,
+        action: () -> Unit
+    ) {
         try {
             action()
         } catch (exception: RuntimeException) {
             val abortScope = AbortKoraContext(koraContext)
             val reason = exception.message ?: "Control stream lifecycle aborting"
             val abortReason = AbortReason(exception, reason)
-            val handler: KoraHttpRequestHandler? = getHandler(koraContext.method())
             try {
                 if (handler != null) {
                     response(handlerContext, abortScope, handler.handleAbort(abortScope, abortReason))

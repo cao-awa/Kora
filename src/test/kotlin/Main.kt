@@ -1,21 +1,29 @@
 import com.github.cao.awa.cason.annotation.Field
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.builder.http
+import com.github.cao.awa.kora.server.network.response.content.NoContentResponse
 import io.netty.handler.codec.http.HttpResponseStatus
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.atomics.AtomicInt
 
 fun main() {
-    val testCondition = false
-    val testCustomAbortCondition = true
+    KoraHttpServer.instructHttpStatusCode = false
+
+    val count = AtomicInteger(0)
+
+    Thread {
+        while (true) {
+            Thread.sleep(1000)
+            println("QPS: ${count.get()}")
+            count.set(0)
+        }
+    }.start()
 
     val api = http {
         route("/test") {
             get {
-                println(this.arguments["ax"])
-
-                KoraResponse(
-                    type = "get",
-                    timestamp = System.currentTimeMillis()
-                )
+                count.addAndGet(1)
+                NoContentResponse
             }
 
             post {

@@ -9,8 +9,6 @@ APIs as values**, composed through Kotlin expressions and verified as early as p
 
 Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic.
 
----
-
 # What Kora Is
 
 Kora is a **Kotlin-first**, expression-based web framework that emphasizes:
@@ -26,8 +24,6 @@ It is built on Netty for performance and IO efficiency, and uses Kotlin coroutin
 > When present, they are used only as **descriptive schema at data boundaries**.
 >
 > This guarantees that routing behavior and execution logic are always visible in code.
-
----
 
 ## What Makes Kora Different
 
@@ -49,8 +45,7 @@ It is a **language-shaped web framework**.
 > In Ktor, routing mutates a global pipeline.\
 > In Spring, routing is discovered via annotations.\
 > In Kora, routing is an expression that produces a value.
----
-
+> 
 # Quick Start
 
 Define and run a simple HTTP server with two routes:
@@ -100,8 +95,6 @@ This starts an HTTP server on port `12345` with two routes:
 
 Kora automatically serializes Kotlin data classes using
 [Cason](https://github.com/cao-awa/Cason), a lightweight, type-safe JSON/JSON5 library.
-
----
 
 ## Structured Responses and HTTP Metadata
 
@@ -246,7 +239,8 @@ Cannot modifying the scope data in abort context.
 
 Response body is also required in abort scope, so that every abort has a clear, explicit outcome.
 
----
+# Performance
+Test by JMeter on ```AMD Ryzen 7 8845HS w``` in Windows 10 with default settings, got 19000~21000 HTTP requests per second.
 
 # Design Philosophy
 

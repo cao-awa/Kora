@@ -6,7 +6,7 @@ import com.github.cao.awa.kora.server.network.http.argument.HttpRequestArguments
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.control.abort.EndingEarlyException
-import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedFormParser
+import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpHeaderNames
@@ -18,9 +18,14 @@ import java.nio.charset.StandardCharsets
 
 open class KoraContext(val msg: FullHttpRequest) {
     companion object {
+        private val APPLICATION_JSON: String =
+            HttpHeaderValues.APPLICATION_JSON.toString()
+        private val APPLICATION_X_WWW_FORM_URLENCODED: String =
+            HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()
+
         private fun produceParams(msg: FullHttpRequest): HttpRequestParams {
             return when (msg.headers().get(HttpHeaderNames.CONTENT_TYPE)) {
-                HttpHeaderValues.APPLICATION_JSON.toString() -> {
+                APPLICATION_JSON -> {
                     HttpRequestParams.build(
                         StrictJSONParser.parseObject(
                             msg.content().toString(StandardCharsets.UTF_8)
@@ -28,24 +33,28 @@ open class KoraContext(val msg: FullHttpRequest) {
                     )
                 }
 
-                HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString() -> {
+                APPLICATION_X_WWW_FORM_URLENCODED -> {
                     HttpRequestParams.build(
-                        UrlEncodedFormParser.parse(
-                            msg.content().toString(StandardCharsets.UTF_8)
+                        UrlEncodedForm.build(
+                            msg.uri().substringAfter("?")
                         )
                     )
                 }
 
-                else -> HttpRequestParams()
+                else -> HttpRequestParams.EMPTY
             }
         }
 
         private fun produceArguments(msg: FullHttpRequest): HttpRequestArguments {
-            return HttpRequestArguments.build(
-                UrlEncodedFormParser.parse(
-                    msg.uri().substringAfter("?")
+            if (msg.uri().contains("?")) {
+                return HttpRequestArguments.build(
+                    UrlEncodedForm.build(
+                        msg.uri().substringAfter("?")
+                    )
                 )
-            )
+            } else {
+                return HttpRequestArguments.EMPTY
+            }
         }
     }
 
@@ -62,7 +71,7 @@ open class KoraContext(val msg: FullHttpRequest) {
         }
         if (result.endsWith("/")) {
             result.substring(0, it.length - 1)
-        } else{
+        } else {
             result
         }
     }

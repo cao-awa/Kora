@@ -1,10 +1,11 @@
 package com.github.cao.awa.kora.server.network.http.argument
 
-import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 
 class HttpRequestArguments {
     companion object {
+        val EMPTY: HttpRequestArguments = HttpRequestArguments()
+
         fun build(data: UrlEncodedForm): HttpRequestArguments {
             return HttpRequestArguments().apply {
                 data.forEach { (key, value) ->
@@ -24,5 +25,13 @@ class HttpRequestArguments {
         get(key)?.let {
             action(it)
         }
+    }
+
+    fun forEach(action: (String, String) -> Unit) {
+        this.data.forEach(action)
+    }
+
+    fun forEach(action: (Map.Entry<String, String>) -> Unit) {
+        this.data.forEach(action)
     }
 }

@@ -5,6 +5,8 @@ import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 
 class HttpRequestParams {
     companion object {
+        val EMPTY: HttpRequestParams = HttpRequestParams()
+
         fun build(data: JSONObject): HttpRequestParams {
             return HttpRequestParams().apply {
                 data.forEach { (key, value) ->

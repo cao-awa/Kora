@@ -1,14 +1,23 @@
 package com.github.cao.awa.kora.server.network.http.form.encoded
 
 class UrlEncodedForm {
+    companion object {
+        val EMPTY = UrlEncodedForm()
+
+        fun build(content: String): UrlEncodedForm {
+            return UrlEncodedForm().apply {
+                if (content.isNotEmpty()) {
+                    content.split("&").forEach {
+                        this.form[it.substringBefore("=")] = it.substringAfter("=")
+                    }
+                }
+            }
+        }
+    }
     private val form = HashMap<String, String>()
 
-    fun add(name: String, value: String) {
-     this.form[name] = value
-    }
-
-    fun remove(name: String) {
-        this.form.remove(name)
+    fun get(key: String): String? {
+        return this.form[key]
     }
 
     fun forEach(action: (String, String) -> Unit) {
