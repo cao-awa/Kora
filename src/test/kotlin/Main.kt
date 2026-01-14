@@ -1,10 +1,9 @@
 import com.github.cao.awa.cason.annotation.Field
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.builder.http
-import com.github.cao.awa.kora.server.network.response.content.NoContentResponse
+import com.github.cao.awa.kora.server.network.http.response.content.NoContentResponse
 import io.netty.handler.codec.http.HttpResponseStatus
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.atomics.AtomicInt
 
 fun main() {
     KoraHttpServer.instructHttpStatusCode = false
@@ -32,6 +31,8 @@ fun main() {
 //                } else if (testCustomAbortCondition) {
 //                    abortWith(NullPointerException("Test NPE"), HttpResponseStatus.INTERNAL_SERVER_ERROR)
 //                }
+
+                abortWith(HttpResponseStatus.BAD_REQUEST)
 
                 KoraResponse(
                     type = "post",

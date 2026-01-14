@@ -2,7 +2,7 @@ package com.github.cao.awa.kora.server.network.http.builder.error
 
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
 import com.github.cao.awa.kora.server.network.http.context.KoraContext
-import com.github.cao.awa.kora.server.network.http.control.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyException
 import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
 import io.netty.handler.codec.http.HttpMethod
 import kotlin.reflect.KClass

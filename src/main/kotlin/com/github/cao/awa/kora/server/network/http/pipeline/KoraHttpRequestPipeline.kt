@@ -5,10 +5,10 @@ import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraContext
-import com.github.cao.awa.kora.server.network.http.context.abort.AbortKoraContext
+import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortContext
 import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
-import com.github.cao.awa.kora.server.network.http.exception.NotSupportedMethodException
+import com.github.cao.awa.kora.server.network.http.exception.NotSupportedHttpMethodException
 import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
 import com.github.cao.awa.kora.server.network.http.handler.get.KoraHttpGetHandler
 import com.github.cao.awa.kora.server.network.http.handler.post.KoraHttpPostHandler
@@ -16,7 +16,7 @@ import com.github.cao.awa.kora.server.network.http.metadata.HttpResponseMetadata
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setContentType
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
-import com.github.cao.awa.kora.server.network.response.content.NoContentResponse
+import com.github.cao.awa.kora.server.network.http.response.content.NoContentResponse
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.HttpMethod
@@ -93,7 +93,7 @@ class KoraHttpRequestPipeline {
                         response = handler.handle(koraContext)
                     )
                 } else {
-                    throw NotSupportedMethodException(koraContext.method())
+                    throw NotSupportedHttpMethodException(koraContext.method())
                 }
             }
         }
@@ -108,7 +108,7 @@ class KoraHttpRequestPipeline {
         try {
             action()
         } catch (exception: RuntimeException) {
-            val abortScope = AbortKoraContext(koraContext)
+            val abortScope = KoraAbortContext(koraContext)
             val reason = exception.message ?: "Control stream lifecycle aborting"
             val abortReason = AbortReason(exception, reason)
             try {

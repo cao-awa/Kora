@@ -5,7 +5,7 @@ import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
 import com.github.cao.awa.kora.server.network.http.argument.HttpRequestArguments
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
-import com.github.cao.awa.kora.server.network.http.control.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyException
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
 import io.netty.handler.codec.http.FullHttpRequest
@@ -16,6 +16,7 @@ import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import java.nio.charset.StandardCharsets
 
+@Suppress("unused")
 open class KoraContext(val msg: FullHttpRequest) {
     companion object {
         private val APPLICATION_JSON: String =
@@ -24,7 +25,7 @@ open class KoraContext(val msg: FullHttpRequest) {
             HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()
 
         private fun produceParams(msg: FullHttpRequest): HttpRequestParams {
-            return when (msg.headers().get(HttpHeaderNames.CONTENT_TYPE)) {
+            return when (msg.headers()[HttpHeaderNames.CONTENT_TYPE]) {
                 APPLICATION_JSON -> {
                     HttpRequestParams.build(
                         StrictJSONParser.parseObject(
@@ -46,14 +47,14 @@ open class KoraContext(val msg: FullHttpRequest) {
         }
 
         private fun produceArguments(msg: FullHttpRequest): HttpRequestArguments {
-            if (msg.uri().contains("?")) {
-                return HttpRequestArguments.build(
+            return if (msg.uri().contains("?")) {
+                HttpRequestArguments.build(
                     UrlEncodedForm.build(
                         msg.uri().substringAfter("?")
                     )
                 )
             } else {
-                return HttpRequestArguments.EMPTY
+                HttpRequestArguments.EMPTY
             }
         }
     }
