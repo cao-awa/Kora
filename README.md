@@ -56,7 +56,7 @@ import com.github.cao.awa.kora.server.network.http.builder.server
 import io.netty.handler.codec.http.HttpResponseStatus
 
 fun main() {
-    val api = server {
+    val api = http {
         route("/test") {
             post {
                 KoraResponse(
