@@ -2,6 +2,7 @@ package com.github.cao.awa.kora.server.network.http.builder
 
 import com.github.cao.awa.kora.server.network.http.builder.route.KoraHttpServerRouteBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
+import java.net.URLEncoder
 
 class KoraHttpServerBuilder {
     private val routes: MutableMap<String, KoraHttpServerRouteBuilder> = mutableMapOf()
@@ -11,13 +12,23 @@ class KoraHttpServerBuilder {
     }
 
     fun route(targetPath: String, handler: KoraHttpServerRouteBuilder.() -> Unit) {
-        val path = targetPath.let {
-            if (it.endsWith("/")) {
-                it.substring(0, it.length - 1)
+        var path = targetPath
+
+        path = if (path.endsWith("/")) {
+                path.substring(0, path.length - 1)
             } else {
-                it
+                path
             }
+
+        path = if (path.startsWith("/")) {
+            path.substring(1, path.length)
+        } else {
+            path
         }
+
+        // Encode the path and replace connecting symbol to '%20' .
+        path = "/${URLEncoder.encode(path, "UTF-8")}"
+            .replace("+", "%20")
 
         if (!this.routes.containsKey(path)) {
             this.routes[path] = KoraHttpServerRouteBuilder(path, handler)

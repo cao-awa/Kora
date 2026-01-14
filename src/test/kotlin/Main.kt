@@ -22,7 +22,10 @@ fun main() {
         route("/test") {
             get {
                 count.addAndGet(1)
-                NoContentResponse
+                KoraResponse(
+                    type = "post",
+                    timestamp = System.currentTimeMillis()
+                )
             }
 
             post {

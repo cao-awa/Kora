@@ -8,7 +8,7 @@ import com.github.cao.awa.kora.server.network.http.context.KoraContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortContext
 import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
-import com.github.cao.awa.kora.server.network.http.exception.NotSupportedHttpMethodException
+import com.github.cao.awa.kora.server.network.http.exception.method.NotSupportedHttpMethodException
 import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
 import com.github.cao.awa.kora.server.network.http.handler.get.KoraHttpGetHandler
 import com.github.cao.awa.kora.server.network.http.handler.post.KoraHttpPostHandler
@@ -93,7 +93,7 @@ class KoraHttpRequestPipeline {
                         response = handler.handle(koraContext)
                     )
                 } else {
-                    throw NotSupportedHttpMethodException(koraContext.method())
+                    throw NotSupportedHttpMethodException(koraContext.method().name())
                 }
             }
         }
@@ -119,6 +119,7 @@ class KoraHttpRequestPipeline {
                 }
             } catch (exception: Exception) {
                 val endOfLifecycleScope = abortScope.createInherited()
+                endOfLifecycleScope.withStatus(HttpResponseStatus.NO_CONTENT)
                 response(
                     handlerContext,
                     endOfLifecycleScope,
