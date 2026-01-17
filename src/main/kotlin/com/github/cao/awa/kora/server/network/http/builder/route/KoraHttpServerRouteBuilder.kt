@@ -2,12 +2,12 @@ package com.github.cao.awa.kora.server.network.http.builder.route
 
 import com.github.cao.awa.kora.server.network.http.builder.error.KoraHttpRouteExceptionBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
-import com.github.cao.awa.kora.server.network.http.context.KoraContext
+import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import io.netty.handler.codec.http.HttpMethod
 
 class KoraHttpServerRouteBuilder {
     val path: String
-    val routes: MutableMap<HttpMethod, KoraContext.() -> Any> = mutableMapOf()
+    val routes: MutableMap<HttpMethod, KoraHttpContext.() -> Any> = mutableMapOf()
     val exceptionHandlers: MutableMap<HttpMethod, KoraHttpRouteExceptionBuilder> = mutableMapOf()
 
     constructor(path: String, builder: KoraHttpServerRouteBuilder.() -> Unit) {
@@ -15,7 +15,7 @@ class KoraHttpServerRouteBuilder {
         builder(this)
     }
 
-    inline fun <reified T : Any> post(noinline handler: KoraContext.() -> T): KoraHttpRouteExceptionBuilder {
+    inline fun <reified T : Any> post(noinline handler: KoraHttpContext.() -> T): KoraHttpRouteExceptionBuilder {
         if (T::class == Unit::class) {
             error("HTTP method cannot missing response")
         }
@@ -28,7 +28,7 @@ class KoraHttpServerRouteBuilder {
         }
     }
 
-    inline fun <reified T : Any> get(noinline handler: KoraContext.() -> T): KoraHttpRouteExceptionBuilder {
+    inline fun <reified T : Any> get(noinline handler: KoraHttpContext.() -> T): KoraHttpRouteExceptionBuilder {
         if (T::class == Unit::class) {
             error("HTTP method cannot missing response")
         }
@@ -61,7 +61,7 @@ class KoraHttpServerRouteBuilder {
 
     fun routePost(
         adapter: KoraHttpInboundHandlerAdapter,
-        handler: KoraContext.() -> Any
+        handler: KoraHttpContext.() -> Any
     ) {
         adapter.pipeline.getHandler(HttpMethod.POST)?.route(this.path, handler)
     }
@@ -75,7 +75,7 @@ class KoraHttpServerRouteBuilder {
 
     fun routeGet(
         adapter: KoraHttpInboundHandlerAdapter,
-        handler: KoraContext.() -> Any
+        handler: KoraHttpContext.() -> Any
     ) {
         adapter.pipeline.getHandler(HttpMethod.GET)?.route(this.path, handler)
     }

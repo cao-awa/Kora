@@ -4,6 +4,8 @@ import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
+import com.github.cao.awa.kora.server.network.http.config.KoraHttpDefaultServerConfig
+import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.ChannelInitializer
@@ -29,7 +31,12 @@ class KoraHttpServer {
         this.serverBuilder = builder
     }
 
-    fun start(port: Int, useEpoll: Boolean = true) {
+    fun start(
+        port: Int,
+        address: String = "localhost",
+        useEpoll: Boolean = true,
+        config: KoraHttpServerConfig = KoraHttpDefaultServerConfig
+    ) {
         val threadFactory = KoraEventLoopGroupFactory.remote(
             useEpoll
         )
@@ -44,24 +51,19 @@ class KoraHttpServer {
                 ).channel(
                     threadFactory.channel
                 ).option(
-                    ChannelOption.SO_BACKLOG, 2048
+                    ChannelOption.SO_BACKLOG, config.backlog()
                 ).childOption(
-                    ChannelOption.TCP_NODELAY, true
+                    ChannelOption.TCP_NODELAY, config.tcpNoDelay()
                 ).childOption(
-                    ChannelOption.SO_KEEPALIVE, true
+                    ChannelOption.SO_KEEPALIVE, config.keepalive()
                 ).childOption(
-                    ChannelOption.SO_RCVBUF, 65536
+                    ChannelOption.SO_RCVBUF, config.rcvBuf()
                 ).childOption(
-                    ChannelOption.SO_REUSEADDR, true
+                    ChannelOption.SO_REUSEADDR, config.reuseAddr()
                 ).childOption(
-                    ChannelOption.WRITE_BUFFER_WATER_MARK,
-                    WriteBufferWaterMark(
-                        32 * 1024,
-                        64 * 1024
-                    )
+                    ChannelOption.WRITE_BUFFER_WATER_MARK, config.writeBufferWaterMark()
                 ).childOption(
-                    ChannelOption.ALLOCATOR,
-                    PooledByteBufAllocator.DEFAULT
+                    ChannelOption.ALLOCATOR, config.allocator()
                 ).childHandler(object : ChannelInitializer<SocketChannel>() {
                     @Override
                     override fun initChannel(channel: SocketChannel) {
@@ -76,8 +78,10 @@ class KoraHttpServer {
                 })
 
             val future = bootstrap.bind(
+                address,
                 port
             ).sync()
+            println("Kora HTTP server started on port $port on $address")
             future.channel().closeFuture().sync()
         } finally {
             bossGroup.shutdownGracefully()

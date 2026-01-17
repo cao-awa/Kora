@@ -4,8 +4,8 @@ import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
-import com.github.cao.awa.kora.server.network.http.context.KoraContext
-import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortContext
+import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
+import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
 import com.github.cao.awa.kora.server.network.http.exception.method.NotSupportedHttpMethodException
@@ -29,15 +29,14 @@ import kotlinx.coroutines.launch
 
 class KoraHttpRequestPipeline {
     companion object {
-        fun instructHttpMetadata(json: JSONObject, koraContext: KoraContext): JSONObject {
+        fun instructHttpMetadata(json: JSONObject, koraContext: KoraHttpContext): JSONObject {
             json.instruct {
                 if (KoraHttpServer.instructHttpMetadata) {
                     nested("http_meta") {
                         HttpResponseMetadata(
                             if (KoraHttpServer.instructHttpStatusCode) {
                                 koraContext.status().code()
-                            } else null,
-                            if (KoraHttpServer.instructHttpVersionCode) {
+                            } else null, if (KoraHttpServer.instructHttpVersionCode) {
                                 koraContext.protocolVersion().text()
                             } else null
                         )
@@ -49,9 +48,7 @@ class KoraHttpRequestPipeline {
         }
 
         fun instructHttpMetadata(
-            json: JSONObject,
-            status: HttpResponseStatus,
-            protocolVersion: HttpVersion
+            json: JSONObject, status: HttpResponseStatus, protocolVersion: HttpVersion
         ): JSONObject {
             json.instruct {
                 if (KoraHttpServer.instructHttpMetadata) {
@@ -59,8 +56,7 @@ class KoraHttpRequestPipeline {
                         HttpResponseMetadata(
                             if (KoraHttpServer.instructHttpStatusCode) {
                                 status.code()
-                            } else null,
-                            if (KoraHttpServer.instructHttpVersionCode) {
+                            } else null, if (KoraHttpServer.instructHttpVersionCode) {
                                 protocolVersion.text()
                             } else null
                         )
@@ -81,8 +77,8 @@ class KoraHttpRequestPipeline {
 
     fun getHandler(method: HttpMethod): KoraHttpRequestHandler? = this.handlers[method]
 
-    fun handleFull(handlerContext: ChannelHandlerContext, koraContext: KoraContext) {
-        // CoroutineScope.
+    fun handleFull(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext) {
+        // Launch on coroutine scope.
         this.executionScope.launch {
             val handler: KoraHttpRequestHandler? = handlers[koraContext.method()]
             abortable(handlerContext, koraContext, handler) {
@@ -101,14 +97,14 @@ class KoraHttpRequestPipeline {
 
     private fun abortable(
         handlerContext: ChannelHandlerContext,
-        koraContext: KoraContext,
+        koraContext: KoraHttpContext,
         handler: KoraHttpRequestHandler?,
         action: () -> Unit
     ) {
         try {
             action()
         } catch (exception: RuntimeException) {
-            val abortScope = KoraAbortContext(koraContext)
+            val abortScope = KoraAbortHttpContext(koraContext)
             val reason = exception.message ?: "Control stream lifecycle aborting"
             val abortReason = AbortReason(exception, reason)
             try {
@@ -137,7 +133,7 @@ class KoraHttpRequestPipeline {
         ).addListener(ChannelFutureListener.CLOSE)
     }
 
-    private fun response(handlerContext: ChannelHandlerContext, koraContext: KoraContext, response: Any) {
+    private fun response(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any) {
         when (response) {
             is JSONObject -> {
                 responseJSON(handlerContext, koraContext) {
@@ -163,19 +159,14 @@ class KoraHttpRequestPipeline {
     }
 
     private fun response(
-        handlerContext: ChannelHandlerContext,
-        koraContext: KoraContext,
-        response: KoraContext.() -> String
+        handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: KoraHttpContext.() -> String
     ) {
         val msg: String = response(koraContext)
 
         handlerContext.writeAndFlush(
             KoraHttpResponses.createDefaultResponse(
-                koraContext.protocolVersion(),
-                koraContext.status(),
-                msg
-            ).setContentType(koraContext.contentType())
-                .setLength()
+                koraContext.protocolVersion(), koraContext.status(), msg
+            ).setContentType(koraContext.contentType()).setLength()
         ).also {
             if (koraContext.promiseClose) {
                 it.addListener(ChannelFutureListener.CLOSE)
@@ -184,9 +175,7 @@ class KoraHttpRequestPipeline {
     }
 
     private fun responseJSON(
-        handlerContext: ChannelHandlerContext,
-        koraContext: KoraContext,
-        responser: KoraContext.() -> JSONObject
+        handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, responser: KoraHttpContext.() -> JSONObject
     ) {
         val sendingContext = koraContext.createInherited()
 

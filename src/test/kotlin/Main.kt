@@ -8,35 +8,16 @@ import java.util.concurrent.atomic.AtomicInteger
 fun main() {
     KoraHttpServer.instructHttpStatusCode = false
 
-    val count = AtomicInteger(0)
-
-    Thread {
-        while (true) {
-            Thread.sleep(1000)
-            println("QPS: ${count.get()}")
-            count.set(0)
-        }
-    }.start()
-
     val api = http {
         route("/test") {
             get {
-                count.addAndGet(1)
                 KoraResponse(
-                    type = "post",
+                    type = "get",
                     timestamp = System.currentTimeMillis()
                 )
             }
 
             post {
-//                if (testCondition) {
-//                    abortWith(HttpResponseStatus.UNAUTHORIZED)
-//                } else if (testCustomAbortCondition) {
-//                    abortWith(NullPointerException("Test NPE"), HttpResponseStatus.INTERNAL_SERVER_ERROR)
-//                }
-
-                abortWith(HttpResponseStatus.BAD_REQUEST)
-
                 KoraResponse(
                     type = "post",
                     timestamp = System.currentTimeMillis()

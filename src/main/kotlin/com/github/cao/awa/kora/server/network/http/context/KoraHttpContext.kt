@@ -17,7 +17,7 @@ import io.netty.handler.codec.http.HttpVersion
 import java.nio.charset.StandardCharsets
 
 @Suppress("unused")
-open class KoraContext(val msg: FullHttpRequest) {
+open class KoraHttpContext(val msg: FullHttpRequest) {
     companion object {
         private val APPLICATION_JSON: String =
             HttpHeaderValues.APPLICATION_JSON.toString()
@@ -157,8 +157,8 @@ open class KoraContext(val msg: FullHttpRequest) {
         return this.msg.protocolVersion()
     }
 
-    fun createInherited(): KoraContext {
-        return KoraContext(this.msg).also {
+    fun createInherited(): KoraHttpContext {
+        return KoraHttpContext(this.msg).also {
             it.status = this.status
             it.contentType = this.contentType
             it.protocolVersion = this.protocolVersion

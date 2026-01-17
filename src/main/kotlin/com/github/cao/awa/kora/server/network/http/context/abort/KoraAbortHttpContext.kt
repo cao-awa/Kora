@@ -1,11 +1,11 @@
 package com.github.cao.awa.kora.server.network.http.context.abort
 
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
-import com.github.cao.awa.kora.server.network.http.context.KoraContext
+import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 
-class KoraAbortContext(context: KoraContext): KoraContext(context.msg) {
+class KoraAbortHttpContext(context: KoraHttpContext): KoraHttpContext(context.msg) {
     init {
         super.withStatus(context.status())
         super.withContentType(context.contentType())
