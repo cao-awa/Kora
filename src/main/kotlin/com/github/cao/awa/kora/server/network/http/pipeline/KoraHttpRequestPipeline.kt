@@ -168,7 +168,7 @@ class KoraHttpRequestPipeline {
                 koraContext.protocolVersion(), koraContext.status(), msg
             ).setContentType(koraContext.contentType()).setLength()
         ).also {
-            if (koraContext.promiseClose) {
+            if (koraContext.isPromiseClose()) {
                 it.addListener(ChannelFutureListener.CLOSE)
             }
         }

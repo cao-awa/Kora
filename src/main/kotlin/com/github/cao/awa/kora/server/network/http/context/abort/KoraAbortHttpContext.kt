@@ -10,7 +10,7 @@ class KoraAbortHttpContext(context: KoraHttpContext): KoraHttpContext(context.ms
         super.withStatus(context.status())
         super.withContentType(context.contentType())
         super.withProtocolVersion(context.protocolVersion())
-        if (context.promiseClose) {
+        if (context.isPromiseClose()) {
             promiseClose()
         }
     }

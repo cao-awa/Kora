@@ -34,4 +34,18 @@ class HttpRequestArguments {
     fun forEach(action: (Map.Entry<String, String>) -> Unit) {
         this.data.forEach(action)
     }
+
+    override fun toString(): String {
+        return StringBuilder().let {
+            val size = this.data.size - 1
+            var count = 0
+            for ((key, value) in this.data) {
+                it.append(key).append("=").append(value)
+                if (count++ != size) {
+                    it.append("&")
+                }
+            }
+            it.toString()
+        }
+    }
 }

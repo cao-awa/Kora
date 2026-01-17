@@ -59,9 +59,9 @@ open class KoraHttpContext(val msg: FullHttpRequest) {
         }
     }
 
-    val arguments: HttpRequestArguments = produceArguments(this.msg)
-    val params: HttpRequestParams = produceParams(this.msg)
-    var promiseClose: Boolean = false
+    private val arguments: HttpRequestArguments = produceArguments(this.msg)
+    private val params: HttpRequestParams = produceParams(this.msg)
+    private var promiseClose: Boolean = false
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
     private var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
@@ -93,8 +93,16 @@ open class KoraHttpContext(val msg: FullHttpRequest) {
         return this.params
     }
 
+    fun arguments(): HttpRequestArguments {
+        return this.arguments
+    }
+
     open fun promiseClose() {
         this.promiseClose = true
+    }
+
+    fun isPromiseClose(): Boolean {
+        return this.promiseClose
     }
 
     fun abortWith(exception: Exception, errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {

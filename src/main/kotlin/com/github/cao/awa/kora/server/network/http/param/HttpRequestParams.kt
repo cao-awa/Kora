@@ -35,4 +35,12 @@ class HttpRequestParams {
             action(it)
         }
     }
+
+    override fun toString(): String {
+        return JSONObject{
+            for ((key, value) in this@HttpRequestParams.data) {
+                key set value
+            }
+        }.toString()
+    }
 }
