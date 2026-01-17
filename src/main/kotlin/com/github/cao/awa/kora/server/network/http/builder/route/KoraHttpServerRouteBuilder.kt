@@ -2,10 +2,19 @@ package com.github.cao.awa.kora.server.network.http.builder.route
 
 import com.github.cao.awa.kora.server.network.http.builder.error.KoraHttpRouteExceptionBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
+import com.github.cao.awa.kora.server.network.http.argument.type.TypedHttpArgument
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import io.netty.handler.codec.http.HttpMethod
 
 class KoraHttpServerRouteBuilder {
+    companion object {
+        fun KoraHttpContext.validateArguments(arguments: Array<out TypedHttpArgument<*>>) {
+            arguments.forEach { argument: TypedHttpArgument<*> ->
+                argument.get(this)
+            }
+        }
+    }
+
     val path: String
     val routes: MutableMap<HttpMethod, KoraHttpContext.() -> Any> = mutableMapOf()
     val exceptionHandlers: MutableMap<HttpMethod, KoraHttpRouteExceptionBuilder> = mutableMapOf()

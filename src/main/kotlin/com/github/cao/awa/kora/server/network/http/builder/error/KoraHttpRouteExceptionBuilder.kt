@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 class KoraHttpRouteExceptionBuilder {
     private val method: HttpMethod
     private val path: String
-    val routes: MutableMap<KClass<out Exception>, KoraAbortHttpContext.(AbortReason<out Exception>) -> Any> = mutableMapOf()
+    val routes: MutableMap<KClass<out Throwable>, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any> = mutableMapOf()
 
     constructor(method: HttpMethod, path: String) {
         this.method = method
@@ -19,14 +19,14 @@ class KoraHttpRouteExceptionBuilder {
     }
 
     @Suppress("unchecked_cast")
-    inline fun <reified T: Exception, X: Any> abort(target: KClass<T>, noinline handler: KoraAbortHttpContext.(AbortReason<T>) -> X): KoraHttpRouteExceptionBuilder {
-        this.routes[target] = handler as KoraAbortHttpContext.(AbortReason<out Exception>) -> Any
+    inline fun <reified T: Throwable, X: Any> abort(target: KClass<T>, noinline handler: KoraAbortHttpContext.(AbortReason<T>) -> X): KoraHttpRouteExceptionBuilder {
+        this.routes[target] = handler as KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
         return this
     }
 
     @Suppress("unchecked_cast")
     fun abort(handler: KoraAbortHttpContext.(reason: AbortReason<EndingEarlyException>) -> Any): KoraHttpRouteExceptionBuilder {
-        this.routes[EndingEarlyException::class] = handler as KoraAbortHttpContext.(AbortReason<out Exception>) -> Any
+        this.routes[EndingEarlyException::class] = handler as KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
         return this
     }
 

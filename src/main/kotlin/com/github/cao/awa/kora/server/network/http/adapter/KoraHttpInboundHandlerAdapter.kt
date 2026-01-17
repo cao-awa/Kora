@@ -30,7 +30,7 @@ class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : Cha
 
             else -> {
                 ctx.writeAndFlush(
-                    KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0)
+                    KoraHttpError.BAD_REQUEST(HttpVersion.HTTP_1_0)
                 ).addListener(ChannelFutureListener.CLOSE)
             }
         }

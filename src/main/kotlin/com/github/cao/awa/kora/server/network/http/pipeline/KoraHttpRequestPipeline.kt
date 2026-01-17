@@ -103,24 +103,21 @@ class KoraHttpRequestPipeline {
     ) {
         try {
             action()
-        } catch (exception: RuntimeException) {
-            val abortScope = KoraAbortHttpContext(koraContext)
-            val reason = exception.message ?: "Control stream lifecycle aborting"
-            val abortReason = AbortReason(exception, reason)
+        } catch (exception: Throwable) {
             try {
-                if (handler != null) {
+                val abortScope = KoraAbortHttpContext(koraContext)
+                val reason = exception.message!!
+                val abortReason = AbortReason(exception, reason)
+                if (handler != null && handler.hasAbortHandler(abortReason)) {
                     response(handlerContext, abortScope, handler.handleAbort(abortScope, abortReason))
                 } else {
-                    error("Unprocessable handle in path ${koraContext.path()}")
+                    throw exception
                 }
-            } catch (exception: Exception) {
-                val endOfLifecycleScope = abortScope.createInherited()
-                endOfLifecycleScope.withStatus(HttpResponseStatus.NO_CONTENT)
-                response(
-                    handlerContext,
-                    endOfLifecycleScope,
-                    NoContentResponse
-                )
+            } catch (unhandledException: Throwable) {
+                // Response an error message.
+                handlerContext.writeAndFlush(
+                    KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, unhandledException)
+                ).addListener(ChannelFutureListener.CLOSE)
             }
         }
     }
@@ -129,7 +126,7 @@ class KoraHttpRequestPipeline {
         cause.printStackTrace()
         // Response an error message.
         handlerContext.writeAndFlush(
-            KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0)
+            KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause)
         ).addListener(ChannelFutureListener.CLOSE)
     }
 

@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 
 abstract class KoraHttpRequestHandler(val method: HttpMethod) {
     private val routes: MutableMap<String, KoraHttpContext.() -> Any> = mutableMapOf()
-    private val exceptionHandler: MutableMap<KClass<out Exception>, MutableMap<String, KoraAbortHttpContext.(AbortReason<out Exception>) -> Any>> =
+    private val exceptionHandler: MutableMap<KClass<out Throwable>, MutableMap<String, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any>> =
         mutableMapOf()
 
     fun route(path: String, handler: KoraHttpContext.() -> Any): KoraHttpRequestHandler {
@@ -19,8 +19,8 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) {
 
     fun routeExceptionHandler(
         path: String,
-        type: KClass<out Exception>,
-        handler: KoraAbortHttpContext.(AbortReason<out Exception>) -> Any
+        type: KClass<out Throwable>,
+        handler: KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
     ): KoraHttpRequestHandler {
         if (!this.exceptionHandler.containsKey(type)) {
             this.exceptionHandler[type] = mutableMapOf()
@@ -32,10 +32,14 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) {
     fun handle(context: KoraHttpContext): Any {
         return this.routes[context.path()]?.let {
             it(context)
-        } ?: EndingEarlyException.abort()
+        } ?: error("Unhandled request for pathing '${context.path()}'")
     }
 
-    fun handleAbort(abortScope: KoraAbortHttpContext, abortReason: AbortReason<out Exception>): Any {
+    fun hasAbortHandler(abortReason: AbortReason<out Throwable>): Boolean {
+        return (this.exceptionHandler[abortReason.exception::class]?.size ?: 0) > 0
+    }
+
+    fun handleAbort(abortScope: KoraAbortHttpContext, abortReason: AbortReason<out Throwable>): Any {
         return this.exceptionHandler[abortReason.exception::class]?.get(abortScope.path())?.let {
             it(abortScope, abortReason)
         } ?: EndingEarlyException.abort()

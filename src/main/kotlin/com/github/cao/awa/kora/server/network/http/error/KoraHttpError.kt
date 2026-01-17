@@ -20,13 +20,30 @@ object KoraHttpError {
         )
     }
 
-    val INTERNAL_SERVER_ERROR: (HttpVersion) -> FullHttpResponse = { protocolVersion ->
+    val BAD_REQUEST: (HttpVersion) -> FullHttpResponse = { protocolVersion ->
+        KoraHttpResponses.createDefaultResponse(
+            protocolVersion,
+            HttpResponseStatus.BAD_REQUEST,
+            KoraHttpRequestPipeline.instructHttpMetadata(JSONObject {
+                "error" set "Server protocol (Kora/${KoraInformation.VERSION}, ${protocolVersion.text()}) error: Bad request"
+                "internal_error_name" set "Request is not full"
+            }, HttpResponseStatus.BAD_REQUEST, protocolVersion).toString(true, "    ", 0)
+        )
+    }
+
+    val INTERNAL_SERVER_ERROR: (HttpVersion, Throwable) -> FullHttpResponse = { protocolVersion, exception ->
         KoraHttpResponses.createDefaultResponse(
             protocolVersion,
             HttpResponseStatus.INTERNAL_SERVER_ERROR,
             KoraHttpRequestPipeline.instructHttpMetadata(JSONObject {
                 "message" set "Server protocol (Kora/${KoraInformation.VERSION}, ${protocolVersion.text()}) error: Internal server error"
                 "internal_error_name" set "Internal server error"
+                array("stacktrace") {
+                    + exception.toString()
+                    exception.stackTrace.forEach {
+                        + " - at $it"
+                    }
+                }
             }, HttpResponseStatus.INTERNAL_SERVER_ERROR, protocolVersion).toString(true, "    ", 0)
         )
     }

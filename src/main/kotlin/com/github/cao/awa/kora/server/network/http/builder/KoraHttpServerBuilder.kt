@@ -15,10 +15,10 @@ class KoraHttpServerBuilder {
         var path = targetPath
 
         path = if (path.endsWith("/")) {
-                path.substring(0, path.length - 1)
-            } else {
-                path
-            }
+            path.substring(0, path.length - 1)
+        } else {
+            path
+        }
 
         path = if (path.startsWith("/")) {
             path.substring(1, path.length)

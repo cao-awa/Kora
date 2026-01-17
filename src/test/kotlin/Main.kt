@@ -1,5 +1,6 @@
 import com.github.cao.awa.cason.annotation.Field
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
+import com.github.cao.awa.kora.server.network.http.argument.type.arg
 import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
@@ -9,18 +10,24 @@ import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyEx
 fun main() {
     KoraHttpServer.instructHttpStatusCode = false
 
+    val intArg = arg<Int>("action")
+
     val api = http {
         route("/test") {
             get {
-                testGet(this)
+                val action = intArg(this)
+
+                println(action)
+
+                testGet()
             }
 
             post {
-                testPost(this)
+                testPost()
             }.abort { reason ->
-                testHandleAbort(this, reason)
+                testHandleAbort(reason)
             }.abort(NullPointerException::class) { reason ->
-                testHandleNPE(this, reason)
+                testHandleNPE(reason)
             }
         }
     }
@@ -31,38 +38,38 @@ fun main() {
     )
 }
 
-fun testGet(context: KoraHttpContext): KoraResponse {
+fun KoraHttpContext.testGet(): KoraResponse {
     return KoraResponse(
-        type = "get: ${context.params()}, ${context.arguments()}",
+        type = "get: ${params()}, ${arguments()}",
         timestamp = System.currentTimeMillis()
     )
 }
 
-fun testPost(context: KoraHttpContext): KoraResponse {
+fun KoraHttpContext.testPost(): KoraResponse {
     return KoraResponse(
-        type = "post: ${context.params()}, ${context.arguments()}",
+        type = "post: ${params()}, ${arguments()}",
         timestamp = System.currentTimeMillis()
     )
 }
 
-fun testHandleAbort(context: KoraAbortHttpContext, reason: AbortReason<EndingEarlyException>): KoraErrorResponse {
+fun KoraAbortHttpContext.testHandleAbort(reason: AbortReason<EndingEarlyException>): KoraErrorResponse {
     // Use logging in the future.
     println("Abort with: ${reason.reason}")
     reason.exception.printStackTrace()
     return KoraErrorResponse(
         "Error: controlled abort",
-        context.status().code(),
+        status().code(),
         System.currentTimeMillis()
     )
 }
 
-fun testHandleNPE(context: KoraAbortHttpContext, reason: AbortReason<NullPointerException>): KoraErrorResponse {
+fun KoraAbortHttpContext.testHandleNPE(reason: AbortReason<NullPointerException>): KoraErrorResponse {
     // Use logging in the future.
     println("Abort with: ${reason.reason}")
     reason.exception.printStackTrace()
     return KoraErrorResponse(
         "Error: ${reason.reason}",
-        context.status().code(),
+        status().code(),
         System.currentTimeMillis()
     )
 }
