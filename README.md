@@ -9,6 +9,8 @@ APIs as values**, composed through Kotlin expressions and verified as early as p
 
 Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic.
 
+![](https://count.getloli.com/@@cao-awa.kora?name=%40cao-awa.kora&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
+
 # What Kora Is
 
 Kora is a **Kotlin-first**, expression-based web framework that emphasizes:
