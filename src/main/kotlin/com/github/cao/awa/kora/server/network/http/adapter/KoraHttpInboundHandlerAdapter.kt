@@ -4,6 +4,7 @@ import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
+import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
@@ -19,7 +20,7 @@ class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : Cha
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         when (msg) {
             is FullHttpRequest -> {
-                this.pipeline.handleFull(ctx, KoraHttpContext(msg))
+                this.pipeline.handleFull(ctx, KoraHttpContext(KoraFullHttpRequestHolder(msg)))
             }
 
             is HttpRequest -> {

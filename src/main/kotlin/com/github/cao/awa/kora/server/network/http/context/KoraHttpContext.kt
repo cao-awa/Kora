@@ -2,11 +2,14 @@ package com.github.cao.awa.kora.server.network.http.context
 
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
+import com.github.cao.awa.kora.server.network.context.KoraContext
 import com.github.cao.awa.kora.server.network.http.argument.HttpRequestArguments
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
+import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyException
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
+import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpHeaderNames
@@ -17,14 +20,14 @@ import io.netty.handler.codec.http.HttpVersion
 import java.nio.charset.StandardCharsets
 
 @Suppress("unused")
-open class KoraHttpContext(val msg: FullHttpRequest) {
+open class KoraHttpContext(val msg: KoraFullHttpRequestHolder): KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>(msg) {
     companion object {
         private val APPLICATION_JSON: String =
             HttpHeaderValues.APPLICATION_JSON.toString()
         private val APPLICATION_X_WWW_FORM_URLENCODED: String =
             HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()
 
-        private fun produceParams(msg: FullHttpRequest): HttpRequestParams {
+        private fun produceParams(msg: KoraFullHttpRequestHolder): HttpRequestParams {
             return when (msg.headers()[HttpHeaderNames.CONTENT_TYPE]) {
                 APPLICATION_JSON -> {
                     HttpRequestParams.build(
@@ -37,7 +40,7 @@ open class KoraHttpContext(val msg: FullHttpRequest) {
                 APPLICATION_X_WWW_FORM_URLENCODED -> {
                     HttpRequestParams.build(
                         UrlEncodedForm.build(
-                            msg.uri().substringAfter("?")
+                            msg.path().substringAfter("?")
                         )
                     )
                 }
@@ -46,11 +49,11 @@ open class KoraHttpContext(val msg: FullHttpRequest) {
             }
         }
 
-        private fun produceArguments(msg: FullHttpRequest): HttpRequestArguments {
-            return if (msg.uri().contains("?")) {
+        private fun produceArguments(msg: KoraFullHttpRequestHolder): HttpRequestArguments {
+            return if (msg.path().contains("?")) {
                 HttpRequestArguments.build(
                     UrlEncodedForm.build(
-                        msg.uri().substringAfter("?")
+                        msg.path().substringAfter("?")
                     )
                 )
             } else {
@@ -65,7 +68,7 @@ open class KoraHttpContext(val msg: FullHttpRequest) {
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
     private var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
-    private var path: String = this.msg.uri().let {
+    private var path: String = path().let {
         var result = it
         if (result.contains("?")) {
             result = result.substringBefore("?")
@@ -129,26 +132,6 @@ open class KoraHttpContext(val msg: FullHttpRequest) {
         }
     }
 
-    fun content(): ByteArray {
-        return this.msg.content().let { content ->
-            ByteArray(content.readableBytes()).also {
-                content.readBytes(it)
-            }
-        }
-    }
-
-    fun stringContent(): String {
-        return String(content(), StandardCharsets.UTF_8)
-    }
-
-    fun jsonContent(): JSONObject {
-        return StrictJSONParser.parseObject(stringContent())
-    }
-
-    fun path(): String {
-        return this.path
-    }
-
     fun status(): HttpResponseStatus {
         return this.status
     }
@@ -165,12 +148,16 @@ open class KoraHttpContext(val msg: FullHttpRequest) {
         return this.msg.protocolVersion()
     }
 
-    fun createInherited(): KoraHttpContext {
+    override fun createInherited(): KoraHttpContext {
         return KoraHttpContext(this.msg).also {
             it.status = this.status
             it.contentType = this.contentType
             it.protocolVersion = this.protocolVersion
             it.promiseClose = this.promiseClose
         }
+    }
+
+    override fun createAbort(): KoraAbortHttpContext {
+        return KoraAbortHttpContext(this)
     }
 }

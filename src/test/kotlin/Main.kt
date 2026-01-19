@@ -6,13 +6,15 @@ import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.ws.KoraWebSocketServer
+import com.github.cao.awa.kora.server.network.ws.builder.websocket
 
 fun main() {
     KoraHttpServer.instructHttpStatusCode = false
 
     val intArg = arg<Int>("action")
 
-    val api = http {
+    val http = http {
         route("/test") {
             get {
                 val action = intArg(this)
@@ -32,8 +34,17 @@ fun main() {
         }
     }
 
-    KoraHttpServer(api).start(
+    KoraHttpServer(http).start(
         port = 12345,
+        useEpoll = true
+    )
+
+    val ws = websocket {
+
+    }
+
+    KoraWebSocketServer(ws).start(
+        port = 12346,
         useEpoll = true
     )
 }

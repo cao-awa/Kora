@@ -1,4 +1,4 @@
-package com.github.cao.awa.kora.server.network.http.pipeline
+package com.github.cao.awa.kora.server.network.ws.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
@@ -19,6 +19,11 @@ import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.se
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
 import com.github.cao.awa.kora.server.network.http.response.content.NoContentResponse
 import com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline
+import com.github.cao.awa.kora.server.network.ws.context.KoraWebSocketContext
+import com.github.cao.awa.kora.server.network.ws.context.abort.KoraAbortWebSocketContext
+import com.github.cao.awa.kora.server.network.ws.handler.KoraWebSocketRequestHandler
+import com.github.cao.awa.kora.server.network.ws.holder.KoraTextWebsocketFrameHolder
+import com.github.cao.awa.kora.server.network.ws.response.KoraWebSocketResponses
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.HttpMethod
@@ -28,70 +33,38 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
-class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
-    companion object {
-        fun instructHttpMetadata(json: JSONObject, koraContext: KoraHttpContext): JSONObject {
-            json.instruct {
-                if (KoraHttpServer.instructHttpMetadata) {
-                    nested("http_meta") {
-                        HttpResponseMetadata(
-                            if (KoraHttpServer.instructHttpStatusCode) {
-                                koraContext.status().code()
-                            } else null, if (KoraHttpServer.instructHttpVersionCode) {
-                                koraContext.protocolVersion().text()
-                            } else null
-                        )
-                    }
-                }
-            }
-
-            return json
-        }
-
-        fun instructHttpMetadata(
-            json: JSONObject, status: HttpResponseStatus, protocolVersion: HttpVersion
-        ): JSONObject {
-            json.instruct {
-                if (KoraHttpServer.instructHttpMetadata) {
-                    nested("http_meta") {
-                        HttpResponseMetadata(
-                            if (KoraHttpServer.instructHttpStatusCode) {
-                                status.code()
-                            } else null, if (KoraHttpServer.instructHttpVersionCode) {
-                                protocolVersion.text()
-                            } else null
-                        )
-                    }
-                }
-            }
-
-            return json
-        }
-    }
-
-    private val handlers: Map<HttpMethod, KoraHttpRequestHandler> =
-        HashMap<HttpMethod, KoraHttpRequestHandler>().apply {
-            put(HttpMethod.GET, KoraHttpGetHandler())
-            put(HttpMethod.POST, KoraHttpPostHandler())
-        }
+class KoraWebSocketRequestPipeline :
+    KoraRequestPipeline<KoraTextWebsocketFrameHolder, KoraWebSocketContext, KoraAbortWebSocketContext, KoraWebSocketRequestHandler>() {
+    private val handler: KoraWebSocketRequestHandler = KoraWebSocketRequestHandler()
     private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    fun getHandler(method: HttpMethod): KoraHttpRequestHandler? = this.handlers[method]
+    fun route(path: String, handler: KoraWebSocketContext.() -> Any) {
+        this.handler.route(path, handler)
+    }
 
-    fun handleFull(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext) {
+    fun routeExceptionHandler(
+        path: String,
+        type: KClass<out Throwable>,
+        handler: KoraAbortWebSocketContext.(AbortReason<out Throwable>) -> Any
+    ) {
+        this.handler.routeExceptionHandler(path, type, handler)
+    }
+
+    fun handle(handlerContext: ChannelHandlerContext, koraContext: KoraWebSocketContext) {
         // Launch on coroutine scope.
         this.executionScope.launch {
-            val handler: KoraHttpRequestHandler? = handlers[koraContext.method()]
+            val handler: KoraWebSocketRequestHandler = this@KoraWebSocketRequestPipeline.handler
             abortable(handlerContext, koraContext, handler) {
-                if (handler != null) {
+                if (handler.hasRoute(koraContext.path())) {
                     response(
                         handlerContext = handlerContext,
                         koraContext = koraContext,
                         response = handler.handle(koraContext)
                     )
                 } else {
-                    throw NotSupportedHttpMethodException(koraContext.method().name())
+                    error("Unhandlable on path '${koraContext.path()}'")
                 }
             }
         }
@@ -105,7 +78,7 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
         ).addListener(ChannelFutureListener.CLOSE)
     }
 
-    override fun response(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any) {
+    override fun response(handlerContext: ChannelHandlerContext, koraContext: KoraWebSocketContext, response: Any) {
         when (response) {
             is JSONObject -> {
                 responseJSON(handlerContext, koraContext) {
@@ -115,9 +88,6 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
 
             is NoContentResponse -> {
                 response(handlerContext, koraContext) {
-                    // Force be no content status when response is no body response.
-                    koraContext.withStatus(HttpResponseStatus.NO_CONTENT)
-
                     ""
                 }
             }
@@ -132,15 +102,15 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
 
     private fun response(
         handlerContext: ChannelHandlerContext,
-        koraContext: KoraHttpContext,
-        response: KoraHttpContext.() -> String
+        koraContext: KoraWebSocketContext,
+        response: KoraWebSocketContext.() -> String
     ) {
         val msg: String = response(koraContext)
 
         handlerContext.writeAndFlush(
-            KoraHttpResponses.createDefaultResponse(
-                koraContext.protocolVersion(), koraContext.status(), msg
-            ).setContentType(koraContext.contentType()).setLength()
+            KoraWebSocketResponses.createDefaultResponse(
+                msg
+            )
         ).also {
             if (koraContext.isPromiseClose()) {
                 it.addListener(ChannelFutureListener.CLOSE)
@@ -149,13 +119,13 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
     }
 
     private fun responseJSON(
-        handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, responser: KoraHttpContext.() -> JSONObject
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraWebSocketContext,
+        responser: KoraWebSocketContext.() -> JSONObject
     ) {
         val sendingContext = koraContext.createInherited()
 
-        val msg: JSONObject = instructHttpMetadata(responser(sendingContext), sendingContext)
-
-        sendingContext.withContentType(HttpContentTypes.JSON)
+        val msg: JSONObject = responser(sendingContext)
 
         response(handlerContext, sendingContext) {
             JSONEncoder.renderJSON(msg)
