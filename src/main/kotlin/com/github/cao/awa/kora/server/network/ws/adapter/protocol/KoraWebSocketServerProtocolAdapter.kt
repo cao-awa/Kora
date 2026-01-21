@@ -1,16 +1,26 @@
-package com.github.cao.awa.kora.server.network.ws.protocol.handler
+package com.github.cao.awa.kora.server.network.ws.adapter.protocol
 
+import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
+import com.github.cao.awa.kora.server.network.ws.builder.KoraWebsocketServerBuilder
 import com.github.cao.awa.kora.server.network.ws.config.KoraWebSocketServerProtocolConfig
 import com.github.cao.awa.kora.server.network.ws.config.decoder.KoraWebSocketDecoderConfig
+import com.github.cao.awa.kora.server.network.ws.context.KoraWebSocketContext
 import com.github.cao.awa.kora.server.network.ws.holder.KoraTextWebsocketFrameHolder
-import com.github.cao.awa.kora.server.network.ws.protocol.handler.handshake.KoraWebSocketServerProtocolHandshakeHandler
+import com.github.cao.awa.kora.server.network.ws.phase.KoraWebSocketPhase
+import com.github.cao.awa.kora.server.network.ws.pipeline.KoraWebSocketRequestPipeline
+import com.github.cao.awa.kora.server.network.ws.protocol.handshake.KoraWebSocketServerProtocolHandshakeHandler
 import io.netty.buffer.Unpooled
-import io.netty.channel.*
+import io.netty.channel.Channel
+import io.netty.channel.ChannelFuture
+import io.netty.channel.ChannelFutureListener
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInboundHandler
+import io.netty.channel.ChannelInboundHandlerAdapter
+import io.netty.channel.ChannelOutboundHandler
+import io.netty.channel.ChannelPromise
 import io.netty.handler.codec.MessageToMessageDecoder
-import io.netty.handler.codec.http.DefaultFullHttpResponse
 import io.netty.handler.codec.http.FullHttpResponse
-import io.netty.handler.codec.http.HttpResponseStatus
-import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
+import io.netty.handler.codec.http.HttpVersion
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame
 import io.netty.handler.codec.http.websocketx.PongWebSocketFrame
@@ -21,7 +31,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakeException
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler.HandshakeComplete
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler
 import io.netty.util.AttributeKey
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.Future
@@ -30,9 +40,10 @@ import java.net.SocketAddress
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.TimeUnit
 
-class KoraWebSocketServerProtocolHandler(
-    private val serverConfig: KoraWebSocketServerProtocolConfig
-) : MessageToMessageDecoder<WebSocketFrame>(), ChannelOutboundHandler {
+class KoraWebSocketServerProtocolAdapter(
+    private val serverConfig: KoraWebSocketServerProtocolConfig,
+    val pipeline: KoraWebSocketRequestPipeline
+) : ChannelInboundHandlerAdapter(), ChannelOutboundHandler {
     companion object {
         const val DEFAULT_HANDSHAKE_TIMEOUT_MILLIS: Long = 10000L
 
@@ -62,7 +73,8 @@ class KoraWebSocketServerProtocolHandler(
         checkStartsWith: Boolean,
         dropPongFrames: Boolean,
         decoderConfig: KoraWebSocketDecoderConfig,
-        handshakeTimeoutMillis: Long = DEFAULT_HANDSHAKE_TIMEOUT_MILLIS
+        handshakeTimeoutMillis: Long,
+        builder: KoraWebsocketServerBuilder
     ) : this(
         KoraWebSocketServerProtocolConfig(
             subprotocols,
@@ -73,8 +85,16 @@ class KoraWebSocketServerProtocolHandler(
             sendCloseFrame,
             dropPongFrames,
             decoderConfig
-        )
+        ),
+        builder
     )
+
+    constructor(
+        config: KoraWebSocketServerProtocolConfig,
+        builder: KoraWebsocketServerBuilder
+    ) : this(config, KoraWebSocketRequestPipeline()) {
+        builder.applyRoute(this)
+    }
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
         val pipeline = ctx.pipeline()
@@ -100,13 +120,12 @@ class KoraWebSocketServerProtocolHandler(
     }
 
     override fun userEventTriggered(ctx: ChannelHandlerContext, evt: Any) {
-        if (evt is HandshakeComplete) {
+        if (evt is WebSocketServerProtocolHandler.HandshakeComplete) {
             this.uri = evt.requestUri()
         }
     }
 
-    @Throws(Exception::class)
-    protected override fun decode(ctx: ChannelHandlerContext, frame: WebSocketFrame, out: MutableList<Any>) {
+    override fun channelRead(ctx: ChannelHandlerContext, frame: Any) {
         if (this.serverConfig.handleCloseFrames && frame is CloseWebSocketFrame) {
             val handshaker: WebSocketServerHandshaker? = getHandshaker(ctx.channel())
             if (handshaker != null) {
@@ -131,12 +150,18 @@ class KoraWebSocketServerProtocolHandler(
         }
 
         if (frame is TextWebSocketFrame) {
-            out.add(KoraTextWebsocketFrameHolder(frame.retain(), this.uri!!))
+            val holder = KoraTextWebsocketFrameHolder(frame.retain(), this.uri!!)
+
+            this.pipeline.handle(
+                ctx,
+                KoraWebSocketContext(
+                    holder,
+                    KoraWebSocketPhase.MESSAGE
+                )
+            )
         }
     }
 
-
-    @Throws(java.lang.Exception::class)
     override fun close(ctx: ChannelHandlerContext, promise: ChannelPromise?) {
         if (!ctx.channel().isActive) {
             ctx.close(promise)
@@ -172,14 +197,13 @@ class KoraWebSocketServerProtocolHandler(
         })
     }
 
-    @Throws(java.lang.Exception::class)
     override fun write(ctx: ChannelHandlerContext, msg: Any?, promise: ChannelPromise) {
         if (this.closeSent != null) {
             ReferenceCountUtil.release(msg)
             promise.setFailure(ClosedChannelException())
         } else if (msg is CloseWebSocketFrame) {
             this.closeSent = promise.unvoid()
-            ctx.write(msg).addListener(PromiseNotifier<Void?, ChannelFuture?>(false, this.closeSent))
+            ctx.write(msg).addListener(PromiseNotifier(false, this.closeSent))
         } else {
             ctx.write(msg, promise)
         }
@@ -191,11 +215,10 @@ class KoraWebSocketServerProtocolHandler(
         }
     }
 
-    protected fun buildHandshakeException(message: String?): WebSocketServerHandshakeException {
+    fun buildHandshakeException(message: String?): WebSocketServerHandshakeException {
         return WebSocketServerHandshakeException(message)
     }
 
-    @Throws(java.lang.Exception::class)
     override fun bind(
         ctx: ChannelHandlerContext, localAddress: SocketAddress?,
         promise: ChannelPromise?
@@ -203,7 +226,6 @@ class KoraWebSocketServerProtocolHandler(
         ctx.bind(localAddress, promise)
     }
 
-    @Throws(java.lang.Exception::class)
     override fun connect(
         ctx: ChannelHandlerContext, remoteAddress: SocketAddress?,
         localAddress: SocketAddress?, promise: ChannelPromise?
@@ -211,31 +233,27 @@ class KoraWebSocketServerProtocolHandler(
         ctx.connect(remoteAddress, localAddress, promise)
     }
 
-    @Throws(java.lang.Exception::class)
     override fun disconnect(ctx: ChannelHandlerContext, promise: ChannelPromise?) {
         ctx.disconnect(promise)
     }
 
-    @Throws(java.lang.Exception::class)
     override fun deregister(ctx: ChannelHandlerContext, promise: ChannelPromise?) {
         ctx.deregister(promise)
     }
 
-    @Throws(java.lang.Exception::class)
     override fun read(ctx: ChannelHandlerContext) {
         ctx.read()
     }
 
-    @Throws(java.lang.Exception::class)
     override fun flush(ctx: ChannelHandlerContext) {
         ctx.flush()
     }
 
-    @Throws(Exception::class)
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         if (cause is WebSocketHandshakeException) {
-            val response: FullHttpResponse = DefaultFullHttpResponse(
-                HTTP_1_1, HttpResponseStatus.BAD_REQUEST, Unpooled.wrappedBuffer(cause.message!!.toByteArray())
+            val response: FullHttpResponse = KoraHttpError.INTERNAL_SERVER_ERROR(
+                HttpVersion.HTTP_1_1,
+                cause
             )
             ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE)
         } else {

@@ -1,8 +1,8 @@
 package com.github.cao.awa.kora.server.network.ws.builder
 
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
-import com.github.cao.awa.kora.server.network.ws.adapter.KoraWebSocketFrameAdapter
 import com.github.cao.awa.kora.server.network.ws.builder.route.KoraWebSocketRouteBuilder
+import com.github.cao.awa.kora.server.network.ws.adapter.protocol.KoraWebSocketServerProtocolAdapter
 import java.net.URLEncoder
 
 class KoraWebsocketServerBuilder {
@@ -38,8 +38,8 @@ class KoraWebsocketServerBuilder {
         }
     }
 
-    fun applyRoute(adapter: KoraWebSocketFrameAdapter) {
-        for ((key, builder) in this.routes) {
+    fun applyRoute(adapter: KoraWebSocketServerProtocolAdapter) {
+        for ((path, builder) in this.routes) {
             builder.applyRoute(adapter)
         }
     }

@@ -11,7 +11,14 @@ data class KoraWebSocketDecoderConfig(
     val withUTF8Validator: Boolean
 ) {
     companion object {
-        val DEFAULT: KoraWebSocketDecoderConfig = KoraWebSocketDecoderConfig(65536, true, false, false, true, true)
+        val DEFAULT: KoraWebSocketDecoderConfig = KoraWebSocketDecoderConfig(
+            maxFramePayloadLength = 1024 * 512,
+            expectMaskedFrames = true,
+            allowMaskMismatch = false,
+            allowExtensions = false,
+            closeOnProtocolViolation = true,
+            withUTF8Validator = true
+        )
     }
 
     fun toWebSocketDecoderConfig(): WebSocketDecoderConfig {

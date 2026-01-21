@@ -6,7 +6,6 @@ import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
 import com.github.cao.awa.kora.server.network.http.exception.method.NotSupportedHttpMethodException
 import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler

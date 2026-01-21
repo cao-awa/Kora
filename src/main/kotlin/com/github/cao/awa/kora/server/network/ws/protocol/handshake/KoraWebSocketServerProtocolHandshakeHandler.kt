@@ -1,7 +1,7 @@
-package com.github.cao.awa.kora.server.network.ws.protocol.handler.handshake
+package com.github.cao.awa.kora.server.network.ws.protocol.handshake
 
 import com.github.cao.awa.kora.server.network.ws.config.KoraWebSocketServerProtocolConfig
-import com.github.cao.awa.kora.server.network.ws.protocol.handler.KoraWebSocketServerProtocolHandler
+import com.github.cao.awa.kora.server.network.ws.adapter.protocol.KoraWebSocketServerProtocolAdapter
 import io.netty.channel.*
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpObject
@@ -21,7 +21,16 @@ internal class KoraWebSocketServerProtocolHandshakeHandler(
 ) : ChannelInboundHandlerAdapter() {
     companion object {
         fun resolvePath(uri: String): String {
-            return uri.substring(0, uri.indexOf('?'))
+            var endIndex = uri.indexOf('?')
+            if (endIndex == -1) {
+                endIndex = uri.length
+            }
+            return uri.substring(0, endIndex)
+        }
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            println(resolvePath("ws://127.0.0.1/qq"))
         }
 
         private fun getWebSocketLocation(cp: ChannelPipeline, req: HttpRequest, path: String): String {
@@ -65,7 +74,7 @@ internal class KoraWebSocketServerProtocolHandshakeHandler(
                 if (handshaker == null) {
                     WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(context.channel())
                 } else {
-                    KoraWebSocketServerProtocolHandler.setHandshaker(context.channel(), handshaker)
+                    KoraWebSocketServerProtocolAdapter.setHandshaker(context.channel(), handshaker)
                     context.pipeline().remove(this)
 
                     val handshakeFuture = handshaker.handshake(context.channel(), httpObject)
@@ -115,7 +124,7 @@ internal class KoraWebSocketServerProtocolHandshakeHandler(
     private fun checkNextUri(uri: String, websocketPath: String): Boolean {
         val len = websocketPath.length
         if (uri.length > len) {
-            val nextUri = uri.get(len)
+            val nextUri = uri[len]
             return nextUri == '/' || nextUri == '?'
         }
         return true

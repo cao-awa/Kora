@@ -2,32 +2,18 @@ package com.github.cao.awa.kora.server.network.ws.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
-import com.github.cao.awa.kora.server.network.http.KoraHttpServer
-import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
-import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
-import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
+import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
-import com.github.cao.awa.kora.server.network.http.exception.method.NotSupportedHttpMethodException
-import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
-import com.github.cao.awa.kora.server.network.http.handler.get.KoraHttpGetHandler
-import com.github.cao.awa.kora.server.network.http.handler.post.KoraHttpPostHandler
-import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
-import com.github.cao.awa.kora.server.network.http.metadata.HttpResponseMetadata
-import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
-import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setContentType
-import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
 import com.github.cao.awa.kora.server.network.http.response.content.NoContentResponse
 import com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline
 import com.github.cao.awa.kora.server.network.ws.context.KoraWebSocketContext
 import com.github.cao.awa.kora.server.network.ws.context.abort.KoraAbortWebSocketContext
 import com.github.cao.awa.kora.server.network.ws.handler.KoraWebSocketRequestHandler
 import com.github.cao.awa.kora.server.network.ws.holder.KoraTextWebsocketFrameHolder
+import com.github.cao.awa.kora.server.network.ws.phase.KoraWebSocketPhase
 import com.github.cao.awa.kora.server.network.ws.response.KoraWebSocketResponses
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
-import io.netty.handler.codec.http.HttpMethod
-import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,8 +26,8 @@ class KoraWebSocketRequestPipeline :
     private val handler: KoraWebSocketRequestHandler = KoraWebSocketRequestHandler()
     private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    fun route(path: String, handler: KoraWebSocketContext.() -> Any) {
-        this.handler.route(path, handler)
+    fun route(path: String, phase: KoraWebSocketPhase, handler: KoraWebSocketContext.() -> Any) {
+        this.handler.route(path, phase, handler)
     }
 
     fun routeExceptionHandler(
@@ -57,7 +43,7 @@ class KoraWebSocketRequestPipeline :
         this.executionScope.launch {
             val handler: KoraWebSocketRequestHandler = this@KoraWebSocketRequestPipeline.handler
             abortable(handlerContext, koraContext, handler) {
-                if (handler.hasRoute(koraContext.path())) {
+                if (handler.hasRoute(koraContext.path(), koraContext.phase)) {
                     response(
                         handlerContext = handlerContext,
                         koraContext = koraContext,
@@ -86,10 +72,8 @@ class KoraWebSocketRequestPipeline :
                 }
             }
 
-            is NoContentResponse -> {
-                response(handlerContext, koraContext) {
-                    ""
-                }
+            is Unit -> {
+                // Do nothing.
             }
 
             else -> {

@@ -9,7 +9,7 @@ import com.github.cao.awa.kora.server.network.ws.holder.KoraTextWebsocketFrameHo
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 
-class KoraAbortWebSocketContext(context: KoraWebSocketContext): KoraWebSocketContext(context.msg), KoraAbortContext<KoraTextWebsocketFrameHolder> {
+class KoraAbortWebSocketContext(context: KoraWebSocketContext): KoraWebSocketContext(context.msg, context.phase), KoraAbortContext<KoraTextWebsocketFrameHolder> {
     init {
         if (context.isPromiseClose()) {
             promiseClose()

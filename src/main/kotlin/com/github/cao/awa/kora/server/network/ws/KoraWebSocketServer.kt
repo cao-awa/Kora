@@ -2,14 +2,12 @@ package com.github.cao.awa.kora.server.network.ws
 
 import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
-import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.config.KoraHttpDefaultServerConfig
 import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
-import com.github.cao.awa.kora.server.network.ws.adapter.KoraWebSocketFrameAdapter
 import com.github.cao.awa.kora.server.network.ws.builder.KoraWebsocketServerBuilder
 import com.github.cao.awa.kora.server.network.ws.config.KoraWebSocketServerProtocolConfig
 import com.github.cao.awa.kora.server.network.ws.config.decoder.KoraWebSocketDecoderConfig
-import com.github.cao.awa.kora.server.network.ws.protocol.handler.KoraWebSocketServerProtocolHandler
+import com.github.cao.awa.kora.server.network.ws.adapter.protocol.KoraWebSocketServerProtocolAdapter
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
@@ -67,20 +65,20 @@ class KoraWebSocketServer {
                             // Only aggregate 1MB http request.
                             addLast(HttpObjectAggregator(KoraInformation.MB))
                             addLast(
-                                KoraWebSocketServerProtocolHandler(
+                                KoraWebSocketServerProtocolAdapter(
                                     KoraWebSocketServerProtocolConfig(
                                         null,
                                         false,
-                                        KoraWebSocketServerProtocolHandler.DEFAULT_HANDSHAKE_TIMEOUT_MILLIS,
+                                        KoraWebSocketServerProtocolAdapter.DEFAULT_HANDSHAKE_TIMEOUT_MILLIS,
                                         0L,
                                         true,
                                         WebSocketCloseStatus.NORMAL_CLOSURE,
                                         true,
                                         KoraWebSocketDecoderConfig.DEFAULT
-                                    )
+                                    ),
+                                    this@KoraWebSocketServer.serverBuilder
                                 )
                             )
-                            addLast(KoraWebSocketFrameAdapter(this@KoraWebSocketServer.serverBuilder))
                         }
                     }
                 })

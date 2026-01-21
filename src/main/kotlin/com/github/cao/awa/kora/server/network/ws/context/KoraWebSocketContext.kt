@@ -1,27 +1,13 @@
 package com.github.cao.awa.kora.server.network.ws.context
 
-import com.github.cao.awa.cason.obj.JSONObject
-import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
 import com.github.cao.awa.kora.server.network.context.KoraContext
-import com.github.cao.awa.kora.server.network.http.argument.HttpRequestArguments
-import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
-import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
-import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyException
-import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
-import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
-import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
+import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
 import com.github.cao.awa.kora.server.network.ws.context.abort.KoraAbortWebSocketContext
 import com.github.cao.awa.kora.server.network.ws.holder.KoraTextWebsocketFrameHolder
-import io.netty.handler.codec.http.FullHttpRequest
-import io.netty.handler.codec.http.HttpHeaderNames
-import io.netty.handler.codec.http.HttpHeaderValues
-import io.netty.handler.codec.http.HttpMethod
-import io.netty.handler.codec.http.HttpResponseStatus
-import io.netty.handler.codec.http.HttpVersion
-import java.nio.charset.StandardCharsets
+import com.github.cao.awa.kora.server.network.ws.phase.KoraWebSocketPhase
 
 @Suppress("unused")
-open class KoraWebSocketContext(val msg: KoraTextWebsocketFrameHolder): KoraContext<KoraTextWebsocketFrameHolder, KoraWebSocketContext, KoraAbortWebSocketContext>(msg) {
+open class KoraWebSocketContext(val msg: KoraTextWebsocketFrameHolder, val phase: KoraWebSocketPhase): KoraContext<KoraTextWebsocketFrameHolder, KoraWebSocketContext, KoraAbortWebSocketContext>(msg) {
     companion object {
 
     }
@@ -65,7 +51,7 @@ open class KoraWebSocketContext(val msg: KoraTextWebsocketFrameHolder): KoraCont
     }
 
     override fun createInherited(): KoraWebSocketContext {
-        return KoraWebSocketContext(this.msg).also {
+        return KoraWebSocketContext(this.msg, this.phase).also {
             it.promiseClose = this.promiseClose
         }
     }

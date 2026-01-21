@@ -22,7 +22,6 @@ class KoraHttpServer {
         var instructHttpMetadata: Boolean = true
         var instructHttpStatusCode: Boolean = true
         var instructHttpVersionCode: Boolean = true
-        var fastAbort: Boolean = false
     }
 
     private val serverBuilder: KoraHttpServerBuilder

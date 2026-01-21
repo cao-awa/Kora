@@ -1,12 +1,9 @@
 package com.github.cao.awa.kora.server.network.ws.builder.error
 
-import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
-import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
-import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyException
-import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
-import com.github.cao.awa.kora.server.network.ws.adapter.KoraWebSocketFrameAdapter
+import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.ws.context.abort.KoraAbortWebSocketContext
+import com.github.cao.awa.kora.server.network.ws.adapter.protocol.KoraWebSocketServerProtocolAdapter
 import io.netty.handler.codec.http.HttpMethod
 import kotlin.reflect.KClass
 
@@ -30,7 +27,7 @@ class KoraWebSocketRouteExceptionBuilder {
         return this
     }
 
-    fun applyRoute(adapter: KoraWebSocketFrameAdapter) {
+    fun applyRoute(adapter: KoraWebSocketServerProtocolAdapter) {
         for ((type, handler) in this.routes) {
             adapter.pipeline.routeExceptionHandler(this.path, type, handler)
         }

@@ -4,11 +4,8 @@ import com.github.cao.awa.kora.server.network.context.KoraContext
 import com.github.cao.awa.kora.server.network.context.abort.KoraAbortContext
 import com.github.cao.awa.kora.server.network.handler.KoraRequestHandler
 import com.github.cao.awa.kora.server.network.holder.PathByteBufHolder
-import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
-import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
+import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
-import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.HttpVersion

@@ -1,27 +1,24 @@
 package com.github.cao.awa.kora.server.network.ws.handler
 
 import com.github.cao.awa.kora.server.network.handler.KoraRequestHandler
-import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
-import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyException
-import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
-import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
+import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.ws.context.KoraWebSocketContext
 import com.github.cao.awa.kora.server.network.ws.context.abort.KoraAbortWebSocketContext
 import com.github.cao.awa.kora.server.network.ws.holder.KoraTextWebsocketFrameHolder
-import io.netty.handler.codec.http.HttpMethod
+import com.github.cao.awa.kora.server.network.ws.phase.KoraWebSocketPhase
 import kotlin.reflect.KClass
 
 class KoraWebSocketRequestHandler: KoraRequestHandler<KoraTextWebsocketFrameHolder, KoraWebSocketContext, KoraAbortWebSocketContext>() {
-    private val routes: MutableMap<String, MutableList<KoraWebSocketContext.() -> Any>> = mutableMapOf()
+    private val routes: MutableMap<String, MutableMap<KoraWebSocketPhase, KoraWebSocketContext.() -> Any>> = mutableMapOf()
     private val exceptionHandler: MutableMap<KClass<out Throwable>, MutableMap<String, KoraAbortWebSocketContext.(AbortReason<out Throwable>) -> Any>> =
         mutableMapOf()
 
-    fun route(path: String, handler: KoraWebSocketContext.() -> Any): KoraWebSocketRequestHandler {
+    fun route(path: String, phase: KoraWebSocketPhase, handler: KoraWebSocketContext.() -> Any): KoraWebSocketRequestHandler {
         if (!this.routes.containsKey(path)) {
-            this.routes[path] = mutableListOf()
+            this.routes[path] = mutableMapOf()
         }
-        this.routes[path]?.add(handler)
+        this.routes[path]?.put(phase, handler)
         return this
     }
 
@@ -39,14 +36,19 @@ class KoraWebSocketRequestHandler: KoraRequestHandler<KoraTextWebsocketFrameHold
 
     override fun handle(context: KoraWebSocketContext): Any {
         return this.routes[context.path()]?.let {
-            for (handler in it) {
+            it[context.phase]?.let { handler ->
                 handler(context)
             }
         } ?: error("Unhandled request for pathing '${context.path()}'")
     }
 
     override fun hasRoute(path: String): Boolean {
-        return (this.routes[path]?.size ?: 0) > 0
+        // Missing phase.
+        return false
+    }
+
+    fun hasRoute(path: String, phase: KoraWebSocketPhase): Boolean {
+        return this.routes[path]?.get(phase) != null
     }
 
     override fun hasAbortHandler(abortReason: AbortReason<out Throwable>): Boolean {

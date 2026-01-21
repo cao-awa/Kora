@@ -4,10 +4,13 @@ import com.github.cao.awa.kora.server.network.http.argument.type.arg
 import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.http.control.abort.reason.AbortReason
-import com.github.cao.awa.kora.server.network.http.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
+import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
 import com.github.cao.awa.kora.server.network.ws.KoraWebSocketServer
 import com.github.cao.awa.kora.server.network.ws.builder.websocket
+import java.io.File
+import java.io.FileWriter
+import java.io.OutputStreamWriter
 
 fun main() {
     KoraHttpServer.instructHttpStatusCode = false
@@ -34,17 +37,52 @@ fun main() {
         }
     }
 
-    KoraHttpServer(http).start(
-        port = 12345,
-        useEpoll = true
-    )
+//    KoraHttpServer(http).start(
+//        port = 12345,
+//        useEpoll = true
+//    )
+
+    val files: MutableMap<String, OutputStreamWriter> = mutableMapOf()
+    val compute: (String, String) -> OutputStreamWriter = { type, id ->
+        val key = "C:\\Users\\cao_awa\\Documents\\NapCatQQ\\records\\qq\\chat_records\\$type\\$id.txt"
+        if (!files.containsKey(key)) {
+            val file = File(key)
+            file.parentFile.mkdirs()
+            files[key] = file.writer()
+        }
+        files[key]!!
+    }
 
     val ws = websocket {
+        route("qq") {
+            onMessage {
+                try {
+                    jsonContent().also {
+                        val type = it.getString("message_type")
 
+                        when (type) {
+                            "group" -> compute(type, it.getLong("group_id").toString())
+                            "private" -> compute(type, it.getLong("target_id").toString())
+                            else -> null
+                        }.let {
+                            if (it != null) {
+                                it.write(stringContent())
+                                it.write("\n")
+                                it.flush()
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                Unit
+            }
+        }
     }
 
     KoraWebSocketServer(ws).start(
-        port = 12346,
+        port = 8082,
         useEpoll = true
     )
 }
