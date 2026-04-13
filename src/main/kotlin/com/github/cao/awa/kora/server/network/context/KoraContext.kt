@@ -29,7 +29,7 @@ abstract class KoraContext<B: PathByteBufHolder, C: KoraContext<B, C, A>, A: Kor
     }
 
     fun path(): String {
-        return this.msg.path()
+        return this.msg.path().split("?")[0]
     }
 
     abstract fun createInherited(): C

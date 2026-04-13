@@ -23,6 +23,8 @@ fun main() {
                 val action = intArg(this)
 
                 println(action)
+                println(params())
+                println(arguments())
 
                 testGet()
             }
@@ -37,54 +39,52 @@ fun main() {
         }
     }
 
-//    KoraHttpServer(http).start(
-//        port = 12345,
-//        useEpoll = true
-//    )
-
-    val files: MutableMap<String, OutputStreamWriter> = mutableMapOf()
-    val compute: (String, String) -> OutputStreamWriter = { type, id ->
-        val key = "C:\\Users\\cao_awa\\Documents\\NapCatQQ\\records\\qq\\chat_records\\$type\\$id.txt"
-        if (!files.containsKey(key)) {
-            val file = File(key)
-            file.parentFile.mkdirs()
-            files[key] = file.writer()
-        }
-        files[key]!!
-    }
-
-    val ws = websocket {
-        route("qq") {
-            onMessage {
-                try {
-                    jsonContent().also {
-                        val type = it.getString("message_type")
-
-                        when (type) {
-                            "group" -> compute(type, it.getLong("group_id").toString())
-                            "private" -> compute(type, it.getLong("target_id").toString())
-                            else -> null
-                        }.let {
-                            if (it != null) {
-                                it.write(stringContent())
-                                it.write("\n")
-                                it.flush()
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-
-                Unit
-            }
-        }
-    }
-
-    KoraWebSocketServer(ws).start(
-        port = 8082,
+    KoraHttpServer(http).start(
+        port = 12345,
         useEpoll = true
     )
+
+//    val files: MutableMap<String, OutputStreamWriter> = mutableMapOf()
+//    val compute: (String, String) -> OutputStreamWriter = { type, id ->
+//        val key = "C:\\Users\\cao_awa\\Documents\\NapCatQQ\\records\\qq\\chat_records\\$type\\$id.txt"
+//        if (!files.containsKey(key)) {
+//            val file = File(key)
+//            file.parentFile.mkdirs()
+//            files[key] = file.writer()
+//        }
+//        files[key]!!
+//    }
+//
+//    val ws = websocket {
+//        route("qq") {
+//            onMessage {
+//                try {
+//                    jsonContent().also {
+//                        val type = it.getString("message_type")
+//
+//                        when (type) {
+//                            "group" -> compute(type, it.getLong("group_id").toString())
+//                            "private" -> compute(type, it.getLong("target_id").toString())
+//                            else -> null
+//                        }.let {
+//                            if (it != null) {
+//                                it.write(stringContent())
+//                                it.write("\n")
+//                                it.flush()
+//                            }
+//                        }
+//                    }
+//                } catch (e: Exception) {
+//                    e.printStackTrace()
+//                }
+//            }
+//        }
+//    }
+//
+//    KoraWebSocketServer(ws).start(
+//        port = 8082,
+//        useEpoll = true
+//    )
 }
 
 fun KoraHttpContext.testGet(): KoraResponse {
