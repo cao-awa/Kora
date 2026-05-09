@@ -116,10 +116,10 @@ open class KoraHttpContext(val msg: KoraFullHttpRequestHolder): KoraContext<Kora
         throw exception
     }
 
-    fun abortWith(errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
+    fun abortWith(httpStatus: HttpResponseStatus, postHandler: () -> Unit = { }) {
         abortWith(
-            EndingEarlyException(),
-            errorCode,
+            EndingEarlyException(httpStatus.reasonPhrase()),
+            httpStatus,
             postHandler
         )
     }
