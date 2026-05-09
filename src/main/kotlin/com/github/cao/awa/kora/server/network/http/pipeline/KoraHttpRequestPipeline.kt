@@ -6,7 +6,7 @@ import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
+import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
 import com.github.cao.awa.kora.server.network.http.exception.method.NotSupportedHttpMethodException
 import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
 import com.github.cao.awa.kora.server.network.http.handler.get.KoraHttpGetHandler
@@ -98,10 +98,9 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
     }
 
     fun handleExceptionCaught(handlerContext: ChannelHandlerContext, cause: Throwable) {
-        cause.printStackTrace()
         // Response an error message.
         handlerContext.writeAndFlush(
-            KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause)
+            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, "Unhandled internal server error")
         ).addListener(ChannelFutureListener.CLOSE)
     }
 

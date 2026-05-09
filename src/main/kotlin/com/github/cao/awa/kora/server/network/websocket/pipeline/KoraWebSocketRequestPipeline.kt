@@ -3,7 +3,7 @@ package com.github.cao.awa.kora.server.network.websocket.pipeline
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
-import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
+import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
 import com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline
 import com.github.cao.awa.kora.server.network.websocket.context.KoraWebSocketContext
 import com.github.cao.awa.kora.server.network.websocket.context.abort.KoraAbortWebSocketContext
@@ -59,7 +59,7 @@ class KoraWebSocketRequestPipeline :
         cause.printStackTrace()
         // Response an error message.
         handlerContext.writeAndFlush(
-            KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause)
+            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, "Unhandleable request")
         ).addListener(ChannelFutureListener.CLOSE)
     }
 

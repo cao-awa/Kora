@@ -12,17 +12,15 @@ import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 fun main() {
     KoraHttpServer.instructHttpStatusCode = false
 
-    val intArg = arg<Int>("action")
+    val actionArg = arg<Int>("action", false)
 
     val http = http {
         route("/test") {
             get {
-                val action = intArg(this)
+                // Get URL input argument.
+                val action = actionArg(this)
 
-                println(action)
-                println(params())
-                println(arguments())
-
+                // Render HTML page.
                 html {
                     head {
                         charset(Charsets.UTF_8)
@@ -37,7 +35,10 @@ fun main() {
                     body {
                         a {
                             href("https://www.google.com")
-                            +"Google"
+                            text("Google")
+                        }
+                        p {
+                            text("Successfully input arg '${actionArg.name}', value is '$action'")
                         }
                     }
                 }
@@ -49,48 +50,6 @@ fun main() {
         port = 12345,
         useEpoll = true
     )
-
-//    val files: MutableMap<String, OutputStreamWriter> = mutableMapOf()
-//    val compute: (String, String) -> OutputStreamWriter = { type, id ->
-//        val key = "C:\\Users\\cao_awa\\Documents\\NapCatQQ\\records\\qq\\chat_records\\$type\\$id.txt"
-//        if (!files.containsKey(key)) {
-//            val file = File(key)
-//            file.parentFile.mkdirs()
-//            files[key] = file.writer()
-//        }
-//        files[key]!!
-//    }
-//
-//    val ws = websocket {
-//        route("qq") {
-//            onMessage {
-//                try {
-//                    jsonContent().also {
-//                        val type = it.getString("message_type")
-//
-//                        when (type) {
-//                            "group" -> compute(type, it.getLong("group_id").toString())
-//                            "private" -> compute(type, it.getLong("target_id").toString())
-//                            else -> null
-//                        }.let {
-//                            if (it != null) {
-//                                it.write(stringContent())
-//                                it.write("\n")
-//                                it.flush()
-//                            }
-//                        }
-//                    }
-//                } catch (e: Exception) {
-//                    e.printStackTrace()
-//                }
-//            }
-//        }
-//    }
-//
-//    KoraWebSocketServer(ws).start(
-//        port = 8082,
-//        useEpoll = true
-//    )
 }
 
 fun KoraHttpContext.testGet(): KoraResponse {

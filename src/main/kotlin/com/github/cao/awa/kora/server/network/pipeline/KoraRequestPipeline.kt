@@ -6,6 +6,7 @@ import com.github.cao.awa.kora.server.network.handler.KoraRequestHandler
 import com.github.cao.awa.kora.server.network.holder.PathByteBufHolder
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
+import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.HttpVersion
@@ -33,7 +34,7 @@ abstract class KoraRequestPipeline<B: PathByteBufHolder, C: KoraContext<B, C, A>
             } catch (unhandledException: Throwable) {
                 // Response an error message.
                 handlerContext.writeAndFlush(
-                    KoraHttpError.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, unhandledException)
+                    KoraHttpErrors.adapter(HttpVersion.HTTP_1_0, unhandledException)
                 ).addListener(ChannelFutureListener.CLOSE)
             }
         }

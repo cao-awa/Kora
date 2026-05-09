@@ -1,7 +1,7 @@
 package com.github.cao.awa.kora.server.network.http.adapter
 
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
-import com.github.cao.awa.kora.server.network.http.error.KoraHttpError
+import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
@@ -25,13 +25,13 @@ class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : Cha
 
             is HttpRequest -> {
                 ctx.writeAndFlush(
-                    KoraHttpError.FAILURE_NOT_FULL(msg.protocolVersion())
+                    KoraHttpErrors.FAILURE_NOT_FULL(msg.protocolVersion(), IllegalArgumentException("Request not full"), "Request not full")
                 ).addListener(ChannelFutureListener.CLOSE)
             }
 
             else -> {
                 ctx.writeAndFlush(
-                    KoraHttpError.BAD_REQUEST(HttpVersion.HTTP_1_0)
+                    KoraHttpErrors.BAD_REQUEST(HttpVersion.HTTP_1_0, IllegalArgumentException("Request not handleable"), "Request not handleable")
                 ).addListener(ChannelFutureListener.CLOSE)
             }
         }

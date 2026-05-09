@@ -8,43 +8,27 @@ import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 
-object KoraHttpError {
-    val FAILURE_NOT_FULL: (HttpVersion) -> FullHttpResponse = { protocolVersion ->
-        KoraHttpResponses.createDefaultResponse(
-            protocolVersion,
-            HttpResponseStatus.BAD_REQUEST,
+class KoraHttpError(
+    val status: HttpResponseStatus,
+    val httpVersion: HttpVersion,
+    val exception: Throwable,
+    val message: String
+) {
+    fun createResponse(): FullHttpResponse {
+        return KoraHttpResponses.createDefaultResponse(
+            httpVersion,
+            this.status,
             KoraHttpRequestPipeline.instructHttpMetadata(JSONObject {
-                "error" set "Server protocol (Kora/${KoraInformation.VERSION}, ${protocolVersion.text()}) error: Bad request"
-                "internal_error_name" set "Request is not full"
-            }, HttpResponseStatus.BAD_REQUEST, protocolVersion).toString(true, "    ", 0)
-        )
-    }
-
-    val BAD_REQUEST: (HttpVersion) -> FullHttpResponse = { protocolVersion ->
-        KoraHttpResponses.createDefaultResponse(
-            protocolVersion,
-            HttpResponseStatus.BAD_REQUEST,
-            KoraHttpRequestPipeline.instructHttpMetadata(JSONObject {
-                "error" set "Server protocol (Kora/${KoraInformation.VERSION}, ${protocolVersion.text()}) error: Bad request"
-                "internal_error_name" set "Request is not full"
-            }, HttpResponseStatus.BAD_REQUEST, protocolVersion).toString(true, "    ", 0)
-        )
-    }
-
-    val INTERNAL_SERVER_ERROR: (HttpVersion, Throwable) -> FullHttpResponse = { protocolVersion, exception ->
-        KoraHttpResponses.createDefaultResponse(
-            protocolVersion,
-            HttpResponseStatus.INTERNAL_SERVER_ERROR,
-            KoraHttpRequestPipeline.instructHttpMetadata(JSONObject {
-                "message" set "Server protocol (Kora/${KoraInformation.VERSION}, ${protocolVersion.text()}) error: Internal server error"
-                "internal_error_name" set "Internal server error"
+                "error" set "Server protocol (Kora/${KoraInformation.VERSION}, ${httpVersion.text()}) error: ${status.reasonPhrase()}"
+                "internal_error_name" set "${status.reasonPhrase()}"
+                "error_message" set message
                 array("stacktrace") {
-                    + exception.toString()
+                    +exception.toString()
                     exception.stackTrace.forEach {
-                        + " - at $it"
+                        +" - at $it"
                     }
                 }
-            }, HttpResponseStatus.INTERNAL_SERVER_ERROR, protocolVersion).toString(true, "    ", 0)
+            }, this.status, this.httpVersion).toString(true, "    ", 0)
         )
     }
 }
