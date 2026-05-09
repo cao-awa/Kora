@@ -27,6 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
 
 class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
     companion object {
@@ -116,8 +117,15 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
                 response(handlerContext, koraContext) {
                     // Force be no content status when response is no body response.
                     koraContext.withStatus(HttpResponseStatus.NO_CONTENT)
-
                     ""
+                }
+            }
+
+            is HTMLElement -> {
+                response(handlerContext, koraContext) {
+                    // Setting content type to HTML to render HTML page.
+                    koraContext.withContentType(HttpContentTypes.HTML)
+                    response.toString()
                 }
             }
 

@@ -6,11 +6,8 @@ import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
-import com.github.cao.awa.kora.server.network.ws.KoraWebSocketServer
-import com.github.cao.awa.kora.server.network.ws.builder.websocket
-import java.io.File
-import java.io.FileWriter
-import java.io.OutputStreamWriter
+import org.github.cao.awa.com.github.cao.awa.capertml.html
+import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 
 fun main() {
     KoraHttpServer.instructHttpStatusCode = false
@@ -26,15 +23,24 @@ fun main() {
                 println(params())
                 println(arguments())
 
-                testGet()
-            }
-
-            post {
-                testPost()
-            }.abort { reason ->
-                testHandleAbort(reason)
-            }.abort(NullPointerException::class) { reason ->
-                testHandleNPE(reason)
+                html {
+                    head {
+                        charset(Charsets.UTF_8)
+                        viewport {
+                            width(DEVICE_WIDTH)
+                            initialScale(1.0)
+                        }
+                        pageTitle {
+                            +"TestPage"
+                        }
+                    }
+                    body {
+                        a {
+                            href("https://www.google.com")
+                            +"Google"
+                        }
+                    }
+                }
             }
         }
     }

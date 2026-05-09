@@ -18,14 +18,18 @@ dependencies {
     implementation 'com.google.guava:guava:33.5.0-jre'
     implementation 'io.netty:netty-all:4.2.9.Final'
     implementation 'com.github.cao-awa:Cason:1.0.25'
+    implementation 'com.github.cao-awa:CaperTML:1.0.0'
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(24)
 }
 
 test {
     useJUnitPlatform()
 }
+
+sourceCompatibility = JavaVersion.VERSION_24
+targetCompatibility = JavaVersion.VERSION_24
