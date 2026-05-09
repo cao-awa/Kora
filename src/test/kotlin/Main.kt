@@ -12,6 +12,7 @@ import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 fun main() {
     KoraHttpServer.instructHttpStatusCode = false
 
+    // Define a required URL argument, get value in http scope.
     val actionArg = arg<Int>("action", false)
 
     val http = http {

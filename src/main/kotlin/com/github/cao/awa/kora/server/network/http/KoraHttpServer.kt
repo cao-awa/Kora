@@ -16,9 +16,12 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 class KoraHttpServer {
     companion object {
+        private val LOGGER: Logger = LogManager.getLogger("KoraHttpServer")
         var instructHttpMetadata: Boolean = true
         var instructHttpStatusCode: Boolean = true
         var instructHttpVersionCode: Boolean = true
@@ -80,7 +83,7 @@ class KoraHttpServer {
                 address,
                 port
             ).sync()
-            println("Kora HTTP server started on port $port on $address")
+            LOGGER.info("Kora HTTP server started on port {} on {}", port, address)
             future.channel().closeFuture().sync()
         } finally {
             bossGroup.shutdownGracefully()

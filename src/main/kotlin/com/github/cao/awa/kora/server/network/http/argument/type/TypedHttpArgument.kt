@@ -4,13 +4,16 @@ import com.github.cao.awa.kora.server.network.http.argument.exception.TypedHttpA
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentBooleanValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentByteValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentCharValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentDataValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentDoubleValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentFloatValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentIntValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentJSONArrayValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentLongValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentShortValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentStringValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.error
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
 import com.github.cao.awa.kora.server.network.http.argument.type.value.TypedHttpArgumentDefaultValues
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
@@ -22,6 +25,10 @@ class TypedHttpArgument<T : Any>(val name: String, private val type: KClass<T>, 
 
         fun <T: Any> addValidator(type: KClass<T>, validator: TypedHttpArgumentValidator<T>) {
             this.validators[type] = validator
+        }
+
+        fun <T: Any> addValidator(type: KClass<T>, validator: (String, String) -> T) {
+            this.validators[type] = TypedHttpArgumentDataValidator(validator)
         }
 
         @Suppress("unchecked_cast")
