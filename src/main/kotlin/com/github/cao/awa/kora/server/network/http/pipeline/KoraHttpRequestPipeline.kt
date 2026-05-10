@@ -14,6 +14,7 @@ import com.github.cao.awa.kora.server.network.http.handler.get.KoraHttpGetHandle
 import com.github.cao.awa.kora.server.network.http.handler.post.KoraHttpPostHandler
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.metadata.HttpResponseMetadata
+import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setContentType
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
@@ -96,7 +97,7 @@ class KoraHttpRequestPipeline :
                         response(
                             handlerContext,
                             koraContext,
-                             handler.handle(koraContext)
+                            handler.handle(koraContext)
                         )
                     } catch (e: Throwable) {
                         // Let user handle error if user registered error handler.
@@ -104,9 +105,17 @@ class KoraHttpRequestPipeline :
                         val abortReason = AbortReason(
                             e, e.message ?: "Unhandled exception"
                         )
+                        // When error, default status is 500 INTERNAL_SERVER_ERROR.
+                        var httpStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
+
+                        if (e is HttpPathNotRegisteredException) {
+                            // When error is page path not registered, it should be 404 NOT_FOUND.
+                            httpStatus = HttpResponseStatus.NOT_FOUND
+                        }
+
                         // Handle abort control logic.
                         handler.handleAbort(
-                            koraContext.abortWith(HttpResponseStatus.INTERNAL_SERVER_ERROR),
+                            koraContext.abortWith(httpStatus),
                             abortReason
                         ) {
                             if (it is Unit) {
@@ -126,7 +135,11 @@ class KoraHttpRequestPipeline :
     fun handleExceptionCaught(handlerContext: ChannelHandlerContext, cause: Throwable) {
         // Response an error message.
         handlerContext.writeAndFlush(
-            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, cause.message ?: "Unhandled internal server error")
+            KoraHttpErrors.INTERNAL_SERVER_ERROR(
+                HttpVersion.HTTP_1_0,
+                cause,
+                cause.message ?: "Unhandled internal server error"
+            )
         ).addListener(ChannelFutureListener.CLOSE)
     }
 
@@ -157,10 +170,9 @@ class KoraHttpRequestPipeline :
 
             is Throwable -> {
                 responseFull(handlerContext, koraContext) {
-                    KoraHttpErrors.INTERNAL_SERVER_ERROR(
+                    KoraHttpErrors.adapter(
                         koraContext.protocolVersion(),
-                        response,
-                        response.message ?: "Unknown message exception"
+                        response
                     )
                 }
             }

@@ -6,6 +6,7 @@ import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpCo
 import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
+import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.HttpMethod
 import kotlin.reflect.KClass
 
@@ -39,7 +40,7 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
     override fun handle(context: KoraHttpContext): Any {
         return this.routes[context.path()]?.let {
             it(context)
-        } ?: error("Unhandled request for pathing '${context.path()}'")
+        } ?: HttpPathNotRegisteredException("Not registered request handler found for pathing '${context.path()}' (404 page not found)")
     }
 
     override fun hasAbortHandler(abortReason: AbortReason<out Throwable>): Boolean {

@@ -2,6 +2,7 @@ package com.github.cao.awa.kora.server.network.http.error
 
 import com.github.cao.awa.kora.server.network.http.argument.exception.TypedHttpArgumentMissingException
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
+import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
@@ -18,6 +19,16 @@ object KoraHttpErrors {
             "Request is not full"
         ).createResponse()
     }
+
+    val NOT_FOUND: (HttpVersion, Throwable, String) -> FullHttpResponse = { httpVersion, exception, _ ->
+        KoraHttpError(
+            HttpResponseStatus.NOT_FOUND,
+            httpVersion,
+            exception,
+            "Page not found"
+        ).createResponse()
+    }
+
 
     val BAD_REQUEST: (HttpVersion, Throwable, String) -> FullHttpResponse = { httpVersion, exception, message ->
         KoraHttpError(
@@ -49,5 +60,6 @@ object KoraHttpErrors {
     init {
         ERRORS[TypedHttpArgumentMissingException::class] = BAD_REQUEST
         ERRORS[TypedHttpArgumentValidateException::class] = BAD_REQUEST
+        ERRORS[HttpPathNotRegisteredException::class] = NOT_FOUND
     }
 }
