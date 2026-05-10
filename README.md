@@ -189,7 +189,7 @@ Kora uses a scoped abort model where execution and error handling are strictly s
 In Kora, aborting execution is not an exceptional case.\
 It is a first-class, structured control flow with explicit scope boundaries.
 
-The ```abortWith()``` or ```abortIf()``` defines when to abort, and ```.abort {}``` defines how aborted execution is rendered into a
+The ```abortWith()``` or ```abortIf()``` defines when to abort, and ```.ifAbort {}``` defines how aborted execution is rendered into a
 response:
 
 ```kotlin
@@ -198,7 +198,7 @@ fun main() {
         route("/test") {
             get {
                 // Simulation code wrongs.
-                throw NullPointerException("Test if logic error occurs NPE")
+                abortWith(NullPointerException("Test if logic error occurs NPE"), HttpResponseStatus.BAD_REQUEST, this)
             }.ifAbort(NullPointerException::class) { context ->
                 LOGGER.error(context.exception)
                 val httpProtocolVersion: HttpVersion = protocolVersion()

@@ -65,7 +65,7 @@ fun testError() {
         route("/test") {
             get {
                 // Simulation code wrongs.
-                throw NullPointerException("Test if logic error occurs NPE")
+                abortWith(NullPointerException("Test if logic error occurs NPE"), HttpResponseStatus.BAD_REQUEST, this)
             }.ifAbort(NullPointerException::class) { context ->
                 LOGGER.error(context.exception)
                 val httpProtocolVersion: HttpVersion = protocolVersion()

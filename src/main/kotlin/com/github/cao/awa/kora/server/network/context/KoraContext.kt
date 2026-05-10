@@ -7,7 +7,7 @@ import com.github.cao.awa.kora.server.network.holder.PathByteBufHolder
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
-abstract class KoraContext<B: PathByteBufHolder, C: KoraContext<B, C, A>, A: KoraAbortContext<B>>(private val msg: B) {
+abstract class KoraContext<B : PathByteBufHolder, C : KoraContext<B, C, A>, A : KoraAbortContext<B>>(private val msg: B) {
     fun content(): ByteArray {
         return this.msg.content().copy().let { content ->
             ByteArray(content.readableBytes()).also {
@@ -29,7 +29,12 @@ abstract class KoraContext<B: PathByteBufHolder, C: KoraContext<B, C, A>, A: Kor
     }
 
     fun path(): String {
-        return this.msg.path().split("?")[0]
+        val path = this.msg.path().split("?")[0]
+        if (path.startsWith("/")) {
+            return path.replaceFirst("/", "")
+        } else {
+            return path
+        }
     }
 
     abstract fun createInherited(): C

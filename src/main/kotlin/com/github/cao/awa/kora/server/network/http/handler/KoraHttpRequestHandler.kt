@@ -13,7 +13,7 @@ import kotlin.reflect.KClass
 abstract class KoraHttpRequestHandler(val method: HttpMethod) :
     KoraRequestHandler<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>() {
     private val routes: MutableMap<String, KoraHttpContext.() -> Any> = mutableMapOf()
-    private val exceptionHandler: MutableMap<KClass<out Throwable>, MutableMap<String, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any>> =
+    private val exceptionHandlers: MutableMap<KClass<out Throwable>, MutableMap<String, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any>> =
         mutableMapOf()
 
     fun route(path: String, handler: KoraHttpContext.() -> Any): KoraHttpRequestHandler {
@@ -26,10 +26,10 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
         type: KClass<out Throwable>,
         handler: KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
     ): KoraHttpRequestHandler {
-        if (!this.exceptionHandler.containsKey(type)) {
-            this.exceptionHandler[type] = mutableMapOf()
+        if (!this.exceptionHandlers.containsKey(type)) {
+            this.exceptionHandlers[type] = mutableMapOf()
         }
-        this.exceptionHandler[type]?.put(path, handler)
+        this.exceptionHandlers[type]?.put(path, handler)
         return this
     }
 
@@ -44,7 +44,7 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
     }
 
     override fun hasAbortHandler(abortReason: AbortReason<out Throwable>): Boolean {
-        return (this.exceptionHandler[abortReason.exception::class]?.size ?: 0) > 0
+        return (this.exceptionHandlers[abortReason.exception::class]?.size ?: 0) > 0
     }
 
     override fun handleAbort(
@@ -52,15 +52,15 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
         abortReason: AbortReason<out Throwable>,
         responser: (Any) -> Unit
     ): Any {
-        val handlers = this.exceptionHandler[abortReason.exception::class]
+        val handlers = this.exceptionHandlers[abortReason.exception::class]
 
         val handler = handlers?.get(abortScope.path())
 
         if (handler != null) {
             return responser(handler(abortScope, abortReason))
-        } else if (handlers != null) {
+        } else if (handlers == null) {
             UnexpectedBehaviorException.abort()
-        } else{
+        } else {
             pageNotFound(abortScope)
         }
     }

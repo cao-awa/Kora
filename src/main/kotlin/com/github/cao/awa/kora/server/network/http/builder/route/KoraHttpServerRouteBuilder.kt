@@ -24,14 +24,15 @@ class KoraHttpServerRouteBuilder {
     val exceptionHandlers: MutableMap<HttpMethod, KoraHttpRouteExceptionBuilder> = mutableMapOf()
 
     constructor(path: String, builder: KoraHttpServerRouteBuilder.() -> Unit) {
-        this.path = path
+        if (path.startsWith("/")) {
+            this.path = path.replace("/", "")
+        } else {
+            this.path = path
+        }
         builder(this)
     }
 
     inline fun <reified T : Any> post(noinline handler: KoraHttpContext.() -> T): KoraHttpRouteExceptionBuilder {
-        if (T::class == Unit::class) {
-            error("HTTP method cannot missing response")
-        }
         if (this.routes.containsKey(HttpMethod.POST)) {
             error("Duplicated HTTP POST handler")
         }
@@ -42,9 +43,6 @@ class KoraHttpServerRouteBuilder {
     }
 
     inline fun <reified T : Any> get(noinline handler: KoraHttpContext.() -> T): KoraHttpRouteExceptionBuilder {
-        if (T::class == Unit::class) {
-            error("HTTP method cannot missing response")
-        }
         if (this.routes.containsKey(HttpMethod.POST)) {
             error("Duplicated HTTP GET handler")
         }

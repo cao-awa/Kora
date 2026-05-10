@@ -120,14 +120,14 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                             httpStatus = HttpResponseStatus.NOT_FOUND
                         }
 
-                        val abortContext = koraContext.abortWith(httpStatus)
+                        val abortContext = koraContext.createAbort(httpStatus, koraContext)
 
                         if (e is KoraServerException) {
                             // Handle server level exception (like 404 NOT_FOUND).
                             if (!serverAbortHandlers.hasHandler(e::class)) {
                                 response(handlerContext, koraContext, e)
-                            } else{
-                                serverAbortHandlers.handleAbort(abortContext, abortReason){
+                            } else {
+                                serverAbortHandlers.handleAbort(abortContext, abortReason) {
                                     // Response formatted JSON error or user result.
                                     responseExceptionOrData(handlerContext, koraContext, it, e)
                                 }
@@ -148,7 +148,12 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         }
     }
 
-    fun responseExceptionOrData(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any, exception: Throwable) {
+    fun responseExceptionOrData(
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraHttpContext,
+        response: Any,
+        exception: Throwable
+    ) {
         if (response is Unit) {
             // Response formatted JSON error response when user doesn't make a result.
             response(handlerContext, koraContext, exception)
@@ -179,11 +184,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             }
 
             is NoContentResponse -> {
-                response(handlerContext, koraContext) {
-                    // Force be no content status when response is no body response.
-                    koraContext.withStatus(HttpResponseStatus.NO_CONTENT)
-                    ""
-                }
+                responseNoContent(handlerContext, koraContext)
             }
 
             is HTMLElement -> {
@@ -203,12 +204,24 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 }
             }
 
+            is Unit -> {
+                responseNoContent(handlerContext, koraContext)
+            }
+
             else -> {
                 responseJSON(handlerContext, koraContext) {
                     koraContext.withContentType(HttpContentTypes.JSON)
                     JSONEncoder.encode(response)
                 }
             }
+        }
+    }
+
+    fun responseNoContent(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext) {
+        response(handlerContext, koraContext) {
+            // Force be no content status when response is no body response.
+            koraContext.withStatus(HttpResponseStatus.NO_CONTENT)
+            ""
         }
     }
 

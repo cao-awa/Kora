@@ -18,7 +18,8 @@ import io.netty.handler.codec.http.HttpVersion
 import java.nio.charset.StandardCharsets
 
 @Suppress("unused")
-open class KoraHttpContext(val msg: KoraFullHttpRequestHolder): KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>(msg) {
+open class KoraHttpContext(val msg: KoraFullHttpRequestHolder) :
+    KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>(msg) {
     companion object {
         private val APPLICATION_JSON: String =
             HttpHeaderValues.APPLICATION_JSON.toString()
@@ -106,21 +107,60 @@ open class KoraHttpContext(val msg: KoraFullHttpRequestHolder): KoraContext<Kora
         return this.promiseClose
     }
 
-    fun abortWith(exception: Exception, errorCode: HttpResponseStatus, postHandler: (KoraAbortHttpContext) -> Unit = { }): KoraAbortHttpContext {
+    fun createAbort(
+        exception: Exception,
+        errorCode: HttpResponseStatus,
+        context: KoraHttpContext,
+        postHandler: (KoraAbortHttpContext) -> Unit = { }
+    ): KoraAbortHttpContext {
         when (errorCode) {
             HttpResponseStatus.OK -> error("Error response cannot use status '200 OK'")
         }
         withStatus(errorCode)
         withContentType(HttpContentTypes.JSON)
+        postHandler(context.createAbort())
         return KoraAbortHttpContext(this).also {
             postHandler(it)
         }
     }
 
-    fun abortWith(httpStatus: HttpResponseStatus, postHandler: (KoraAbortHttpContext) -> Unit = { }): KoraAbortHttpContext {
-        return abortWith(
+    fun createAbort(
+        httpStatus: HttpResponseStatus,
+        context: KoraHttpContext,
+        postHandler: (KoraAbortHttpContext) -> Unit = { }
+    ): KoraAbortHttpContext {
+        return createAbort(
             UnexpectedBehaviorException(httpStatus.reasonPhrase()),
             httpStatus,
+            context,
+            postHandler
+        )
+    }
+
+    fun abortWith(
+        exception: Exception,
+        errorCode: HttpResponseStatus,
+        context: KoraHttpContext,
+        postHandler: (KoraAbortHttpContext) -> Unit = { }
+    ) {
+        when (errorCode) {
+            HttpResponseStatus.OK -> error("Error response cannot use status '200 OK'")
+        }
+        withStatus(errorCode)
+        withContentType(HttpContentTypes.JSON)
+        postHandler(context.createAbort())
+        throw exception
+    }
+
+    fun abortWith(
+        httpStatus: HttpResponseStatus,
+        context: KoraHttpContext,
+        postHandler: (KoraAbortHttpContext) -> Unit = { }
+    ) {
+        abortWith(
+            UnexpectedBehaviorException(httpStatus.reasonPhrase()),
+            httpStatus,
+            context,
             postHandler
         )
     }
