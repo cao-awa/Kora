@@ -12,7 +12,7 @@ import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
 fun main() {
-    testNotFound()
+    testError()
 }
 
 fun testNotFound(){

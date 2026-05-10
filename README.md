@@ -100,8 +100,8 @@ fun main() {
 
 This starts an HTTP server on port `12345` with two routes:
 
-* `POST /test` → `200 OK`
-* `GET /test` → `500 Internal Server Error`
+* `POST /test` → `500 Internal Server Error`
+* `GET /test` → `200 OK`
 
 Kora automatically serializes Kotlin data classes using
 [Cason](https://github.com/cao-awa/Cason), a lightweight, type-safe JSON/JSON5 library.
@@ -159,10 +159,6 @@ Missing return values or “status-only” handlers are rejected.
 To return `204 No Content`, use `NoContentResponse` explicitly:
 
 ```kotlin
-import com.github.cao.awa.kora.server.network.http.KoraHttpServer
-import com.github.cao.awa.kora.server.network.http.builder.server
-import io.netty.handler.codec.http.HttpResponseStatus
-
 fun main() {
     val api = http {
         route("/test") {
@@ -197,36 +193,27 @@ The ```abortWith()``` or ```abortIf()``` defines when to abort, and ```.abort {}
 response:
 
 ```kotlin
-import com.github.cao.awa.kora.server.network.http.KoraHttpServer
-import com.github.cao.awa.kora.server.network.http.builder.server
-import io.netty.handler.codec.http.HttpResponseStatus
-
 fun main() {
-    val api = http {
+    val http = http {
         route("/test") {
             get {
-                // Abort this scope, into next scope 'abort'.
-                abortWith(HttpResponseStatus.INTERNAL_SERVER_ERROR)
-            }.abort {
-                KoraErrorResponse(
-                    "Error details",
-                    status().code(),
-                    System.currentTimeMillis()
-                )
+                // Simulation code wrongs.
+                throw NullPointerException("Test if logic error occurs NPE")
+            }.ifAbort(NullPointerException::class) { context ->
+                LOGGER.error(context.exception)
+                val httpProtocolVersion: HttpVersion = protocolVersion()
+                LOGGER.error("Http protocol version: $httpProtocolVersion")
+                val status: HttpResponseStatus = status()
+                LOGGER.error("Http status: $status")
             }
         }
     }
 
-    KoraHttpServer(api).start(
+    KoraHttpServer(http).start(
         port = 12345,
         useEpoll = true
     )
 }
-
-data class KoraErrorResponse(
-    val error: String,
-    val code: Int,
-    val timestamp: Long
 )
 ```
 
@@ -234,13 +221,28 @@ Client will get data seems like:
 
 ```json
 {
-  "code": 500,
-  "error": "Error details",
-  "timestamp": 1768148489124,
-  "http_meta": {
-    "http_version": "HTTP/1.1",
-    "http_status": 500
-  }
+    "error_message": "Test if logic error occurs NPE",
+    "stacktrace": [
+        "java.lang.NullPointerException: Test if logic error occurs NPE",
+        " - at MainKt.testError$lambda$0$0$0(Main.kt:68)",
+        " - at com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler.handle(KoraHttpRequestHandler.kt:42)",
+        " - at com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline$handleFull$1.invokeSuspend$lambda$0(KoraHttpRequestPipeline.kt:107)",
+        " - at com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline.abortable(KoraRequestPipeline.kt:22)",
+        " - at com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline$handleFull$1.invokeSuspend(KoraHttpRequestPipeline.kt:102)",
+        " - at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)",
+        " - at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)",
+        " - at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:124)",
+        " - at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)",
+        " - at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:586)",
+        " - at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:820)",
+        " - at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:717)",
+        " - at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:704)"
+    ],
+    "internal_error_name": "Internal Server Error",
+    "http_meta": {
+        "http_version": "HTTP/1.1"
+    },
+    "error": "Server protocol (Kora/1.0.0, HTTP/1.1) error: Internal Server Error"
 }
 ```
 

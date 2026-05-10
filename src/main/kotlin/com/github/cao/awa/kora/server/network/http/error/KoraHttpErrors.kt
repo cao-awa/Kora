@@ -54,7 +54,7 @@ object KoraHttpErrors {
         if (errorProducer != null) {
             return errorProducer(httpVersion, error, error.message ?: "Unknown error")
         }
-        return INTERNAL_SERVER_ERROR(httpVersion, error, "Unknown error")
+        return INTERNAL_SERVER_ERROR(httpVersion, error, error.message?: "Unknown error")
     }
 
     init {
