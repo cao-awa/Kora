@@ -12,7 +12,7 @@ import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
 fun main() {
-    testError()
+    testNotFound()
 }
 
 fun testNotFound(){
@@ -28,7 +28,7 @@ fun testNotFound(){
                     }
                     body {
                         p {
-                            text("Page '${path()}' has loaded!")
+                            text("Page '/${path()}' has loaded!")
                         }
                     }
                 }
@@ -45,7 +45,7 @@ fun testNotFound(){
                 }
                 body {
                     p {
-                        text("Page '${path()}' not found!")
+                        text("Page '/${path()}' not found!")
                     }
                 }
             }

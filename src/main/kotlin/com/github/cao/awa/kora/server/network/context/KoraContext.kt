@@ -28,7 +28,7 @@ abstract class KoraContext<B : PathByteBufHolder, C : KoraContext<B, C, A>, A : 
         return StrictJSONParser.parseObject(stringContent())
     }
 
-    fun path(): String {
+    open fun path(): String {
         val path = this.msg.path().split("?")[0]
         if (path.startsWith("/")) {
             return path.replaceFirst("/", "")

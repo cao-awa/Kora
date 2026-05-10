@@ -246,10 +246,8 @@ Client will get data seems like:
 }
 ```
 
-All abort scope is readonly-scope from contexts Kora auto collecting.\
-Cannot modifying the scope data in abort context.
-
-Response body is also required in abort scope, so that every abort has a clear, explicit outcome.
+All abort scope is a copy scope from contexts that Kora auto collecting.\
+You can modifying the scope data in abort context.
 
 # Performance
 Test by JMeter on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```190000```~```210000``` HTTP requests per second.
@@ -260,7 +258,7 @@ Test by JMeter on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings:
 
 Kora does not “support Kotlin”.
 
-Kora is **designed for Kotlin**.
+Kora is **designed for Kotlin**:
 
 * Expression-based DSLs instead of annotation metadata
 * Inline and reified generics instead of reflection

@@ -15,6 +15,7 @@ import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
+import org.jetbrains.annotations.Contract
 import java.nio.charset.StandardCharsets
 
 @Suppress("unused")
@@ -67,7 +68,7 @@ open class KoraHttpContext(val msg: KoraFullHttpRequestHolder) :
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
     private var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
-    private var path: String = path().let {
+    private val path: String = super.path().let {
         var result = it
         if (result.contains("?")) {
             result = result.substringBefore("?")
@@ -105,6 +106,11 @@ open class KoraHttpContext(val msg: KoraFullHttpRequestHolder) :
 
     fun isPromiseClose(): Boolean {
         return this.promiseClose
+    }
+
+    @Contract(pure = true)
+    override fun path(): String {
+        return this.path
     }
 
     fun createAbort(
