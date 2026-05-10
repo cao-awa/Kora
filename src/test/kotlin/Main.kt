@@ -19,7 +19,7 @@ fun testNotFound(){
     KoraHttpServer.instructHttpStatusCode = false
 
     val http = http {
-        route("/test") {
+        route("/test/qaq") {
             get {
                 // Render HTML page.
                 html {

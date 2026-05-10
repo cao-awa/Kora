@@ -84,7 +84,9 @@ class KoraHttpServer {
                 port
             ).sync()
             LOGGER.info("Kora HTTP server started on port {} on {}", port, address)
-            future.channel().closeFuture().sync()
+            future.channel().closeFuture().addListener {
+                LOGGER.info("Kora HTTP server stopped")
+            }.sync()
         } finally {
             bossGroup.shutdownGracefully()
             workerGroup.shutdownGracefully()

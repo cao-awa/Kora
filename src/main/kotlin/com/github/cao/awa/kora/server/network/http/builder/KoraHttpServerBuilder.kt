@@ -32,8 +32,9 @@ class KoraHttpServerBuilder {
         }
 
         // Encode the path and replace connecting symbol to '%20' .
-        path = "/${URLEncoder.encode(path, "UTF-8")}"
+        path = "${URLEncoder.encode(path, "UTF-8")}"
             .replace("+", "%20")
+            .replace("%2F", "/")
 
         if (!this.routes.containsKey(path)) {
             this.routes[path] = KoraHttpServerRouteBuilder(path, handler)

@@ -25,7 +25,7 @@ class KoraHttpServerRouteBuilder {
 
     constructor(path: String, builder: KoraHttpServerRouteBuilder.() -> Unit) {
         if (path.startsWith("/")) {
-            this.path = path.replace("/", "")
+            this.path = path.substringAfter("/")
         } else {
             this.path = path
         }
