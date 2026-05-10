@@ -23,12 +23,6 @@ class KoraHttpRouteExceptionBuilder {
         return this
     }
 
-    @Suppress("unchecked_cast")
-    fun ifAbort(handler: KoraAbortHttpContext.(reason: AbortReason<UnexpectedBehaviorException>) -> Any): KoraHttpRouteExceptionBuilder {
-        this.routes[UnexpectedBehaviorException::class] = handler as KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
-        return this
-    }
-
     fun applyRoute(adapter: KoraHttpInboundHandlerAdapter) {
         for ((type, handler) in this.routes) {
             adapter.pipeline.getHandler(this.method)?.routeExceptionHandler(this.path, type, handler)

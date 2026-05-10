@@ -8,8 +8,11 @@ import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
+import com.github.cao.awa.kora.server.network.http.exception.KoraPathException
+import com.github.cao.awa.kora.server.network.http.exception.KoraServerException
 import com.github.cao.awa.kora.server.network.http.exception.method.NotSupportedHttpMethodException
 import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
+import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestServerAbortHandler
 import com.github.cao.awa.kora.server.network.http.handler.get.KoraHttpGetHandler
 import com.github.cao.awa.kora.server.network.http.handler.post.KoraHttpPostHandler
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
@@ -31,8 +34,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
+import kotlin.reflect.KClass
 
-class KoraHttpRequestPipeline :
+val abortHandlers: MutableMap<KClass<out Throwable>, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any> =
+    mutableMapOf()
+
+class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestServerAbortHandler) :
     KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
     companion object {
         fun instructHttpMetadata(json: JSONObject, koraContext: KoraHttpContext): JSONObject {
@@ -113,22 +120,41 @@ class KoraHttpRequestPipeline :
                             httpStatus = HttpResponseStatus.NOT_FOUND
                         }
 
-                        // Handle abort control logic.
-                        handler.handleAbort(
-                            koraContext.abortWith(httpStatus),
-                            abortReason
-                        ) {
-                            if (it is Unit) {
-                                // Response formatted JSON error response when user doesn't make a result.
+                        val abortContext = koraContext.abortWith(httpStatus)
+
+                        if (e is KoraServerException) {
+                            // Handle server level exception (like 404 NOT_FOUND).
+                            if (!serverAbortHandlers.hasHandler(e::class)) {
                                 response(handlerContext, koraContext, e)
-                            } else {
-                                // Response user result.
-                                response(handlerContext, koraContext, it)
+                            } else{
+                                serverAbortHandlers.handleAbort(abortContext, abortReason){
+                                    // Response formatted JSON error or user result.
+                                    responseExceptionOrData(handlerContext, koraContext, it, e)
+                                }
+                            }
+                        } else {
+                            // Handle abort control logic.
+                            handler.handleAbort(
+                                abortContext,
+                                abortReason
+                            ) {
+                                // Response formatted JSON error or user result.
+                                responseExceptionOrData(handlerContext, koraContext, it, e)
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    fun responseExceptionOrData(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any, exception: Throwable) {
+        if (response is Unit) {
+            // Response formatted JSON error response when user doesn't make a result.
+            response(handlerContext, koraContext, exception)
+        } else {
+            // Response user result.
+            response(handlerContext, koraContext, response)
         }
     }
 

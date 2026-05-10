@@ -4,6 +4,7 @@ import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
+import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestServerAbortHandler
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
@@ -13,7 +14,7 @@ import io.netty.handler.codec.http.HttpRequest
 import io.netty.handler.codec.http.HttpVersion
 
 class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : ChannelInboundHandlerAdapter() {
-    constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestPipeline()) {
+    constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestPipeline(KoraHttpRequestServerAbortHandler(builder.abortHandlers))) {
         builder.applyRoute(this)
     }
 
@@ -25,13 +26,21 @@ class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : Cha
 
             is HttpRequest -> {
                 ctx.writeAndFlush(
-                    KoraHttpErrors.FAILURE_NOT_FULL(msg.protocolVersion(), IllegalArgumentException("Request not full"), "Request not full")
+                    KoraHttpErrors.FAILURE_NOT_FULL(
+                        msg.protocolVersion(),
+                        IllegalArgumentException("Request not full"),
+                        "Request not full"
+                    )
                 ).addListener(ChannelFutureListener.CLOSE)
             }
 
             else -> {
                 ctx.writeAndFlush(
-                    KoraHttpErrors.BAD_REQUEST(HttpVersion.HTTP_1_0, IllegalArgumentException("Request not handleable"), "Request not handleable")
+                    KoraHttpErrors.BAD_REQUEST(
+                        HttpVersion.HTTP_1_0,
+                        IllegalArgumentException("Request not handleable"),
+                        "Request not handleable"
+                    )
                 ).addListener(ChannelFutureListener.CLOSE)
             }
         }

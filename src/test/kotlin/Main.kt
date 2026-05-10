@@ -1,6 +1,7 @@
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
 import com.github.cao.awa.kora.server.network.http.builder.http
+import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import org.apache.logging.log4j.LogManager
@@ -11,7 +12,50 @@ import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
 fun main() {
-    testRender()
+    testNotFound()
+}
+
+fun testNotFound(){
+    KoraHttpServer.instructHttpStatusCode = false
+
+    val http = http {
+        route("/test") {
+            get {
+                // Render HTML page.
+                html {
+                    head {
+                        charset(Charsets.UTF_8)
+                    }
+                    body {
+                        p {
+                            text("Page '${path()}' has loaded!")
+                        }
+                    }
+                }
+            }
+        }
+
+        ifAbort(HttpPathNotRegisteredException::class) { context ->
+            LOGGER.error(context.exception)
+
+            // Render HTML page.
+            html {
+                head {
+                    charset(Charsets.UTF_8)
+                }
+                body {
+                    p {
+                        text("Page '${path()}' not found!")
+                    }
+                }
+            }
+        }
+    }
+
+    KoraHttpServer(http).start(
+        port = 12345,
+        useEpoll = true
+    )
 }
 
 fun testError() {
@@ -60,10 +104,6 @@ fun testRender() {
                         }
                         pageTitle {
                             +"TestPage"
-                        }
-                        refresh {
-                            jumpUrl("/awa")
-                            waitTime(0)
                         }
                     }
                     body {

@@ -40,7 +40,7 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
     override fun handle(context: KoraHttpContext): Any {
         return this.routes[context.path()]?.let {
             it(context)
-        } ?: HttpPathNotRegisteredException("Not registered request handler found for pathing '${context.path()}' (404 page not found)")
+        } ?: pageNotFound(context)
     }
 
     override fun hasAbortHandler(abortReason: AbortReason<out Throwable>): Boolean {
@@ -52,8 +52,18 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
         abortReason: AbortReason<out Throwable>,
         responser: (Any) -> Unit
     ): Any {
-        return this.exceptionHandler[abortReason.exception::class]?.get(abortScope.path())?.let {
-            responser(it(abortScope, abortReason))
-        } ?: UnexpectedBehaviorException.abort()
+        val handlers = this.exceptionHandler[abortReason.exception::class]
+
+        val handler = handlers?.get(abortScope.path())
+
+        if (handler != null) {
+            return responser(handler(abortScope, abortReason))
+        } else if (handlers != null) {
+            UnexpectedBehaviorException.abort()
+        } else{
+            pageNotFound(abortScope)
+        }
     }
+
+    fun pageNotFound(context: KoraHttpContext): Nothing = throw HttpPathNotRegisteredException("Not registered request handler found for pathing '${context.path()}' (404 page not found)")
 }

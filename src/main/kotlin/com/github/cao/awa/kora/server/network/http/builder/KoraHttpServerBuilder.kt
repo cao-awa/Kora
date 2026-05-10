@@ -1,11 +1,16 @@
 package com.github.cao.awa.kora.server.network.http.builder
 
+import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.builder.route.KoraHttpServerRouteBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
+import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
+import com.github.cao.awa.kora.server.network.http.exception.KoraServerException
 import java.net.URLEncoder
+import kotlin.reflect.KClass
 
 class KoraHttpServerBuilder {
     private val routes: MutableMap<String, KoraHttpServerRouteBuilder> = mutableMapOf()
+    val abortHandlers: MutableMap<KClass<out Throwable>, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any> = mutableMapOf()
 
     constructor(builder: KoraHttpServerBuilder.() -> Unit) {
         builder(this)
@@ -41,6 +46,11 @@ class KoraHttpServerBuilder {
         for ((key, builder) in this.routes) {
             builder.applyRoute(adapter)
         }
+    }
+
+    @Suppress("unchecked_cast")
+    fun <T : KoraServerException> ifAbort(type: KClass<out T>, context: KoraAbortHttpContext.(AbortReason<T>) -> Any) {
+        this.abortHandlers[type] = context as KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
     }
 }
 

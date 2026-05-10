@@ -6,9 +6,7 @@ class UnexpectedBehaviorException(message: String? = null, cause: Throwable? = n
     companion object {
         private val UNASSIGNED_STACK: Array<StackTraceElement?> = arrayOfNulls(0)
 
-        fun abort() {
-            throw UnexpectedBehaviorException("Control stream lifecycle unexpected aborting")
-        }
+        fun abort(): Nothing = throw UnexpectedBehaviorException("Control stream lifecycle unexpected aborting")
     }
 
     override fun fillInStackTrace(): Throwable {
