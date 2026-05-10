@@ -119,7 +119,7 @@ class KoraHttpRequestPipeline :
                             abortReason
                         ) {
                             if (it is Unit) {
-                                // Response formatted JSON error response when user deoesn't make a result.
+                                // Response formatted JSON error response when user doesn't make a result.
                                 response(handlerContext, koraContext, e)
                             } else {
                                 // Response user result.
