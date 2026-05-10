@@ -1,7 +1,7 @@
 package com.github.cao.awa.kora.server.network.websocket.context
 
 import com.github.cao.awa.kora.server.network.context.KoraContext
-import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
 import com.github.cao.awa.kora.server.network.websocket.context.abort.KoraAbortWebSocketContext
 import com.github.cao.awa.kora.server.network.websocket.holder.KoraTextWebsocketFrameHolder
 import com.github.cao.awa.kora.server.network.websocket.phase.KoraWebSocketPhase
@@ -39,7 +39,7 @@ open class KoraWebSocketContext(val msg: KoraTextWebsocketFrameHolder, val phase
 
     fun abortWith(postHandler: () -> Unit = { }) {
         abortWith(
-            EndingEarlyException(),
+            UnexpectedBehaviorException(),
             postHandler
         )
     }

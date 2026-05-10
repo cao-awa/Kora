@@ -27,7 +27,9 @@ abstract class KoraRequestPipeline<B: PathByteBufHolder, C: KoraContext<B, C, A>
                 val reason = exception.message!!
                 val abortReason = AbortReason(exception, reason)
                 if (handler != null && handler.hasAbortHandler(abortReason)) {
-                    response(handlerContext, responseScope, handler.handleAbort(abortScope, abortReason))
+                    handler.handleAbort(abortScope, abortReason){
+                        response(handlerContext, responseScope, it)
+                    }
                 } else {
                     throw exception
                 }

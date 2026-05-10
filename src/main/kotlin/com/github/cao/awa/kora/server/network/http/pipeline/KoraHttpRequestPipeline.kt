@@ -2,6 +2,7 @@ package com.github.cao.awa.kora.server.network.http.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
+import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
@@ -20,6 +21,7 @@ import com.github.cao.awa.kora.server.network.http.response.content.NoContentRes
 import com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
+import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
@@ -29,7 +31,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
 
-class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
+class KoraHttpRequestPipeline :
+    KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
     companion object {
         fun instructHttpMetadata(json: JSONObject, koraContext: KoraHttpContext): JSONObject {
             json.instruct {
@@ -83,15 +86,38 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
         // Launch on coroutine scope.
         this.executionScope.launch {
             val handler: KoraHttpRequestHandler? = handlers[koraContext.method()]
-            abortable(handlerContext, koraContext, handler) {
-                if (handler != null) {
-                    response(
-                        handlerContext = handlerContext,
-                        koraContext = koraContext,
-                        response = handler.handle(koraContext)
-                    )
-                } else {
-                    throw NotSupportedHttpMethodException(koraContext.method().name())
+            if (handler == null) {
+                // Notice user doesn't register this method handler (like POST, GET or ETC.) and let Kora framework handle this error.
+                throw NotSupportedHttpMethodException("${koraContext.method().name()} handler not registered")
+            } else {
+                // Handle program logics.
+                abortable(handlerContext, koraContext, handler) {
+                    try {
+                        response(
+                            handlerContext,
+                            koraContext,
+                             handler.handle(koraContext)
+                        )
+                    } catch (e: Throwable) {
+                        // Let user handle error if user registered error handler.
+                        // Make abort reason.
+                        val abortReason = AbortReason(
+                            e, e.message ?: "Unhandled exception"
+                        )
+                        // Handle abort control logic.
+                        handler.handleAbort(
+                            koraContext.abortWith(HttpResponseStatus.INTERNAL_SERVER_ERROR),
+                            abortReason
+                        ) {
+                            if (it is Unit) {
+                                // Response formatted JSON error response when user deoesn't make a result.
+                                response(handlerContext, koraContext, e)
+                            } else {
+                                // Response user result.
+                                response(handlerContext, koraContext, it)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -107,6 +133,7 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
     override fun response(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any) {
         when (response) {
             is JSONObject -> {
+                koraContext.withContentType(HttpContentTypes.JSON)
                 responseJSON(handlerContext, koraContext) {
                     response
                 }
@@ -128,8 +155,19 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
                 }
             }
 
+            is Throwable -> {
+                responseFull(handlerContext, koraContext) {
+                    KoraHttpErrors.INTERNAL_SERVER_ERROR(
+                        koraContext.protocolVersion(),
+                        response,
+                        response.message ?: "Unknown message exception"
+                    )
+                }
+            }
+
             else -> {
                 responseJSON(handlerContext, koraContext) {
+                    koraContext.withContentType(HttpContentTypes.JSON)
                     JSONEncoder.encode(response)
                 }
             }
@@ -147,6 +185,22 @@ class KoraHttpRequestPipeline: KoraRequestPipeline<KoraFullHttpRequestHolder, Ko
             KoraHttpResponses.createDefaultResponse(
                 koraContext.protocolVersion(), koraContext.status(), msg
             ).setContentType(koraContext.contentType()).setLength()
+        ).also {
+            if (koraContext.isPromiseClose()) {
+                it.addListener(ChannelFutureListener.CLOSE)
+            }
+        }
+    }
+
+    private fun responseFull(
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraHttpContext,
+        response: KoraHttpContext.() -> FullHttpResponse
+    ) {
+        val msg: FullHttpResponse = response(koraContext)
+
+        handlerContext.writeAndFlush(
+            msg.setContentType(koraContext.contentType()).setLength()
         ).also {
             if (koraContext.isPromiseClose()) {
                 it.addListener(ChannelFutureListener.CLOSE)

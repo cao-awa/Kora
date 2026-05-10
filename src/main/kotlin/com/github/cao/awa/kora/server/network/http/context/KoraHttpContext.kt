@@ -6,7 +6,7 @@ import com.github.cao.awa.kora.server.network.http.argument.HttpRequestArguments
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
@@ -106,28 +106,23 @@ open class KoraHttpContext(val msg: KoraFullHttpRequestHolder): KoraContext<Kora
         return this.promiseClose
     }
 
-    fun abortWith(exception: Exception, errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
+    fun abortWith(exception: Exception, errorCode: HttpResponseStatus, postHandler: (KoraAbortHttpContext) -> Unit = { }): KoraAbortHttpContext {
         when (errorCode) {
             HttpResponseStatus.OK -> error("Error response cannot use status '200 OK'")
         }
         withStatus(errorCode)
         withContentType(HttpContentTypes.JSON)
-        postHandler()
-        throw exception
+        return KoraAbortHttpContext(this).also {
+            postHandler(it)
+        }
     }
 
-    fun abortWith(httpStatus: HttpResponseStatus, postHandler: () -> Unit = { }) {
-        abortWith(
-            EndingEarlyException(httpStatus.reasonPhrase()),
+    fun abortWith(httpStatus: HttpResponseStatus, postHandler: (KoraAbortHttpContext) -> Unit = { }): KoraAbortHttpContext {
+        return abortWith(
+            UnexpectedBehaviorException(httpStatus.reasonPhrase()),
             httpStatus,
             postHandler
         )
-    }
-
-    fun abortIf(condition: Boolean, errorCode: HttpResponseStatus, postHandler: () -> Unit = { }) {
-        if (condition) {
-            abortWith(errorCode, postHandler)
-        }
     }
 
     fun status(): HttpResponseStatus {

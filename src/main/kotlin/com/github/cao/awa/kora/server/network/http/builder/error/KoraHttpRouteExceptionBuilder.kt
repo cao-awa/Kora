@@ -2,7 +2,7 @@ package com.github.cao.awa.kora.server.network.http.builder.error
 
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import io.netty.handler.codec.http.HttpMethod
 import kotlin.reflect.KClass
@@ -18,14 +18,14 @@ class KoraHttpRouteExceptionBuilder {
     }
 
     @Suppress("unchecked_cast")
-    inline fun <reified T: Throwable, X: Any> abort(target: KClass<T>, noinline handler: KoraAbortHttpContext.(AbortReason<T>) -> X): KoraHttpRouteExceptionBuilder {
+    inline fun <reified T: Throwable, X: Any> ifAbort(target: KClass<T>, noinline handler: KoraAbortHttpContext.(AbortReason<T>) -> X): KoraHttpRouteExceptionBuilder {
         this.routes[target] = handler as KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
         return this
     }
 
     @Suppress("unchecked_cast")
-    fun abort(handler: KoraAbortHttpContext.(reason: AbortReason<EndingEarlyException>) -> Any): KoraHttpRouteExceptionBuilder {
-        this.routes[EndingEarlyException::class] = handler as KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
+    fun ifAbort(handler: KoraAbortHttpContext.(reason: AbortReason<UnexpectedBehaviorException>) -> Any): KoraHttpRouteExceptionBuilder {
+        this.routes[UnexpectedBehaviorException::class] = handler as KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
         return this
     }
 

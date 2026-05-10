@@ -1,6 +1,6 @@
 package com.github.cao.awa.kora.server.network.websocket.builder.error
 
-import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.websocket.context.abort.KoraAbortWebSocketContext
 import com.github.cao.awa.kora.server.network.websocket.adapter.protocol.KoraWebSocketServerProtocolAdapter
@@ -22,8 +22,8 @@ class KoraWebSocketRouteExceptionBuilder {
     }
 
     @Suppress("unchecked_cast")
-    fun abort(handler: KoraAbortWebSocketContext.(reason: AbortReason<EndingEarlyException>) -> Any): KoraWebSocketRouteExceptionBuilder {
-        this.routes[EndingEarlyException::class] = handler as KoraAbortWebSocketContext.(AbortReason<out Throwable>) -> Any
+    fun abort(handler: KoraAbortWebSocketContext.(reason: AbortReason<UnexpectedBehaviorException>) -> Any): KoraWebSocketRouteExceptionBuilder {
+        this.routes[UnexpectedBehaviorException::class] = handler as KoraAbortWebSocketContext.(AbortReason<out Throwable>) -> Any
         return this
     }
 

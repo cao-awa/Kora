@@ -1,7 +1,7 @@
 package com.github.cao.awa.kora.server.network.websocket.handler
 
 import com.github.cao.awa.kora.server.network.handler.KoraRequestHandler
-import com.github.cao.awa.kora.server.network.exception.abort.EndingEarlyException
+import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.websocket.context.KoraWebSocketContext
 import com.github.cao.awa.kora.server.network.websocket.context.abort.KoraAbortWebSocketContext
@@ -55,9 +55,13 @@ class KoraWebSocketRequestHandler: KoraRequestHandler<KoraTextWebsocketFrameHold
         return (this.exceptionHandler[abortReason.exception::class]?.size ?: 0) > 0
     }
 
-    override fun handleAbort(abortScope: KoraAbortWebSocketContext, abortReason: AbortReason<out Throwable>): Any {
+    override fun handleAbort(
+        abortScope: KoraAbortWebSocketContext,
+        abortReason: AbortReason<out Throwable>,
+        responser: (Any) -> Unit
+    ): Any {
         return this.exceptionHandler[abortReason.exception::class]?.get(abortScope.path())?.let {
-            it(abortScope, abortReason)
-        } ?: EndingEarlyException.abort()
+            responser(it(abortScope, abortReason))
+        } ?: UnexpectedBehaviorException.abort()
     }
 }
