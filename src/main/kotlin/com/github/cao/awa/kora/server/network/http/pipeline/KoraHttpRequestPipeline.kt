@@ -126,7 +126,7 @@ class KoraHttpRequestPipeline :
     fun handleExceptionCaught(handlerContext: ChannelHandlerContext, cause: Throwable) {
         // Response an error message.
         handlerContext.writeAndFlush(
-            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, "Unhandled internal server error")
+            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, cause.message ?: "Unhandled internal server error")
         ).addListener(ChannelFutureListener.CLOSE)
     }
 
@@ -209,7 +209,9 @@ class KoraHttpRequestPipeline :
     }
 
     private fun responseJSON(
-        handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, responser: KoraHttpContext.() -> JSONObject
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraHttpContext,
+        responser: KoraHttpContext.() -> JSONObject
     ) {
         val sendingContext = koraContext.createInherited()
 
