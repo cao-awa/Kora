@@ -1,5 +1,6 @@
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
+import com.github.cao.awa.kora.server.network.http.argument.url.type.urlArg
 import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -12,7 +13,72 @@ import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
 fun main() {
-    testNotFound()
+    testPlaceholder()
+}
+
+fun testPlaceholder(){
+    KoraHttpServer.instructHttpStatusCode = false
+
+    val http = http {
+        val userId = urlArg<Int>("userId")
+        val testId = urlArg<Int>("testId")
+
+        route("/test/{userId}/{testId}") {
+            get {
+                val userIdValue = userId(this)
+                val testIdValue = testId(this)
+
+                // Render HTML page.
+                html {
+                    head {
+                        charset(Charsets.UTF_8)
+                    }
+                    body {
+                        p {
+                            text("Page '/${path()}' has loaded! with userId '$userIdValue' and testId '$testIdValue'")
+                        }
+                    }
+                }
+            }
+        }
+
+        route("/test/qaq") {
+            get {
+                // Render HTML page.
+                html {
+                    head {
+                        charset(Charsets.UTF_8)
+                    }
+                    body {
+                        p {
+                            text("Page '/${path()}' has loaded!")
+                        }
+                    }
+                }
+            }
+        }
+
+        ifAbort(HttpPathNotRegisteredException::class) { context ->
+            LOGGER.error(context.exception)
+
+            // Render HTML page.
+            html {
+                head {
+                    charset(Charsets.UTF_8)
+                }
+                body {
+                    p {
+                        text("Page '/${path()}' not found!")
+                    }
+                }
+            }
+        }
+    }
+
+    KoraHttpServer(http).start(
+        port = 12345,
+        useEpoll = true
+    )
 }
 
 fun testNotFound(){

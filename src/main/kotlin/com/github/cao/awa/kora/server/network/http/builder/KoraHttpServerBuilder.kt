@@ -35,6 +35,8 @@ class KoraHttpServerBuilder {
         path = "${URLEncoder.encode(path, "UTF-8")}"
             .replace("+", "%20")
             .replace("%2F", "/")
+            .replace("%7B","{")
+            .replace("%7D","}")
 
         if (!this.routes.containsKey(path)) {
             this.routes[path] = KoraHttpServerRouteBuilder(path, handler)

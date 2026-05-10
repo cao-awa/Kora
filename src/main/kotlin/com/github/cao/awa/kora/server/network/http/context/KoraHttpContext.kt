@@ -10,6 +10,7 @@ import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehavior
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
+import com.github.cao.awa.kora.server.network.http.url.KoraPlaceholderURL
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.HttpMethod
@@ -79,17 +80,36 @@ open class KoraHttpContext(val msg: KoraFullHttpRequestHolder) :
             result
         }
     }
+    private var placeholders: MutableMap<String, Int> = mutableMapOf()
+    private var placeholderURL: String = ""
 
-    open fun withStatus(status: HttpResponseStatus) {
+    fun withPlaceholder(url: KoraPlaceholderURL):KoraHttpContext {
+        this.placeholders = url.placeholders()
+        this.placeholderURL = url.toString()
+        return this
+    }
+
+    open fun withStatus(status: HttpResponseStatus): KoraHttpContext {
         this.status = status
+        return this
     }
 
-    open fun withContentType(contentType: HttpContentType) {
+    open fun withContentType(contentType: HttpContentType): KoraHttpContext {
         this.contentType = contentType
+        return this
     }
 
-    open fun withProtocolVersion(protocolVersion: HttpVersion) {
+    open fun withProtocolVersion(protocolVersion: HttpVersion): KoraHttpContext {
         this.protocolVersion = protocolVersion
+        return this
+    }
+
+    fun placeholders(): Map<String, Int> {
+        return this.placeholders
+    }
+
+    fun placeholderURL():String {
+        return this.placeholderURL
     }
 
     fun params(): HttpRequestParams {
