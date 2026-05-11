@@ -1,6 +1,6 @@
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.urlArg
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder
 import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -20,8 +20,8 @@ fun testPlaceholder(){
     KoraHttpServer.instructHttpStatusCode = false
 
     val http = http {
-        val userId = urlArg<Int>("userId")
-        val testId = urlArg<Int>("testId")
+        val userId = placeholder<Int>("userId")
+        val testId = placeholder<Int>("testId")
 
         route("/test/{userId}/{testId}") {
             get {

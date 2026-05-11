@@ -2,7 +2,7 @@ package com.github.cao.awa.kora.server.network.http.placeholder.url.type.validat
 
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
 
-interface TypedHttpUrlArgumentValidator<T : Any> {
+interface TypedHttpUrlPlaceholderValidator<T : Any> {
     operator fun get(argumentName: String, content: String, url: String): T
 }
 

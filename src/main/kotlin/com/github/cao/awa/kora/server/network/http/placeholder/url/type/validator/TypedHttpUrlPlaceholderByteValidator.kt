@@ -1,6 +1,6 @@
 package com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator
 
-class TypedHttpUrlArgumentByteValidator : TypedHttpUrlArgumentValidator<Byte> {
+class TypedHttpUrlPlaceholderByteValidator : TypedHttpUrlPlaceholderValidator<Byte> {
     override operator fun get(argumentName:String, content: String, url: String): Byte {
         try {
             return java.lang.Byte.parseByte(content)
