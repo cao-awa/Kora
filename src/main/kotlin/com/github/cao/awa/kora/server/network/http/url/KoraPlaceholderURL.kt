@@ -35,11 +35,10 @@ class KoraPlaceholderURL {
         while (seq < end) {
             val path = this.url[seq]
             val targetPath = url.url[seq]
-            if (path != targetPath) {
-                return false
-            }
-            if (path.startsWith("{") || path.endsWith("}")) {
+            if (targetPath.startsWith("{") || path.endsWith("}")) {
                 hasPlaceholder = true
+            } else if (path != targetPath) {
+                return false
             }
             seq++
         }

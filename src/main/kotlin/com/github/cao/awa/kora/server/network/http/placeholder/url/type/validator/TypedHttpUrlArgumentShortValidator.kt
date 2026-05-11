@@ -1,4 +1,4 @@
-package com.github.cao.awa.kora.server.network.http.argument.url.type.validator
+package com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator
 
 class TypedHttpUrlArgumentShortValidator : TypedHttpUrlArgumentValidator<Short> {
     override operator fun get(argumentName:String, content: String, url: String): Short {

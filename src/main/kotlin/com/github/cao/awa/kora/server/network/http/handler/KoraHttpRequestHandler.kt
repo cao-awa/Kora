@@ -47,7 +47,7 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
         for ((routeUrl, route) in this.routes) {
             if (routeUrl == url && !routeUrl.hasPlaceholder()) {
                 return route(context)
-            } else if (routeUrl.matchPlaceholder(routeUrl)) {
+            } else if (url.matchPlaceholder(routeUrl)) {
                 matchPlaceholderHandler = route
                 placeholderURL = routeUrl
             }

@@ -1,6 +1,6 @@
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
-import com.github.cao.awa.kora.server.network.http.argument.url.type.urlArg
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.urlArg
 import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -36,22 +36,6 @@ fun testPlaceholder(){
                     body {
                         p {
                             text("Page '/${path()}' has loaded! with userId '$userIdValue' and testId '$testIdValue'")
-                        }
-                    }
-                }
-            }
-        }
-
-        route("/test/qaq") {
-            get {
-                // Render HTML page.
-                html {
-                    head {
-                        charset(Charsets.UTF_8)
-                    }
-                    body {
-                        p {
-                            text("Page '/${path()}' has loaded!")
                         }
                     }
                 }

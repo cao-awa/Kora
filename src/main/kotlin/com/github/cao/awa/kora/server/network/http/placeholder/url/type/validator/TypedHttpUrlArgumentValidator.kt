@@ -1,4 +1,4 @@
-package com.github.cao.awa.kora.server.network.http.argument.url.type.validator
+package com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator
 
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
 
