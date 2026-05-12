@@ -177,7 +177,6 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
     override fun response(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any) {
         when (response) {
             is JSONObject -> {
-                koraContext.withContentType(HttpContentTypes.JSON)
                 responseJSON(handlerContext, koraContext) {
                     response
                 }
@@ -197,6 +196,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
 
             is Throwable -> {
                 responseFull(handlerContext, koraContext) {
+                    koraContext.withContentType(HttpContentTypes.JSON)
                     KoraHttpErrors.adapter(
                         koraContext.protocolVersion(),
                         response
@@ -210,7 +210,6 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
 
             else -> {
                 responseJSON(handlerContext, koraContext) {
-                    koraContext.withContentType(HttpContentTypes.JSON)
                     JSONEncoder.encode(response)
                 }
             }

@@ -3,7 +3,6 @@ package com.github.cao.awa.kora.server.network.http.handler
 import com.github.cao.awa.kora.server.network.handler.KoraRequestHandler
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
@@ -44,20 +43,31 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
         var matchPlaceholderHandler: (KoraHttpContext.() -> Any)? = null
         var placeholderURL: KoraPlaceholderURL? = null
 
+        val specificRoute = this.routes[url]
+
+        // Pre-fetch to optimization route search speed.
+        if (specificRoute != null) {
+            return specificRoute(context)
+        }
+
+        // Search route.
         for ((routeUrl, route) in this.routes) {
             if (routeUrl == url && !routeUrl.hasPlaceholder()) {
                 return route(context)
             } else if (url.matchPlaceholder(routeUrl)) {
                 matchPlaceholderHandler = route
                 placeholderURL = routeUrl
+                break
             }
         }
 
+        // If route has placeholder, create context with placeholder.
         if (matchPlaceholderHandler != null && placeholderURL != null) {
             return matchPlaceholderHandler(context.withPlaceholder(placeholderURL))
         }
 
-        pageNotFound(context)
+        // If not found a specific route or placeholder route, throws 404 NOT_FOUND error.
+        routeNotFound(context)
     }
 
     override fun hasAbortHandler(abortReason: AbortReason<out Throwable>): Boolean {
@@ -78,10 +88,10 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
         } else if (handlers == null) {
             throw abortReason.exception
         } else {
-            pageNotFound(abortScope)
+            routeNotFound(abortScope)
         }
     }
 
-    fun pageNotFound(context: KoraHttpContext): Nothing =
+    fun routeNotFound(context: KoraHttpContext): Nothing =
         throw HttpPathNotRegisteredException("Not registered request handler found for pathing '${context.path()}' (404 page not found)")
 }

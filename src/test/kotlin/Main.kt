@@ -16,7 +16,7 @@ fun main() {
     testPlaceholder()
 }
 
-fun testPlaceholder(){
+fun testPlaceholder() {
     KoraHttpServer.instructHttpStatusCode = false
 
     val http = http {
@@ -36,6 +36,22 @@ fun testPlaceholder(){
                     body {
                         p {
                             text("Page '/${path()}' has loaded! with userId '$userIdValue' and testId '$testIdValue'")
+                        }
+                    }
+                }
+            }
+        }
+
+        route("/test/qaq/awa") {
+            get {
+                // Render HTML page.
+                html {
+                    head {
+                        charset(Charsets.UTF_8)
+                    }
+                    body {
+                        p {
+                            text("Page '/${path()}' has loaded!")
                         }
                     }
                 }
@@ -65,7 +81,7 @@ fun testPlaceholder(){
     )
 }
 
-fun testNotFound(){
+fun testNotFound() {
     KoraHttpServer.instructHttpStatusCode = false
 
     val http = http {
