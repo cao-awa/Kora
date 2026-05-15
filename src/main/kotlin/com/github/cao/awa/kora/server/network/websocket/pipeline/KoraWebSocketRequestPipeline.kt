@@ -3,6 +3,7 @@ package com.github.cao.awa.kora.server.network.websocket.pipeline
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
+import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
 import com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline
 import com.github.cao.awa.kora.server.network.websocket.context.KoraWebSocketContext
@@ -55,11 +56,16 @@ class KoraWebSocketRequestPipeline :
         }
     }
 
+    override fun handleException(exception: Throwable, handlerContext: ChannelHandlerContext, koraContext: KoraWebSocketContext) {
+        // TODO: websocket exception handler, don't use HTTP way.
+        handleExceptionCaught(handlerContext, exception)
+    }
+
     fun handleExceptionCaught(handlerContext: ChannelHandlerContext, cause: Throwable) {
         cause.printStackTrace()
         // Response an error message.
         handlerContext.writeAndFlush(
-            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, "Unhandleable request")
+            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, "Unhandleable request", null)
         ).addListener(ChannelFutureListener.CLOSE)
     }
 

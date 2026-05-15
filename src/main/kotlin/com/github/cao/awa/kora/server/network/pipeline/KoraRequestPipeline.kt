@@ -5,10 +5,7 @@ import com.github.cao.awa.kora.server.network.context.abort.KoraAbortContext
 import com.github.cao.awa.kora.server.network.handler.KoraRequestHandler
 import com.github.cao.awa.kora.server.network.holder.PathByteBufHolder
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
-import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
-import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
-import io.netty.handler.codec.http.HttpVersion
 
 abstract class KoraRequestPipeline<B: PathByteBufHolder, C: KoraContext<B, C, A>, A: KoraAbortContext<B>, H: KoraRequestHandler<B, C, A>> {
     fun abortable(
@@ -39,13 +36,16 @@ abstract class KoraRequestPipeline<B: PathByteBufHolder, C: KoraContext<B, C, A>
                     throw exception
                 }
             } catch (unhandledException: Throwable) {
-                // If not handleable, response an formatted error message by KoraHttpErrors.adapter formatter.
-                handlerContext.writeAndFlush(
-                    KoraHttpErrors.adapter(HttpVersion.HTTP_1_0, unhandledException)
-                ).addListener(ChannelFutureListener.CLOSE)
+                handleException(
+                    unhandledException,
+                    handlerContext,
+                    koraContext
+                )
             }
         }
     }
+
+    abstract fun handleException(exception: Throwable, handlerContext: ChannelHandlerContext, koraContext: C)
 
     abstract fun response(
         handlerContext: ChannelHandlerContext,

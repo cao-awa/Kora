@@ -4,11 +4,11 @@ import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
+import com.github.cao.awa.kora.server.network.http.asset.KoraHttpAssetsManager
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
-import com.github.cao.awa.kora.server.network.http.exception.KoraPathException
 import com.github.cao.awa.kora.server.network.http.exception.KoraServerException
 import com.github.cao.awa.kora.server.network.http.exception.method.NotSupportedHttpMethodException
 import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler
@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
+import java.io.File
 import kotlin.reflect.KClass
 
 val abortHandlers: MutableMap<KClass<out Throwable>, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any> =
@@ -42,28 +43,30 @@ val abortHandlers: MutableMap<KClass<out Throwable>, KoraAbortHttpContext.(Abort
 class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestServerAbortHandler) :
     KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
     companion object {
-        fun instructHttpMetadata(json: JSONObject, koraContext: KoraHttpContext): JSONObject {
+        fun instructHttpMetadata(json: JSONObject, context: KoraHttpContext): JSONObject {
             json.instruct {
-                if (KoraHttpServer.instructHttpMetadata) {
-                    nested("http_meta") {
-                        HttpResponseMetadata(
-                            if (KoraHttpServer.instructHttpStatusCode) {
-                                koraContext.status().code()
-                            } else null, if (KoraHttpServer.instructHttpVersionCode) {
-                                koraContext.protocolVersion().text()
-                            } else null
-                        )
-                    }
+                if (KoraHttpServer.instructRequestType) {
+                    "request_type" set context.method().name()
                 }
+                instructHttpMetadata(
+                    this,
+                    context.status(),
+                    context.protocolVersion()
+                )
             }
 
             return json
         }
 
         fun instructHttpMetadata(
-            json: JSONObject, status: HttpResponseStatus, protocolVersion: HttpVersion
+            json: JSONObject,
+            status: HttpResponseStatus,
+            protocolVersion: HttpVersion
         ): JSONObject {
             json.instruct {
+                if (KoraHttpServer.instructTimestamp) {
+                    "timestamp" set System.currentTimeMillis()
+                }
                 if (KoraHttpServer.instructHttpMetadata) {
                     nested("http_meta") {
                         HttpResponseMetadata(
@@ -86,7 +89,12 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             put(HttpMethod.GET, KoraHttpGetHandler())
             put(HttpMethod.POST, KoraHttpPostHandler())
         }
+    private val assetsManager: KoraHttpAssetsManager = KoraHttpAssetsManager()
     private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    fun setAssetsPath(path: String) {
+        this.assetsManager.setAssetsPath(path)
+    }
 
     fun getHandler(method: HttpMethod): KoraHttpRequestHandler? = this.handlers[method]
 
@@ -94,10 +102,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         // Launch on coroutine scope.
         this.executionScope.launch {
             val handler: KoraHttpRequestHandler? = handlers[koraContext.method()]
-            if (handler == null) {
-                // Notice user doesn't register this method handler (like POST, GET or ETC.) and let Kora framework handle this error.
-                throw NotSupportedHttpMethodException("${koraContext.method().name()} handler not registered")
-            } else {
+            if (handler != null) {
                 // Handle program logics.
                 abortable(handlerContext, koraContext, handler) {
                     try {
@@ -107,19 +112,31 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                             handler.handle(koraContext)
                         )
                     } catch (e: Throwable) {
+                        // When error, default status is 500 INTERNAL_SERVER_ERROR.
+                        var httpStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
+
+                        if (e is HttpPathNotRegisteredException) {
+                            val asset: File? = assetsManager.getAsset(koraContext.path())
+
+                            // If asset not null. response the asset.
+                            if (asset != null) {
+                                response(
+                                    handlerContext,
+                                    koraContext,
+                                    asset
+                                )
+                                return@abortable
+                            } else {
+                                // When error is page path not registered, it should be 404 NOT_FOUND.
+                                httpStatus = HttpResponseStatus.NOT_FOUND
+                            }
+                        }
+
                         // Let user handle error if user registered error handler.
                         // Make abort reason.
                         val abortReason = AbortReason(
                             e, e.message ?: "Unhandled exception"
                         )
-                        // When error, default status is 500 INTERNAL_SERVER_ERROR.
-                        var httpStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
-
-                        if (e is HttpPathNotRegisteredException) {
-                            // When error is page path not registered, it should be 404 NOT_FOUND.
-                            httpStatus = HttpResponseStatus.NOT_FOUND
-                        }
-
                         val abortContext = koraContext.createAbort(httpStatus, koraContext)
 
                         if (e is KoraServerException) {
@@ -144,6 +161,9 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                         }
                     }
                 }
+            } else {
+                // Notice user doesn't register this method handler (like POST, GET or ETC.) and let Kora framework handle this error.
+                throw NotSupportedHttpMethodException("${koraContext.method().name()} handler not registered")
             }
         }
     }
@@ -169,8 +189,20 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             KoraHttpErrors.INTERNAL_SERVER_ERROR(
                 HttpVersion.HTTP_1_0,
                 cause,
-                cause.message ?: "Unhandled internal server error"
+                cause.message ?: "Unhandled internal server error",
+                null
             )
+        ).addListener(ChannelFutureListener.CLOSE)
+    }
+
+    override fun handleException(
+        exception: Throwable,
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraHttpContext
+    ) {
+// If not handleable, response an formatted error message by KoraHttpErrors.adapter formatter.
+        handlerContext.writeAndFlush(
+            KoraHttpErrors.adapter(HttpVersion.HTTP_1_0, exception, koraContext)
         ).addListener(ChannelFutureListener.CLOSE)
     }
 
@@ -194,6 +226,12 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 }
             }
 
+            is File -> {
+                responseRaw(handlerContext, koraContext) {
+                    assetsManager?.response(koraContext, response) ?: response.readBytes()
+                }
+            }
+
             is Throwable -> {
                 responseFull(handlerContext, koraContext) {
                     koraContext.withContentType(HttpContentTypes.JSON)
@@ -205,7 +243,9 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             }
 
             is Unit -> {
-                responseNoContent(handlerContext, koraContext)
+                responseJSON(handlerContext, koraContext) {
+                    JSONObject()
+                }
             }
 
             else -> {
@@ -242,6 +282,24 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         }
     }
 
+    private fun responseRaw(
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraHttpContext,
+        response: KoraHttpContext.() -> ByteArray
+    ) {
+        val msg = response(koraContext)
+
+        handlerContext.writeAndFlush(
+            KoraHttpResponses.createDefaultResponse(
+                koraContext.protocolVersion(), koraContext.status(), msg
+            ).setContentType(koraContext.contentType()).setLength()
+        ).also {
+            if (koraContext.isPromiseClose()) {
+                it.addListener(ChannelFutureListener.CLOSE)
+            }
+        }
+    }
+
     private fun responseFull(
         handlerContext: ChannelHandlerContext,
         koraContext: KoraHttpContext,
@@ -265,7 +323,13 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
     ) {
         val sendingContext = koraContext.createInherited()
 
-        val msg: JSONObject = instructHttpMetadata(responser(sendingContext), sendingContext)
+        val msg: JSONObject = instructHttpMetadata(JSONObject(), sendingContext)
+        val data = responser(sendingContext)
+        if (data.size() > 0) {
+            msg.instruct {
+                "data" set data
+            }
+        }
 
         sendingContext.withContentType(HttpContentTypes.JSON)
 

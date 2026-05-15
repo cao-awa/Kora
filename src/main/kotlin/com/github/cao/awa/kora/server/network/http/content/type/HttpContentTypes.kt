@@ -41,6 +41,7 @@ object HttpContentTypes {
     val SVG_XML: HttpContentType = HttpContentType("image/svg+xml")
     val TIFF: HttpContentType = HttpContentType("image/tiff")
     val VND_FPX: HttpContentType = HttpContentType("image/vnd.fpx")
+    val X_ICON: HttpContentType = HttpContentType("image/x-icon")
     val X_CMU_RAST: HttpContentType = HttpContentType("image/x-cmu-rast")
     val X_PORTABLE_ANYMAP: HttpContentType = HttpContentType("image/x-portable-anymap")
     val X_PORTABLE_BITMAP: HttpContentType = HttpContentType("image/x-portable-bitmap")

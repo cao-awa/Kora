@@ -49,8 +49,11 @@ It is a **language-shaped web framework**.
 > In Kora, routing is an expression that produces a value.
 > 
 # Quick Start
+## Test cases
+Here is some test cases shown:
 
-Define and run a simple HTTP server with two routes:
+### Case 1
+Define and run a simple HTTP server with one routes:
 
 ```kotlin
 fun main() {
@@ -98,13 +101,28 @@ fun main() {
 }
 ```
 
-This starts an HTTP server on port `12345` with two routes:
+This starts an HTTP server on port `12345` with one routes:
 
-* `POST /test` → `500 Internal Server Error`
-* `GET /test` → `200 OK`
+* `GET /test?action=1234`:  `200 OK`
+* `GET /test`:  `400 BAD REQUEST`
 
-Kora automatically serializes Kotlin data classes using
-[Cason](https://github.com/cao-awa/Cason), a lightweight, type-safe JSON/JSON5 library.
+### Case 2
+Define and run a simple HTTP server with only assets routes:
+
+```kotlin
+fun main() {
+    KoraHttpServer.instructHttpStatusCode = false
+
+    val http = http {
+        assets("assets/")
+    }
+
+    KoraHttpServer(http).start(
+        port = 12345,
+        useEpoll = true
+    )
+}
+```
 
 ## Structured Responses and HTTP Metadata
 
@@ -118,7 +136,6 @@ HTTP metadata instruction is a transport-level concern and is configurable.
 ```json
 {
   "type": "post",
-  "timestamp": 1700000000000,
   "http_meta": {
     "http_version": "HTTP/1.1",
     "http_status": 200
@@ -147,14 +164,13 @@ fun main() {
 }
 ```
 
+Kora automatically serializes Kotlin data classes using [Cason](https://github.com/cao-awa/Cason), a lightweight, type-safe JSON/JSON5 library.
+
 ## Total Handlers and 204 No Content
 
 A handler in Kora is a total function from request scope to a single response value.\
 There is no such thing as a “partially constructed response” in Kora.\
 It may describe response metadata, but it cannot partially construct a response.
-
-A handler must always produce an explicit response.
-Missing return values or “status-only” handlers are rejected.
 
 To return `204 No Content`, use `NoContentResponse` explicitly:
 
@@ -176,11 +192,7 @@ fun main() {
 }
 ```
 
-This design ensures:
-
-* Every handler has a clear, explicit outcome
-* No ambiguous or partially-defined responses
-* Stronger guarantees about API behavior
+or missing return value, Kora will automatically return 204 NO CONTENT response.
 
 ## Abort
 
@@ -189,7 +201,7 @@ Kora uses a scoped abort model where execution and error handling are strictly s
 In Kora, aborting execution is not an exceptional case.\
 It is a first-class, structured control flow with explicit scope boundaries.
 
-The ```abortWith()``` or ```abortIf()``` defines when to abort, and ```.ifAbort {}``` defines how aborted execution is rendered into a
+The ```abortWith()``` or ```abortIf()``` defines when to abort, and ```.ifAbort { }``` defines how aborted execution is rendered into a
 response:
 
 ```kotlin
@@ -214,7 +226,6 @@ fun main() {
         useEpoll = true
     )
 }
-)
 ```
 
 Client will get data seems like:

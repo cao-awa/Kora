@@ -26,6 +26,18 @@ object KoraHttpResponses {
         ).setPlainHeader()
     }
 
+    fun createDefaultResponse(
+        httpVersion: HttpVersion,
+        status: HttpResponseStatus,
+        message: ByteArray
+    ): FullHttpResponse {
+        return DefaultFullHttpResponse(
+            httpVersion,
+            status,
+            Unpooled.copiedBuffer(message)
+        ).setPlainHeader()
+    }
+
     fun FullHttpResponse.setPlainHeader(): FullHttpResponse {
         setContentType(HttpContentTypes.PLAIN)
         return this

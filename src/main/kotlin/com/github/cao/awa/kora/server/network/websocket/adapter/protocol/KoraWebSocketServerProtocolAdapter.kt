@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.server.network.websocket.adapter.protocol
 
+import com.github.cao.awa.kora.server.network.context.KoraContext
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
 import com.github.cao.awa.kora.server.network.websocket.builder.KoraWebsocketServerBuilder
 import com.github.cao.awa.kora.server.network.websocket.config.KoraWebSocketServerProtocolConfig
@@ -248,12 +249,7 @@ class KoraWebSocketServerProtocolAdapter(
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         if (cause is WebSocketHandshakeException) {
-            val response: FullHttpResponse = KoraHttpErrors.INTERNAL_SERVER_ERROR(
-                HttpVersion.HTTP_1_1,
-                cause,
-                "Unhandleable request"
-            )
-            ctx.channel().writeAndFlush(response).addListener(ChannelFutureListener.CLOSE)
+            // TODO: handle handshake errors.
         } else {
             ctx.fireExceptionCaught(cause)
             ctx.close()

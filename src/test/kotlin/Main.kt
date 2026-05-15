@@ -13,13 +13,43 @@ import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
 fun main() {
-    testPlaceholder()
+    testDataClass()
+}
+
+fun testAssets() {
+    val http = http {
+        assets("assets/")
+    }
+
+    KoraHttpServer(http).start(
+        port = 12345,
+        useEpoll = true
+    )
+}
+
+fun testDataClass(){
+    data class Data(val name: String, val age: Int)
+
+    val http = http {
+        route("/test") {
+            get {
+                Data(
+                    "cao-awa",
+                    17
+                )
+            }
+        }
+    }
+
+    KoraHttpServer(http).start(
+        port = 12345,
+        useEpoll = true
+    )
 }
 
 fun testPlaceholder() {
-    KoraHttpServer.instructHttpStatusCode = false
-
     val http = http {
+        assets("assets")
         val userId = placeholder<Int>("userId")
         val testId = placeholder<Int>("testId")
 
@@ -82,8 +112,6 @@ fun testPlaceholder() {
 }
 
 fun testNotFound() {
-    KoraHttpServer.instructHttpStatusCode = false
-
     val http = http {
         route("/test/qaq") {
             get {
@@ -149,8 +177,6 @@ fun testError() {
 }
 
 fun testRender() {
-    KoraHttpServer.instructHttpStatusCode = false
-
     // Define a required URL argument, get value in http scope.
     val actionArg = arg<Int>("action", false)
 

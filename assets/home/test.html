@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="HTML语法示范首页 - 学习HTML基础标签与结构，包含文本、列表、表格、表单、图片链接等核心元素实例及代码展示。">
+    <title>HTML语法示范 | 基础标签实训首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f8fafc;
+            color: #0f172a;
+            line-height: 1.5;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 2rem 1.5rem;
+        }
+        .hero {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px dashed #e2e8f0;
+        }
+        .hero h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, #1e293b, #3b82f6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            margin-bottom: 0.5rem;
+        }
+        .hero .sub {
+            color: #334155;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+        .badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 999px;
+            padding: 0.2rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.75rem;
+        }
+        .demo-card {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #eef2ff;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease;
+        }
+        .demo-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .card-header {
+            background: #f1f5f9;
+            padding: 0.9rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .card-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-header h2:before {
+            content: "▍";
+            color: #3b82f6;
+            font-weight: 400;
+        }
+        .demo-preview {
+            padding: 1.8rem 1.5rem;
+            background: #fefefe;
+            border-bottom: 1px dashed #e2edff;
+        }
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1.2rem 1.5rem;
+            overflow-x: auto;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+        .code-block pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .code-block code {
+            font-family: inherit;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+            margin: 0.5rem 0;
+        }
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+        }
+        th {
+            background: #eef2ff;
+            font-weight: 600;
+        }
+        .demo-list {
+            margin: 0.5rem 0 0.5rem 1.2rem;
+        }
+        form {
+            background: #f9f9ff;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin: 0.5rem 0;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: inline-block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+        input, select, textarea, button {
+            font-family: inherit;
+            padding: 0.5rem;
+            border-radius: 0.6rem;
+            border: 1px solid #cbd5e1;
+            background: white;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+            width: auto;
+            padding: 0.5rem 1.2rem;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 0.75rem;
+            display: inline-block;
+        }
+        hr {
+            margin: 1rem 0;
+            border: none;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .inline-code {
+            background: #eef2ff;
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 1rem;
+            }
+            .demo-preview {
+                padding: 1rem;
+            }
+            .card-header h2 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="hero">
+        <h1>📄 HTML语法示范 · 简明首页</h1>
+        <div class="sub">从标签到语义 —— 常用HTML元素真实渲染 + 源码对照，轻松掌握基础语法</div>
+        <div class="badge">✨ 适合初学者 & 开发者复习 ✨</div>
+    </div>
+
+    <div class="demo-card">
+        <div class="card-header">
+            <h2>📝 文本格式化 & 标题层级</h2>
+        </div>
+        <div class="demo-preview">
+            <h1>H1 一级标题 (主标)</h1>
+            <h2>H2 二级标题 (区块标题)</h2>
+            <h3>H3 三级标题 (小分区)</h3>
+            <p>这是一个普通的段落。HTML中可以使用 <strong>strong标签</strong> 表示<strong>重要文本</strong>，使用 <em>em标签</em> 表示<em>强调语气</em>。另外还支持 <mark>高亮标记(mark)</mark>、<small>小号文本(small)</small>、<del>删除线</del> 和 <ins>下划线插入</ins>。</p>
+            <p>块级引用示例：<br>
+            <blockquote style="margin: 0.5rem 0 0.5rem 1rem; border-left: 4px solid #3b82f6; padding-left: 1rem; color: #334155;">“HTML 是网页结构的基石，语义化标签让内容更清晰。” —— 前端范示</blockquote>
+            </p>
+            <hr>
+            <p>还可以使用 <code>&lt;pre&gt;</code> 标签展示预格式文本，保留空格换行：</p>
+            <pre style="background:#f1f5f9; padding: 0.8rem; border-radius: 12px; overflow-x: auto;">&lt;!-- 这是一段HTML注释示例 --&gt;
+&lt;div&gt;预格式内容保留缩进&lt;/div&gt;</pre>
+        </div>
+        <div class="code-block">
+            <pre><code>&lt;!-- 标题与文本示范源码 --&gt;
+&lt;h1&gt;H1 一级标题 (主标)&lt;/h1&gt;
+&lt;h2&gt;H2 二级标题 (区块标题)&lt;/h2&gt;
+&lt;h3&gt;H3 三级标题 (小分区)&lt;/h3&gt;
+&lt;p&gt;这是一个普通的段落。使用 &lt;strong&gt;strong&lt;/strong&gt; 表示重要，
+&lt;em&gt;em&lt;/em&gt; 表示强调，&lt;mark&gt;高亮&lt;/mark&gt; 标记文本。&lt;/p&gt;
+&lt;blockquote&gt;“HTML 是网页结构的基石...”&lt;/blockquote&gt;
+&lt;pre&gt;预格式文本 保留 空格&lt;/pre&gt;</code></pre>
+        </div>
+    </div>
+
+    <div class="demo-card">
+        <div class="card-header">
+            <h2>📋 列表元素 —— 无序 · 有序 · 描述列表</h2>
+        </div>
+        <div class="demo-preview">
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem;">
+                <div style="flex:1; min-width: 160px;">
+                    <h4>🍎 无序列表 (ul)</h4>
+                    <ul class="demo-list">
+                        <li>HTML 结构标签</li>
+                        <li>CSS 样式表现</li>
+                        <li>JavaScript 行为交互</li>
+                    </ul>
+                </div>
+                <div style="flex:1; min-width: 160px;">
+                    <h4>🔢 有序列表 (ol)</h4>
+                    <ol class="demo-list">
+                        <li>定义文档类型</li>
+                        <li>编写html根标签</li>
+                        <li>添加head/body内容</li>
+                    </ol>
+                </div>
+                <div style="flex:1; min-width: 180px;">
+                    <h4>📖 描述列表 (dl)</h4>
+                    <dl>
+                        <dt><strong>HTML</strong></dt>
+                        <dd>超文本标记语言，负责网页结构。</dd>
+                        <dt><strong>CSS</strong></dt>
+                        <dd>层叠样式表，控制页面美观。</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="code-block">
+            <pre><code>&lt;!-- 无序列表 --&gt;
+&lt;ul&gt;
+  &lt;li&gt;HTML 结构标签&lt;/li&gt;
+  &lt;li&gt;CSS 样式表现&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- 有序列表 --&gt;
+&lt;ol&gt;
+  &lt;li&gt;定义文档类型&lt;/li&gt;
+  &lt;li&gt;编写html根标签&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;!-- 描述列表 --&gt;
+&lt;dl&gt;
+  &lt;dt&gt;HTML&lt;/dt&gt;
+  &lt;dd&gt;超文本标记语言&lt;/dd&gt;
+&lt;/dl&gt;</code></pre>
+        </div>
+    </div>
+
+    <div class="demo-card">
+        <div class="card-header">
+            <h2>📊 表格标签 —— &lt;table&gt; 基础示范</h2>
+        </div>
+        <div class="demo-preview">
+            <table style="width:100%; text-align: center;">
+                <thead>
+                <tr><th>姓名</th><th>职位</th><th>掌握技术</th></tr>
+                </thead>
+                <tbody>
+                <tr><td>张一明</td><td>前端开发</td><td>HTML, CSS, Vue</td></tr>
+                <tr><td>李思瑶</td><td>全栈工程师</td><td>React, Node.js, HTML5</td></tr>
+                <tr><td>王知行</td><td>UI设计师</td><td>Figma, HTML/CSS基础</td></tr>
+                </tbody>
+            </table>
+            <p style="margin-top: 12px; font-size: 0.9rem;">⭐ 表格常用元素：<span class="inline-code">&lt;table&gt;</span> 、<span class="inline-code">&lt;thead&gt;</span> 、<span class="inline-code">&lt;tr&gt;</span> 、<span class="inline-code">&lt;th&gt;</span> 、<span class="inline-code">&lt;td&gt;</span></p>
+        </div>
+        <div class="code-block">
+            <pre><code>&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;&lt;th&gt;姓名&lt;/th&gt;&lt;th&gt;职位&lt;/th&gt;&lt;th&gt;技术&lt;/th&gt;&lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;&lt;td&gt;张一明&lt;/td&gt;&lt;td&gt;前端开发&lt;/td&gt;&lt;td&gt;HTML, CSS&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;李思瑶&lt;/td&gt;&lt;td&gt;全栈工程师&lt;/td&gt;&lt;td&gt;React, Node.js&lt;/td&gt;&lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</code></pre>
+        </div>
+    </div>
+
+    <div class="demo-card">
+        <div class="card-header">
+            <h2>🖼️ 多媒体 & 超链接 —— &lt;img&gt; &lt;a&gt;</h2>
+        </div>
+        <div class="demo-preview">
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;">
+                <div>
+                    <img src="https://picsum.photos/id/20/240/140" alt="示例风景图片" width="240" height="140" style="border-radius: 12px; object-fit: cover;">
+                    <p style="margin-top: 0.4rem; font-size: 0.8rem;">图片来源: picsum 随机图片</p>
+                </div>
+                <div>
+                    <p><strong>🔗 超链接语法:</strong><br>
+                        ➡️ <a href="#" target="_blank">这是一个空链接 (#)</a> (锚点示例)<br>
+                        ➡️ <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTML" target="_blank" rel="noopener">MDN HTML 文档 (新窗口打开)</a><br>
+                        ➡️ 可以使用 <span class="inline-code">mailto:</span> 链接: <a href="mailto:demo@example.com">发送邮件</a></p>
+                    <p><strong>📎 图像标签属性:</strong> src, alt, width, height, loading="lazy"</p>
+                </div>
+            </div>
+        </div>
+        <div class="code-block">
+            <pre><code>&lt;!-- 图片示范 --&gt;
+&lt;img src="https://picsum.photos/id/20/240/140" alt="风景示例" width="240" height="140"&gt;
+
+&lt;!-- 链接示范 --&gt;
+&lt;a href="#" target="_blank"&gt;空链接占位&lt;/a&gt;
+&lt;a href="https://developer.mozilla.org/" target="_blank"&gt;MDN 文档&lt;/a&gt;
+&lt;a href="mailto:someone@example.com"&gt;发送邮件&lt;/a&gt;</code></pre>
+        </div>
+    </div>
+
+    <div class="demo-card">
+        <div class="card-header">
+            <h2>📝 表单元素 —— &lt;form&gt; 交互集合</h2>
+        </div>
+        <div class="demo-preview">
+            <form onsubmit="alert('表单提交示范（未实际发送数据）\n当前仅用于演示 HTML 表单结构'); return false;">
+                <fieldset style="border: 1px solid #cbd5e1; border-radius: 1rem; padding: 1rem;">
+                    <legend><strong>📌 用户反馈 / 注册示范</strong></legend>
+                    <div class="form-group">
+                        <label for="name">👤 姓名 (文本输入框):</label>
+                        <input type="text" id="name" name="username" placeholder="例如: 张三" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">📧 电子邮箱 (email类型):</label>
+                        <input type="email" id="email" name="email" placeholder="example@domain.com">
+                    </div>
+                    <div class="form-group">
+                        <label>⚧ 性别 (单选按钮):</label><br>
+                        <input type="radio" id="male" name="gender" value="男"><label for="male">男</label>
+                        <input type="radio" id="female" name="gender" value="女"><label for="female">女</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="tech">💻 感兴趣领域 (下拉选择):</label>
+                        <select id="tech" name="tech">
+                            <option value="html">HTML / 结构</option>
+                            <option value="css">CSS / 样式</option>
+                            <option value="js">JavaScript / 交互</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>📌 爱好 (复选框):</label><br>
+                        <input type="checkbox" id="coding" name="hobby" value="编程"><label for="coding"> 编程</label>
+                        <input type="checkbox" id="design" name="hobby" value="设计"><label for="design"> 设计</label>
+                        <input type="checkbox" id="reading" name="hobby" value="阅读"><label for="reading"> 阅读</label>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">✍️ 留言 (文本域):</label>
+                        <textarea id="message" name="message" rows="2" placeholder="你对HTML语法的感受..." style="max-width: 100%; width: 100%;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit">✅ 提交示范</button>
+                        <button type="reset" style="background:#64748b; margin-left: 0.6rem;">🗑️ 重置</button>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #475569; margin-top: 0.6rem;">* 点击提交仅弹窗提醒，用于示范表单及按钮行为，无后端交互。</p>
+                </fieldset>
+            </form>
+        </div>
+        <div class="code-block">
+            <pre><code>&lt;form action="#" method="post"&gt;
+  &lt;label&gt;姓名: &lt;input type="text" name="username"&gt;&lt;/label&gt;
+  &lt;label&gt;邮箱: &lt;input type="email" name="email"&gt;&lt;/label&gt;
+  &lt;input type="radio" name="gender" value="男"&gt;男
+  &lt;select name="tech"&gt;
+    &lt;option&gt;HTML&lt;/option&gt;&lt;option&gt;CSS&lt;/option&gt;
+  &lt;/select&gt;
+  &lt;textarea&gt;留言内容&lt;/textarea&gt;
+  &lt;button type="submit"&gt;提交&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+        </div>
+    </div>
+
+    <div class="demo-card">
+        <div class="card-header">
+            <h2>🧱 区块/行内元素 & 语义容器</h2>
+        </div>
+        <div class="demo-preview">
+            <p><span style="background:#d9f0ff; padding: 0.2rem 0.4rem;">&lt;span&gt;行内元素</span> 不会换行，常用于修饰文本片段。而 &lt;div&gt; 是块级元素，独占一行用于布局分区。</p>
+            <div style="background:#f1f5f9; border-radius: 1rem; padding: 1rem; margin: 0.8rem 0;">
+                <p>💡 典型语义标签：&lt;header&gt;、&lt;nav&gt;、&lt;main&gt;、&lt;article&gt;、&lt;section&gt;、&lt;aside&gt;、&lt;footer&gt; 等使网页结构更清晰。</p>
+                <hr>
+                <article style="background: white; padding: 0.5rem 1rem; border-radius: 0.8rem;">
+                    <h4>📰 文章卡片示例 (article)</h4>
+                    <p>HTML5 提供语义化标签，提高可访问性与 SEO。例如 <code>&lt;time&gt;</code> 标签表示日期时间：<time datetime="2025-01-15">2025年1月15日</time>。</p>
+                </article>
+            </div>
+            <p>另外，可以展示<strong>进度条</strong>与<strong>度量标签</strong>：<br>
+                HTML 技能掌握程度: <progress value="80" max="100"></progress> 80% <br>
+                文件上传示例: <meter value="0.6" min="0" max="1">60%</meter> 60% 完成度 (meter示意)</p>
+        </div>
+        <div class="code-block">
+            <pre><code>&lt;div&gt;块级容器&lt;/div&gt;
+&lt;span&gt;行内文本修饰&lt;/span&gt;
+
+&lt;article&gt;
+  &lt;h4&gt;独立内容区&lt;/h4&gt;
+  &lt;p&gt;语义化标签示例&lt;/p&gt;
+&lt;/article&gt;
+
+&lt;progress value="80" max="100"&gt;&lt;/progress&gt;
+&lt;meter value="0.6"&gt;60%&lt;/meter&gt;</code></pre>
+        </div>
+    </div>
+
+    <div class="demo-card">
+        <div class="card-header">
+            <h2>🔣 HTML 实体 & 特殊字符转义</h2>
+        </div>
+        <div class="demo-preview">
+            <p>在 HTML 中，一些字符具有特殊含义，需要使用实体表示：</p>
+            <ul style="margin: 0.5rem 0 0 1.2rem;">
+                <li>小于号 &lt; 用 <code>&amp;lt;</code> 表示</li>
+                <li>大于号 &gt; 用 <code>&amp;gt;</code> 表示</li>
+                <li>&符号 用 <code>&amp;amp;</code> 表示</li>
+                <li>版权符号 © → <code>&amp;copy;</code> &nbsp; 注册商标 ® → <code>&amp;reg;</code></li>
+                <li>空格 &nbsp; 用 <code>&amp;nbsp;</code> 生成不换行空格</li>
+            </ul>
+            <p>示例: 显示HTML标签本身: 用 <code>&amp;lt;div&amp;gt;</code> 转义 = &lt;div&gt;</p>
+        </div>
+        <div class="code-block">
+            <pre><code>&lt;p&gt;字符实体: 小于号 &amp;lt; 表示 &lt; ，&amp;copy; 表示 ©&lt;/p&gt;
+&lt;!-- 注释无法直接显示, 需要转义演示 --&gt;
+展示源代码: &amp;lt;h1&amp;gt;标题&amp;lt;/h1&amp;gt;</code></pre>
+        </div>
+    </div>
+
+    <footer>
+        <p>📖 HTML 语法示范首页 — 涵盖标题、段落、列表、表格、表单、媒体、语义标签与字符实体。所有示例代码均可在开发者工具中查看。</p>
+        <p style="margin-top: 0.6rem;">✨ 学习提示：右键 → 检查元素，对照本页源码与实际效果，快速掌握HTML基础语法 ✨</p>
+        <p>© 2026 HTML 教学演示 | 遵循 W3C 标准 | 仅供学习参考</p>
+    </footer>
+</div>
+</body>
+</html>

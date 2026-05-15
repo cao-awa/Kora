@@ -20,8 +20,9 @@ import org.jetbrains.annotations.Contract
 import java.nio.charset.StandardCharsets
 
 @Suppress("unused")
-open class KoraHttpContext(val msg: KoraFullHttpRequestHolder) :
-    KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>(msg) {
+open class KoraHttpContext(
+    val msg: KoraFullHttpRequestHolder
+) : KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>(msg) {
     companion object {
         private val APPLICATION_JSON: String =
             HttpHeaderValues.APPLICATION_JSON.toString()
@@ -83,7 +84,7 @@ open class KoraHttpContext(val msg: KoraFullHttpRequestHolder) :
     private var placeholders: MutableMap<String, Int> = mutableMapOf()
     private var placeholderURL: String = ""
 
-    fun withPlaceholder(url: KoraPlaceholderURL):KoraHttpContext {
+    fun withPlaceholder(url: KoraPlaceholderURL): KoraHttpContext {
         this.placeholders = url.placeholders()
         this.placeholderURL = url.toString()
         return this
@@ -108,7 +109,7 @@ open class KoraHttpContext(val msg: KoraFullHttpRequestHolder) :
         return this.placeholders
     }
 
-    fun placeholderURL():String {
+    fun placeholderURL(): String {
         return this.placeholderURL
     }
 
