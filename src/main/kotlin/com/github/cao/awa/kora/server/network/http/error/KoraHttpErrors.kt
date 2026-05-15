@@ -10,65 +10,69 @@ import io.netty.handler.codec.http.HttpVersion
 import kotlin.reflect.KClass
 
 object KoraHttpErrors {
-    private val ERRORS: MutableMap<KClass<out Throwable>,  (HttpVersion, Throwable, String, KoraHttpContext?) -> FullHttpResponse> = HashMap()
+    private val ERRORS: MutableMap<KClass<out Throwable>,  (HttpVersion, Throwable, String, String, KoraHttpContext?) -> FullHttpResponse> = HashMap()
 
-    val FAILURE_NOT_FULL: (HttpVersion, Throwable, String, KoraHttpContext?) -> FullHttpResponse = { httpVersion, exception, _, context ->
+    val FAILURE_NOT_FULL: (HttpVersion, Throwable, String, String,  KoraHttpContext?) -> FullHttpResponse = { httpVersion, exception, _, requestPath, context ->
         KoraHttpError(
             HttpResponseStatus.BAD_REQUEST,
             httpVersion,
             exception,
             "Request is not full",
+            requestPath,
             context
         ).createResponse()
     }
 
-    val NOT_FOUND: (HttpVersion, Throwable, String, KoraHttpContext?) -> FullHttpResponse = { httpVersion, exception, _, context ->
+    val NOT_FOUND: (HttpVersion, Throwable, String, String,   KoraHttpContext?) -> FullHttpResponse = { httpVersion, exception, _, requestPath,  context ->
         KoraHttpError(
             HttpResponseStatus.NOT_FOUND,
             httpVersion,
             exception,
             "Page not found",
+            requestPath,
             context
         ).createResponse()
     }
 
 
-    val BAD_REQUEST: (HttpVersion, Throwable, String, KoraHttpContext?) -> FullHttpResponse = { httpVersion, exception, message, context ->
+    val BAD_REQUEST: (HttpVersion, Throwable, String, String,  KoraHttpContext?) -> FullHttpResponse = { httpVersion, exception, message, requestPath,  context ->
         KoraHttpError(
             HttpResponseStatus.BAD_REQUEST,
             httpVersion,
             exception,
             message,
+            requestPath,
             context
         ).createResponse()
     }
 
-    val INTERNAL_SERVER_ERROR: (HttpVersion, Throwable, String, KoraHttpContext?) -> FullHttpResponse = { httpVersion, exception, message, context ->
+    val INTERNAL_SERVER_ERROR: (HttpVersion, Throwable, String, String,   KoraHttpContext?) -> FullHttpResponse = { httpVersion, exception, message, requestPath,  context ->
         KoraHttpError(
             HttpResponseStatus.INTERNAL_SERVER_ERROR,
             httpVersion,
             exception,
             message,
+            requestPath,
             context
         ).createResponse()
     }
 
-    fun adapter(httpVersion: HttpVersion, error: Throwable): FullHttpResponse {
+    fun adapter(httpVersion: HttpVersion, requestPath: String, error: Throwable): FullHttpResponse {
         val errorProducer = ERRORS[error::class]
 
         if (errorProducer != null) {
-            return errorProducer(httpVersion, error, error.message ?: "Unknown error", null)
+            return errorProducer(httpVersion, error, error.message ?: "Unknown error", requestPath, null)
         }
-        return INTERNAL_SERVER_ERROR(httpVersion, error, error.message?: "Unknown error", null)
+        return INTERNAL_SERVER_ERROR(httpVersion, error, error.message?: "Unknown error", requestPath, null)
     }
 
     fun adapter(httpVersion: HttpVersion, error: Throwable, koraContext: KoraHttpContext): FullHttpResponse {
         val errorProducer = ERRORS[error::class]
 
         if (errorProducer != null) {
-            return errorProducer(httpVersion, error, error.message ?: "Unknown error", koraContext)
+            return errorProducer(httpVersion, error, error.message ?: "Unknown error", koraContext.path(), koraContext)
         }
-        return INTERNAL_SERVER_ERROR(httpVersion, error, error.message?: "Unknown error", koraContext)
+        return INTERNAL_SERVER_ERROR(httpVersion, error, error.message?: "Unknown error", koraContext.path(), koraContext)
     }
 
     init {

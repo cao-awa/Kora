@@ -92,6 +92,5 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
         }
     }
 
-    fun routeNotFound(context: KoraHttpContext): Nothing =
-        throw HttpPathNotRegisteredException("Not registered request handler found for pathing '${context.path()}' (404 page not found)")
+    fun routeNotFound(context: KoraHttpContext): Nothing = HttpPathNotRegisteredException.notFound(context.path())
 }

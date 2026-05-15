@@ -13,12 +13,16 @@ import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
 fun main() {
-    testDataClass()
+    testAssets()
 }
 
 fun testAssets() {
     val http = http {
         assets("assets/")
+
+        ifAbort(HttpPathNotRegisteredException::class) {
+            withAsset("home/404.html")
+        }
     }
 
     KoraHttpServer(http).start(

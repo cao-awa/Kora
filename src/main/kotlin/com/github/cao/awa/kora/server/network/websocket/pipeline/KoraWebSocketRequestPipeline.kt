@@ -56,7 +56,11 @@ class KoraWebSocketRequestPipeline :
         }
     }
 
-    override fun handleException(exception: Throwable, handlerContext: ChannelHandlerContext, koraContext: KoraWebSocketContext) {
+    override fun handleException(
+        exception: Throwable,
+        handlerContext: ChannelHandlerContext,
+        koraContext: KoraWebSocketContext
+    ) {
         // TODO: websocket exception handler, don't use HTTP way.
         handleExceptionCaught(handlerContext, exception)
     }
@@ -65,7 +69,7 @@ class KoraWebSocketRequestPipeline :
         cause.printStackTrace()
         // Response an error message.
         handlerContext.writeAndFlush(
-            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, "Unhandleable request", null)
+            KoraHttpErrors.INTERNAL_SERVER_ERROR(HttpVersion.HTTP_1_0, cause, "Unhandleable request", "{UNKNOWN}", null)
         ).addListener(ChannelFutureListener.CLOSE)
     }
 

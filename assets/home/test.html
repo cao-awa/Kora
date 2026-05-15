@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="HTML语法示范首页 - 学习HTML基础标签与结构，包含文本、列表、表格、表单、图片链接等核心元素实例及代码展示。">
+    <meta name="description"
+          content="HTML语法示范首页 - 学习HTML基础标签与结构，包含文本、列表、表格、表单、图片链接等核心元素实例及代码展示。">
     <title>HTML语法示范 | 基础标签实训首页</title>
     <style>
         * {
@@ -11,6 +12,7 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             background: #f8fafc;
@@ -18,6 +20,7 @@
             line-height: 1.5;
             padding: 2rem 1rem;
         }
+
         .container {
             max-width: 1280px;
             margin: 0 auto;
@@ -27,12 +30,14 @@
             overflow: hidden;
             padding: 2rem 1.5rem;
         }
+
         .hero {
             text-align: center;
             margin-bottom: 2.5rem;
             padding-bottom: 1.5rem;
             border-bottom: 2px dashed #e2e8f0;
         }
+
         .hero h1 {
             font-size: 2.2rem;
             background: linear-gradient(135deg, #1e293b, #3b82f6);
@@ -42,11 +47,13 @@
             letter-spacing: -0.3px;
             margin-bottom: 0.5rem;
         }
+
         .hero .sub {
             color: #334155;
             font-size: 1rem;
             margin-top: 0.5rem;
         }
+
         .badge {
             display: inline-block;
             background: #e0f2fe;
@@ -57,6 +64,7 @@
             font-weight: 500;
             margin-top: 0.75rem;
         }
+
         .demo-card {
             background: #ffffff;
             border-radius: 1.5rem;
@@ -65,14 +73,17 @@
             overflow: hidden;
             transition: box-shadow 0.2s ease;
         }
+
         .demo-card:hover {
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.05);
         }
+
         .card-header {
             background: #f1f5f9;
             padding: 0.9rem 1.5rem;
             border-bottom: 1px solid #e2e8f0;
         }
+
         .card-header h2 {
             font-size: 1.4rem;
             font-weight: 600;
@@ -81,16 +92,19 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         .card-header h2:before {
             content: "▍";
             color: #3b82f6;
             font-weight: 400;
         }
+
         .demo-preview {
             padding: 1.8rem 1.5rem;
             background: #fefefe;
             border-bottom: 1px dashed #e2edff;
         }
+
         .code-block {
             background: #0f172a;
             color: #e2e8f0;
@@ -100,46 +114,56 @@
             font-size: 0.85rem;
             line-height: 1.45;
         }
+
         .code-block pre {
             margin: 0;
             white-space: pre-wrap;
             word-break: break-word;
         }
+
         .code-block code {
             font-family: inherit;
         }
+
         table {
             border-collapse: collapse;
             width: 100%;
             background: white;
             margin: 0.5rem 0;
         }
+
         th, td {
             border: 1px solid #cbd5e1;
             padding: 0.6rem 0.8rem;
             text-align: left;
         }
+
         th {
             background: #eef2ff;
             font-weight: 600;
         }
+
         .demo-list {
             margin: 0.5rem 0 0.5rem 1.2rem;
         }
+
         form {
             background: #f9f9ff;
             padding: 1rem;
             border-radius: 1rem;
             margin: 0.5rem 0;
         }
+
         .form-group {
             margin-bottom: 1rem;
         }
+
         label {
             display: inline-block;
             margin-bottom: 0.25rem;
             font-weight: 500;
         }
+
         input, select, textarea, button {
             font-family: inherit;
             padding: 0.5rem;
@@ -149,6 +173,7 @@
             width: 100%;
             max-width: 300px;
         }
+
         button {
             background: #3b82f6;
             color: white;
@@ -159,20 +184,24 @@
             width: auto;
             padding: 0.5rem 1.2rem;
         }
+
         button:hover {
             background: #2563eb;
         }
+
         img {
             max-width: 100%;
             border-radius: 0.75rem;
             display: inline-block;
         }
+
         hr {
             margin: 1rem 0;
             border: none;
             height: 1px;
             background: #e2e8f0;
         }
+
         footer {
             text-align: center;
             margin-top: 2rem;
@@ -181,13 +210,16 @@
             font-size: 0.85rem;
             color: #475569;
         }
+
         a {
             color: #2563eb;
             text-decoration: none;
         }
+
         a:hover {
             text-decoration: underline;
         }
+
         .inline-code {
             background: #eef2ff;
             padding: 0.2rem 0.4rem;
@@ -195,13 +227,16 @@
             font-family: monospace;
             font-size: 0.85em;
         }
+
         @media (max-width: 640px) {
             .container {
                 padding: 1rem;
             }
+
             .demo-preview {
                 padding: 1rem;
             }
+
             .card-header h2 {
                 font-size: 1.2rem;
             }
@@ -224,9 +259,20 @@
             <h1>H1 一级标题 (主标)</h1>
             <h2>H2 二级标题 (区块标题)</h2>
             <h3>H3 三级标题 (小分区)</h3>
-            <p>这是一个普通的段落。HTML中可以使用 <strong>strong标签</strong> 表示<strong>重要文本</strong>，使用 <em>em标签</em> 表示<em>强调语气</em>。另外还支持 <mark>高亮标记(mark)</mark>、<small>小号文本(small)</small>、<del>删除线</del> 和 <ins>下划线插入</ins>。</p>
+            <p>这是一个普通的段落。HTML中可以使用 <strong>strong标签</strong> 表示<strong>重要文本</strong>，使用
+                <em>em标签</em> 表示<em>强调语气</em>。另外还支持
+                <mark>高亮标记(mark)</mark>
+                、<small>小号文本(small)</small>、
+                <del>删除线</del>
+                和
+                <ins>下划线插入</ins>
+                。
+            </p>
             <p>块级引用示例：<br>
-            <blockquote style="margin: 0.5rem 0 0.5rem 1rem; border-left: 4px solid #3b82f6; padding-left: 1rem; color: #334155;">“HTML 是网页结构的基石，语义化标签让内容更清晰。” —— 前端范示</blockquote>
+            <blockquote
+                    style="margin: 0.5rem 0 0.5rem 1rem; border-left: 4px solid #3b82f6; padding-left: 1rem; color: #334155;">
+                “HTML 是网页结构的基石，语义化标签让内容更清晰。” —— 前端范示
+            </blockquote>
             </p>
             <hr>
             <p>还可以使用 <code>&lt;pre&gt;</code> 标签展示预格式文本，保留空格换行：</p>
@@ -306,15 +352,34 @@
         <div class="demo-preview">
             <table style="width:100%; text-align: center;">
                 <thead>
-                <tr><th>姓名</th><th>职位</th><th>掌握技术</th></tr>
+                <tr>
+                    <th>姓名</th>
+                    <th>职位</th>
+                    <th>掌握技术</th>
+                </tr>
                 </thead>
                 <tbody>
-                <tr><td>张一明</td><td>前端开发</td><td>HTML, CSS, Vue</td></tr>
-                <tr><td>李思瑶</td><td>全栈工程师</td><td>React, Node.js, HTML5</td></tr>
-                <tr><td>王知行</td><td>UI设计师</td><td>Figma, HTML/CSS基础</td></tr>
+                <tr>
+                    <td>张一明</td>
+                    <td>前端开发</td>
+                    <td>HTML, CSS, Vue</td>
+                </tr>
+                <tr>
+                    <td>李思瑶</td>
+                    <td>全栈工程师</td>
+                    <td>React, Node.js, HTML5</td>
+                </tr>
+                <tr>
+                    <td>王知行</td>
+                    <td>UI设计师</td>
+                    <td>Figma, HTML/CSS基础</td>
+                </tr>
                 </tbody>
             </table>
-            <p style="margin-top: 12px; font-size: 0.9rem;">⭐ 表格常用元素：<span class="inline-code">&lt;table&gt;</span> 、<span class="inline-code">&lt;thead&gt;</span> 、<span class="inline-code">&lt;tr&gt;</span> 、<span class="inline-code">&lt;th&gt;</span> 、<span class="inline-code">&lt;td&gt;</span></p>
+            <p style="margin-top: 12px; font-size: 0.9rem;">⭐ 表格常用元素：<span
+                    class="inline-code">&lt;table&gt;</span> 、<span class="inline-code">&lt;thead&gt;</span> 、<span
+                    class="inline-code">&lt;tr&gt;</span> 、<span class="inline-code">&lt;th&gt;</span> 、<span
+                    class="inline-code">&lt;td&gt;</span></p>
         </div>
         <div class="code-block">
             <pre><code>&lt;table&gt;
@@ -336,14 +401,17 @@
         <div class="demo-preview">
             <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;">
                 <div>
-                    <img src="https://picsum.photos/id/20/240/140" alt="示例风景图片" width="240" height="140" style="border-radius: 12px; object-fit: cover;">
+                    <img src="https://picsum.photos/id/20/240/140" alt="示例风景图片" width="240" height="140"
+                         style="border-radius: 12px; object-fit: cover;">
                     <p style="margin-top: 0.4rem; font-size: 0.8rem;">图片来源: picsum 随机图片</p>
                 </div>
                 <div>
                     <p><strong>🔗 超链接语法:</strong><br>
                         ➡️ <a href="#" target="_blank">这是一个空链接 (#)</a> (锚点示例)<br>
-                        ➡️ <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTML" target="_blank" rel="noopener">MDN HTML 文档 (新窗口打开)</a><br>
-                        ➡️ 可以使用 <span class="inline-code">mailto:</span> 链接: <a href="mailto:demo@example.com">发送邮件</a></p>
+                        ➡️ <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTML" target="_blank" rel="noopener">MDN
+                            HTML 文档 (新窗口打开)</a><br>
+                        ➡️ 可以使用 <span class="inline-code">mailto:</span> 链接: <a href="mailto:demo@example.com">发送邮件</a>
+                    </p>
                     <p><strong>📎 图像标签属性:</strong> src, alt, width, height, loading="lazy"</p>
                 </div>
             </div>
@@ -396,13 +464,15 @@
                     </div>
                     <div class="form-group">
                         <label for="message">✍️ 留言 (文本域):</label>
-                        <textarea id="message" name="message" rows="2" placeholder="你对HTML语法的感受..." style="max-width: 100%; width: 100%;"></textarea>
+                        <textarea id="message" name="message" rows="2" placeholder="你对HTML语法的感受..."
+                                  style="max-width: 100%; width: 100%;"></textarea>
                     </div>
                     <div class="form-group">
                         <button type="submit">✅ 提交示范</button>
                         <button type="reset" style="background:#64748b; margin-left: 0.6rem;">🗑️ 重置</button>
                     </div>
-                    <p style="font-size: 0.75rem; color: #475569; margin-top: 0.6rem;">* 点击提交仅弹窗提醒，用于示范表单及按钮行为，无后端交互。</p>
+                    <p style="font-size: 0.75rem; color: #475569; margin-top: 0.6rem;">*
+                        点击提交仅弹窗提醒，用于示范表单及按钮行为，无后端交互。</p>
                 </fieldset>
             </form>
         </div>
@@ -425,18 +495,28 @@
             <h2>🧱 区块/行内元素 & 语义容器</h2>
         </div>
         <div class="demo-preview">
-            <p><span style="background:#d9f0ff; padding: 0.2rem 0.4rem;">&lt;span&gt;行内元素</span> 不会换行，常用于修饰文本片段。而 &lt;div&gt; 是块级元素，独占一行用于布局分区。</p>
+            <p><span style="background:#d9f0ff; padding: 0.2rem 0.4rem;">&lt;span&gt;行内元素</span> 不会换行，常用于修饰文本片段。而
+                &lt;div&gt; 是块级元素，独占一行用于布局分区。</p>
             <div style="background:#f1f5f9; border-radius: 1rem; padding: 1rem; margin: 0.8rem 0;">
-                <p>💡 典型语义标签：&lt;header&gt;、&lt;nav&gt;、&lt;main&gt;、&lt;article&gt;、&lt;section&gt;、&lt;aside&gt;、&lt;footer&gt; 等使网页结构更清晰。</p>
+                <p>💡 典型语义标签：&lt;header&gt;、&lt;nav&gt;、&lt;main&gt;、&lt;article&gt;、&lt;section&gt;、&lt;aside&gt;、&lt;footer&gt;
+                    等使网页结构更清晰。</p>
                 <hr>
                 <article style="background: white; padding: 0.5rem 1rem; border-radius: 0.8rem;">
                     <h4>📰 文章卡片示例 (article)</h4>
-                    <p>HTML5 提供语义化标签，提高可访问性与 SEO。例如 <code>&lt;time&gt;</code> 标签表示日期时间：<time datetime="2025-01-15">2025年1月15日</time>。</p>
+                    <p>HTML5 提供语义化标签，提高可访问性与 SEO。例如 <code>&lt;time&gt;</code> 标签表示日期时间：
+                        <time datetime="2025-01-15">2025年1月15日</time>
+                        。
+                    </p>
                 </article>
             </div>
             <p>另外，可以展示<strong>进度条</strong>与<strong>度量标签</strong>：<br>
-                HTML 技能掌握程度: <progress value="80" max="100"></progress> 80% <br>
-                文件上传示例: <meter value="0.6" min="0" max="1">60%</meter> 60% 完成度 (meter示意)</p>
+                HTML 技能掌握程度:
+                <progress value="80" max="100"></progress>
+                80% <br>
+                文件上传示例:
+                <meter value="0.6" min="0" max="1">60%</meter>
+                60% 完成度 (meter示意)
+            </p>
         </div>
         <div class="code-block">
             <pre><code>&lt;div&gt;块级容器&lt;/div&gt;
@@ -475,7 +555,8 @@
     </div>
 
     <footer>
-        <p>📖 HTML 语法示范首页 — 涵盖标题、段落、列表、表格、表单、媒体、语义标签与字符实体。所有示例代码均可在开发者工具中查看。</p>
+        <p>📖 HTML 语法示范首页 —
+            涵盖标题、段落、列表、表格、表单、媒体、语义标签与字符实体。所有示例代码均可在开发者工具中查看。</p>
         <p style="margin-top: 0.6rem;">✨ 学习提示：右键 → 检查元素，对照本页源码与实际效果，快速掌握HTML基础语法 ✨</p>
         <p>© 2026 HTML 教学演示 | 遵循 W3C 标准 | 仅供学习参考</p>
     </footer>

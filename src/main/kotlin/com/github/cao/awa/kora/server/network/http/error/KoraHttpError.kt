@@ -14,6 +14,7 @@ class KoraHttpError(
     val httpVersion: HttpVersion,
     val exception: Throwable,
     val message: String,
+    val requestPath: String,
     val context: KoraHttpContext?
 ) {
     companion object {
@@ -44,7 +45,8 @@ class KoraHttpError(
                         KoraHttpRequestPipeline.instructHttpMetadata(
                             json,
                             this.status,
-                            this.httpVersion
+                            this.httpVersion,
+                            this.requestPath
                         )
                     } else{
                         KoraHttpRequestPipeline.instructHttpMetadata(

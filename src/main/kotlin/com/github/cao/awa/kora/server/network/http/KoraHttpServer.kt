@@ -26,6 +26,7 @@ class KoraHttpServer {
         var instructHttpVersionCode: Boolean = true
         var instructTimestamp: Boolean = false
         var instructRequestType: Boolean = true
+        var instructRequestPath: Boolean = true
     }
 
     private val serverBuilder: KoraHttpServerBuilder

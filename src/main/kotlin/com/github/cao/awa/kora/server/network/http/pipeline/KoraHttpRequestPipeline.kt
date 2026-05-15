@@ -4,7 +4,9 @@ import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
-import com.github.cao.awa.kora.server.network.http.asset.KoraHttpAssetsManager
+import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
+import com.github.cao.awa.kora.server.network.http.asset.KoraAssetProducer
+import com.github.cao.awa.kora.server.network.http.asset.manager.KoraHttpAssetsManager
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
@@ -34,7 +36,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
-import java.io.File
 import kotlin.reflect.KClass
 
 val abortHandlers: MutableMap<KClass<out Throwable>, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any> =
@@ -51,7 +52,8 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 instructHttpMetadata(
                     this,
                     context.status(),
-                    context.protocolVersion()
+                    context.protocolVersion(),
+                    context.path()
                 )
             }
 
@@ -61,11 +63,15 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         fun instructHttpMetadata(
             json: JSONObject,
             status: HttpResponseStatus,
-            protocolVersion: HttpVersion
+            protocolVersion: HttpVersion,
+            requestPath: String
         ): JSONObject {
             json.instruct {
                 if (KoraHttpServer.instructTimestamp) {
                     "timestamp" set System.currentTimeMillis()
+                }
+                if (KoraHttpServer.instructRequestType){
+                    "request_path" set requestPath
                 }
                 if (KoraHttpServer.instructHttpMetadata) {
                     nested("http_meta") {
@@ -96,6 +102,10 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         this.assetsManager.setAssetsPath(path)
     }
 
+    fun getAsset(context: KoraHttpContext): KoraAsset {
+        return this.assetsManager.getAsset(context)
+    }
+
     fun getHandler(method: HttpMethod): KoraHttpRequestHandler? = this.handlers[method]
 
     fun handleFull(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext) {
@@ -116,17 +126,17 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                         var httpStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
 
                         if (e is HttpPathNotRegisteredException) {
-                            val asset: File? = assetsManager.getAsset(koraContext.path())
+                            try {
+                                val asset: KoraAsset = assetsManager.getAsset(koraContext)
 
-                            // If asset not null. response the asset.
-                            if (asset != null) {
+                                // If asset not null. response the asset.
                                 response(
                                     handlerContext,
                                     koraContext,
                                     asset
                                 )
                                 return@abortable
-                            } else {
+                            } catch (_: HttpPathNotRegisteredException) {
                                 // When error is page path not registered, it should be 404 NOT_FOUND.
                                 httpStatus = HttpResponseStatus.NOT_FOUND
                             }
@@ -190,6 +200,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 HttpVersion.HTTP_1_0,
                 cause,
                 cause.message ?: "Unhandled internal server error",
+                "{UNKNOWN}",
                 null
             )
         ).addListener(ChannelFutureListener.CLOSE)
@@ -201,8 +212,13 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         koraContext: KoraHttpContext
     ) {
 // If not handleable, response an formatted error message by KoraHttpErrors.adapter formatter.
+        koraContext.withContentType(HttpContentTypes.JSON)
         handlerContext.writeAndFlush(
-            KoraHttpErrors.adapter(HttpVersion.HTTP_1_0, exception, koraContext)
+            KoraHttpErrors.adapter(
+                HttpVersion.HTTP_1_0,
+                exception,
+                koraContext
+            ).setContentType(HttpContentTypes.JSON).setLength()
         ).addListener(ChannelFutureListener.CLOSE)
     }
 
@@ -226,9 +242,14 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 }
             }
 
-            is File -> {
+            is KoraAsset, is KoraAssetProducer -> {
+                val data: KoraAsset = if (response is KoraAssetProducer) {
+                    response.getAsset(this)
+                } else {
+                    response as KoraAsset
+                }
                 responseRaw(handlerContext, koraContext) {
-                    assetsManager?.response(koraContext, response) ?: response.readBytes()
+                    assetsManager.response(koraContext, data)
                 }
             }
 
@@ -237,8 +258,15 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                     koraContext.withContentType(HttpContentTypes.JSON)
                     KoraHttpErrors.adapter(
                         koraContext.protocolVersion(),
+                        koraContext.path(),
                         response
                     )
+                }
+            }
+
+            is KoraHttpContext -> {
+                responseRaw(handlerContext, koraContext) {
+                    assetsManager.response(koraContext)
                 }
             }
 

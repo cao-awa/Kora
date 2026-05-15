@@ -7,6 +7,8 @@ import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
+import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
+import com.github.cao.awa.kora.server.network.http.asset.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
@@ -83,6 +85,12 @@ open class KoraHttpContext(
     }
     private var placeholders: MutableMap<String, Int> = mutableMapOf()
     private var placeholderURL: String = ""
+    private var redirectAsset: String = ""
+
+    fun withAsset(redirectAsset: String): KoraAssetProducer {
+        this.redirectAsset = redirectAsset
+        return KoraAssetProducer(this)
+    }
 
     fun withPlaceholder(url: KoraPlaceholderURL): KoraHttpContext {
         this.placeholders = url.placeholders()
@@ -103,6 +111,10 @@ open class KoraHttpContext(
     open fun withProtocolVersion(protocolVersion: HttpVersion): KoraHttpContext {
         this.protocolVersion = protocolVersion
         return this
+    }
+
+    fun redirectAsset(): String {
+        return this.redirectAsset
     }
 
     fun placeholders(): Map<String, Int> {
