@@ -1,7 +1,7 @@
 # Kora
 
-> Currently, software ecosystem of Kora are not completed,
-> You can consider this project is an experimental project of the JVM web server.
+> Currently, software ecosystem of Kora are not completed,\
+> You can consider this project is an experimental project of the JVM web server.\
 > Main focus to more FP, more control flow contextualization, and more zero reflections.
 
 **Kora** is a high-performance, type-safe Kotlin web server framework built on Netty.
