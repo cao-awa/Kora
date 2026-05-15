@@ -1,5 +1,9 @@
 # Kora
 
+> Currently, software ecosystem of Kora are not completed,
+> You can consider this project is an experimental project of the JVM web server.
+> Main focus to more FP, more control flow contextualization, and more zero reflections.
+
 **Kora** is a high-performance, type-safe Kotlin web server framework built on Netty.
 
 Kora treats HTTP APIs as **typed programs**, not runtime configurations.
@@ -47,9 +51,11 @@ It is a **language-shaped web framework**.
 > In Ktor, routing mutates a global pipeline.\
 > In Spring, routing is discovered via annotations.\
 > In Kora, routing is an expression that produces a value.
-> 
+
 # Quick Start
 ## Test cases
+Some cases is written in [https://https://github.com/cao-awa/Kora/blob/main/src/test/kotlin/Main.kt](here).
+
 Here is some test cases shown:
 
 ### Case 1
@@ -57,10 +63,8 @@ Define and run a simple HTTP server with one routes:
 
 ```kotlin
 fun main() {
-    KoraHttpServer.instructHttpStatusCode = false
-
     // Define a required URL argument, get value in http scope.
-    val actionArg = arg<Int>("action", false)
+    val actionArg = arg<Int>("action", missable = false)
 
     val http = http {
         route("/test") {
@@ -111,10 +115,14 @@ Define and run a simple HTTP server with only assets routes:
 
 ```kotlin
 fun main() {
-    KoraHttpServer.instructHttpStatusCode = false
-
     val http = http {
+        // Setup static assets path. 
         assets("assets/")
+
+        // Redirect all no registered query to 404 page.
+        ifAbort(HttpPathNotRegisteredException::class) {
+            withAsset(redirectAsset = "error/404.html")
+        }
     }
 
     KoraHttpServer(http).start(

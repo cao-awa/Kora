@@ -18,10 +18,12 @@ fun main() {
 
 fun testAssets() {
     val http = http {
+        // Setup static assets path.
         assets("assets/")
 
+        // Redirect all no registered query to 404 page.
         ifAbort(HttpPathNotRegisteredException::class) {
-            withAsset("home/404.html")
+            withAsset(redirectAsset = "error/404.html")
         }
     }
 
@@ -31,15 +33,15 @@ fun testAssets() {
     )
 }
 
-fun testDataClass(){
+fun testDataClass() {
     data class Data(val name: String, val age: Int)
 
     val http = http {
         route("/test") {
             get {
                 Data(
-                    "cao-awa",
-                    17
+                    name = "cao-awa",
+                    age = 17
                 )
             }
         }
@@ -54,8 +56,8 @@ fun testDataClass(){
 fun testPlaceholder() {
     val http = http {
         assets("assets")
-        val userId = placeholder<Int>("userId")
-        val testId = placeholder<Int>("testId")
+        val userId = placeholder<Int>(name = "userId")
+        val testId = placeholder<Int>(name = "testId")
 
         route("/test/{userId}/{testId}") {
             get {
@@ -157,8 +159,6 @@ fun testNotFound() {
 }
 
 fun testError() {
-    KoraHttpServer.instructHttpStatusCode = false
-
     val http = http {
         route("/test") {
             get {
@@ -182,7 +182,7 @@ fun testError() {
 
 fun testRender() {
     // Define a required URL argument, get value in http scope.
-    val actionArg = arg<Int>("action", false)
+    val actionArg = arg<Int>(name = "action", missable = false)
 
     val http = http {
         route("/test") {
