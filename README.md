@@ -268,7 +268,14 @@ Client will get data seems like:
 All abort scope is a copy scope from contexts that Kora auto collecting.\
 You can modifying the scope data in abort context.
 
+## PHP
+Currently, Kora can execute PHP script by PHP-CGI, but doesn't completely support, only can be use to single file PHP script.
+
 # Performance
+## Startup time
+Kora can launch HTTP server within 200~500ms, even you are creating a large route, because it's all native code instead of reflection searching.
+
+## JMeter test
 Test by JMeter on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```190000```~```210000``` HTTP requests per second.
 
 # Design Philosophy
