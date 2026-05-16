@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
 import java.io.IOException
+import java.nio.charset.StandardCharsets
 
 class KoraHttpAssetsManager {
     companion object {
@@ -43,10 +44,12 @@ class KoraHttpAssetsManager {
 
     fun handlePhp(context: KoraHttpContext, asset: KoraAsset<*>): String {
         try {
+            val rootFile = File(this.path)
             val process = ProcessBuilder(
                 "php-cgi",
-                "-d", "cgi.rfc2616_headers=1",
-                File(this.path).absolutePath
+                "-d", "default_charset=\"UTF-8\"",
+                "-d", "mbstring.http_output=\"UTF-8\"",
+                rootFile.absolutePath
             ).also { builder ->
                 builder.environment()["REQUEST_METHOD"] = context.method().name()
                 builder.environment()["SCRIPT_FILENAME"] = asset.file.absolutePath
@@ -56,6 +59,7 @@ class KoraHttpAssetsManager {
                 builder.environment()["SERVER_SOFTWARE"] = KoraInformation.SOFTWARE_NAME
                 builder.environment()["REQUEST_URI"] = context.path()
                 builder.environment()["REDIRECT_STATUS"] = "200"
+                builder.environment()["DOCUMENT_ROOT"] = rootFile.absolutePath
             }.start()
 
             process.outputStream.use {
@@ -65,16 +69,13 @@ class KoraHttpAssetsManager {
             val response = process.inputStream.readBytes()
             process.waitFor()
 
-            val phpResponse = String(response)
+            val phpResponse = String(response, StandardCharsets.UTF_8)
 
             val headers: MutableMap<String, Any> = HashMap()
-
-            println(phpResponse)
 
             if (phpResponse.contains("<!DOCTYPE html>")) {
                 val headerContent = phpResponse.substring(0, phpResponse.indexOf("<!DOCTYPE html>") - 1)
                 val responseContent = phpResponse.substring(phpResponse.indexOf("<!DOCTYPE html>"))
-
 
                 val headersContent = headerContent.split("\n")
 
