@@ -1,12 +1,23 @@
 package com.github.cao.awa.kora.server.network.http.asset.manager
 
+import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
+import com.github.cao.awa.kora.server.network.http.asset.KoraBinaryAsset
+import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.file.header.KoraHttpFileExtentions
 import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
+import com.github.cao.awa.kora.server.network.http.php.KoraHttpPHPNotFoundException
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import java.io.File
+import java.io.IOException
 
 class KoraHttpAssetsManager {
+    companion object {
+        private val LOGGER: Logger = LogManager.getLogger("KoraHttpAssetsManager")
+    }
+
     private var path: String = ""
 
     fun setAssetsPath(path: String) {
@@ -17,7 +28,7 @@ class KoraHttpAssetsManager {
         }
     }
 
-    fun getAsset(context: KoraHttpContext): KoraAsset {
+    fun getAsset(context: KoraHttpContext): KoraBinaryAsset {
         val assetName = if (context.redirectAsset() == "") {
             context.path()
         } else {
@@ -25,25 +36,86 @@ class KoraHttpAssetsManager {
         }
         val assetFile = File("${this.path}/${assetName}")
         if (assetFile.isFile && assetFile.exists()) {
-            return KoraAsset(assetFile)
+            return KoraBinaryAsset(assetFile)
         }
         HttpPathNotRegisteredException.notFound(assetName, "auto redirect")
     }
 
-    fun response(context: KoraHttpContext, asset: KoraAsset?): ByteArray {
+    fun handlePhp(context: KoraHttpContext, asset: KoraAsset<*>): String {
+        try {
+            val process = ProcessBuilder(
+                "php-cgi",
+                "-d", "cgi.rfc2616_headers=1",
+                File(this.path).absolutePath
+            ).also { builder ->
+                builder.environment()["REQUEST_METHOD"] = context.method().name()
+                builder.environment()["SCRIPT_FILENAME"] = asset.file.absolutePath
+                builder.environment()["CONTENT_LENGTH"] = context.contentLength().toString()
+                builder.environment()["SERVER_PROTOCOL"] = context.protocolVersion().toString()
+                builder.environment()["CONTENT_TYPE"] = context.contentType().toString()
+                builder.environment()["SERVER_SOFTWARE"] = KoraInformation.SOFTWARE_NAME
+                builder.environment()["REQUEST_URI"] = context.path()
+                builder.environment()["REDIRECT_STATUS"] = "200"
+            }.start()
+
+            process.outputStream.use {
+                it.write(context.content())
+            }
+
+            val response = process.inputStream.readBytes()
+            process.waitFor()
+
+            val phpResponse = String(response)
+
+            val headers: MutableMap<String, Any> = HashMap()
+
+            println(phpResponse)
+
+            if (phpResponse.contains("<!DOCTYPE html>")) {
+                val headerContent = phpResponse.substring(0, phpResponse.indexOf("<!DOCTYPE html>") - 1)
+                val responseContent = phpResponse.substring(phpResponse.indexOf("<!DOCTYPE html>"))
+
+
+                val headersContent = headerContent.split("\n")
+
+                val status = headersContent[0]
+
+                var index = 1
+                while (index < headersContent.size) {
+                    val header = headersContent[index]
+                    if (header.indexOf(":") == -1) {
+                        break
+                    }
+                    headers[header.substring(0, header.indexOf(":"))] = header.substring(header.indexOf(":") + 1)
+                    index++
+                }
+
+                return responseContent
+            }
+            return phpResponse
+        } catch (e: IOException) {
+            KoraHttpPHPNotFoundException.notFoundPHP("Please ensure PHP installed in your server")
+        }
+    }
+
+    fun createResponse(context: KoraHttpContext, asset: KoraAsset<*>?): Any {
         if (asset != null) {
-            val data = asset.data
+            var data = asset.data
+            val contentType = KoraHttpFileExtentions.getContentType(
+                asset.file
+            )
+            if (contentType == HttpContentTypes.PHP) {
+                data = handlePhp(context, asset)
+            }
             context.withContentType(
-                KoraHttpFileExtentions.getContentType(
-                    asset.file
-                )
+                contentType
             )
             return data
         }
         HttpPathNotRegisteredException.notFound(context.path())
     }
 
-    fun response(context: KoraHttpContext): ByteArray {
-        return response(context, getAsset(context))
+    fun createResponse(context: KoraHttpContext): Any {
+        return createResponse(context, getAsset(context))
     }
 }

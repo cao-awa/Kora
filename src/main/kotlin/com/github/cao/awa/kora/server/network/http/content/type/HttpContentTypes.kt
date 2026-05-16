@@ -28,6 +28,7 @@ object HttpContentTypes {
     val X_TAR: HttpContentType = HttpContentType("application/x-tar")
     val X_USTAR: HttpContentType = HttpContentType("application/x-ustar")
     val AAC: HttpContentType = HttpContentType("audio/aac")
+    val PHP: HttpContentType = HttpContentType("application/x-php")
     val BASIC: HttpContentType = HttpContentType("audio/basic")
     val FLAC: HttpContentType = HttpContentType("audio/flac")
     val AUDIO_MP4: HttpContentType = HttpContentType("audio/mp4")

@@ -23,7 +23,7 @@ object KoraHttpResponses {
                 message,
                 CharsetUtil.UTF_8
             )
-        ).setPlainHeader()
+        )
     }
 
     fun createDefaultResponse(
@@ -35,7 +35,7 @@ object KoraHttpResponses {
             httpVersion,
             status,
             Unpooled.copiedBuffer(message)
-        ).setPlainHeader()
+        )
     }
 
     fun FullHttpResponse.setPlainHeader(): FullHttpResponse {

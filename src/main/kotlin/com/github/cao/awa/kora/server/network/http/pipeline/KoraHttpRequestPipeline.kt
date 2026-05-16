@@ -4,7 +4,7 @@ import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
-import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
+import com.github.cao.awa.kora.server.network.http.asset.KoraBinaryAsset
 import com.github.cao.awa.kora.server.network.http.asset.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.asset.manager.KoraHttpAssetsManager
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
@@ -70,7 +70,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 if (KoraHttpServer.instructTimestamp) {
                     "timestamp" set System.currentTimeMillis()
                 }
-                if (KoraHttpServer.instructRequestType){
+                if (KoraHttpServer.instructRequestType) {
                     "request_path" set requestPath
                 }
                 if (KoraHttpServer.instructHttpMetadata) {
@@ -102,7 +102,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         this.assetsManager.setAssetsPath(path)
     }
 
-    fun getAsset(context: KoraHttpContext): KoraAsset {
+    fun getAsset(context: KoraHttpContext): KoraBinaryAsset {
         return this.assetsManager.getAsset(context)
     }
 
@@ -127,7 +127,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
 
                         if (e is HttpPathNotRegisteredException) {
                             try {
-                                val asset: KoraAsset = assetsManager.getAsset(koraContext)
+                                val asset: KoraBinaryAsset = assetsManager.getAsset(koraContext)
 
                                 // If asset not null. response the asset.
                                 response(
@@ -211,7 +211,10 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         handlerContext: ChannelHandlerContext,
         koraContext: KoraHttpContext
     ) {
-// If not handleable, response an formatted error message by KoraHttpErrors.adapter formatter.
+        // If not handleable, response an formatted error message by KoraHttpErrors.adapter formatter.
+        if (koraContext.status() == HttpResponseStatus.OK) {
+            koraContext.withStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR)
+        }
         koraContext.withContentType(HttpContentTypes.JSON)
         handlerContext.writeAndFlush(
             KoraHttpErrors.adapter(
@@ -230,6 +233,13 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 }
             }
 
+            is String -> {
+                response(handlerContext, koraContext) {
+                    koraContext.withContentType(HttpContentTypes.HTML)
+                    response
+                }
+            }
+
             is NoContentResponse -> {
                 responseNoContent(handlerContext, koraContext)
             }
@@ -242,15 +252,17 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 }
             }
 
-            is KoraAsset, is KoraAssetProducer -> {
-                val data: KoraAsset = if (response is KoraAssetProducer) {
+            is KoraBinaryAsset, is KoraAssetProducer -> {
+                val data: KoraBinaryAsset = if (response is KoraAssetProducer) {
                     response.getAsset(this)
                 } else {
-                    response as KoraAsset
+                    response as KoraBinaryAsset
                 }
-                responseRaw(handlerContext, koraContext) {
-                    assetsManager.response(koraContext, data)
-                }
+                response(
+                    handlerContext,
+                    koraContext,
+                    assetsManager.createResponse(koraContext, data)
+                )
             }
 
             is Throwable -> {
@@ -265,9 +277,11 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             }
 
             is KoraHttpContext -> {
-                responseRaw(handlerContext, koraContext) {
-                    assetsManager.response(koraContext)
-                }
+                response(
+                    handlerContext,
+                    koraContext,
+                    assetsManager.createResponse(koraContext)
+                )
             }
 
             is Unit -> {

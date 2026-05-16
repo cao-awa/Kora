@@ -16,6 +16,7 @@ object KoraHttpFileExtentions {
             "json" -> HttpContentTypes.JSON
             "jar" -> HttpContentTypes.JAVA_ARCHIVE
             "ico" -> HttpContentTypes.X_ICON
+            "php" -> HttpContentTypes.PHP
             else -> {
                 HttpContentTypes.JSON
             }
