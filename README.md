@@ -363,7 +363,7 @@ fun main() {
 }
 ```
 
-Kora can not only run in a 1G memory environment, but also in a 64M memory environment, although performance will be reduced to 50000~60000 HTTP requests per second. (min 57159, max 63148)
+Kora is not can only run in a 1G or more memory environment, it also can run in a 64M memory environment, although performance will be reduced to 50000~60000 HTTP requests per second. (min 57159, max 63148)
 
 ## Error benchmark
 
