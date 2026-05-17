@@ -18,7 +18,7 @@ import com.github.cao.awa.kora.server.network.http.handler.get.KoraHttpGetHandle
 import com.github.cao.awa.kora.server.network.http.handler.post.KoraHttpPostHandler
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.metadata.HttpResponseMetadata
-import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
+import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setContentType
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
@@ -43,6 +43,9 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             json.instruct {
                 if (KoraHttpServer.instructRequestType) {
                     "request_type" set context.method().name()
+                }
+                if (KoraHttpServer.instructRequestPath) {
+                    "request_path" set context.path()
                 }
                 instructHttpMetadata(
                     this,
@@ -91,7 +94,8 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             put(HttpMethod.POST, KoraHttpPostHandler())
         }
     private val assetsManager: KoraHttpAssetsManager = KoraHttpAssetsManager()
-    private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val responseScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     fun setAssetsPath(path: String) {
         this.assetsManager.setAssetsPath(path)
@@ -121,7 +125,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                         var httpStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
 
                         if (e is HttpPathNotRegisteredException) {
-                            if (assetsManager.avaliable() && assetsManager.hasAsset(koraContext)) {
+                            if (assetsManager.available() && assetsManager.hasAsset(koraContext)) {
                                 val asset: KoraBinaryAsset = assetsManager.getAsset(koraContext)
 
                                 // If asset not null. response the asset.
@@ -168,7 +172,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             }
 
             // Release the msg let GC could be clears,
-            koraContext.msg.release()
+            koraContext.release()
         }
     }
 
@@ -220,80 +224,82 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
     }
 
     override fun response(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any) {
-        when (response) {
-            is JSONObject -> {
-                responseJSON(handlerContext, koraContext) {
-                    response
-                }
-            }
-
-            is String -> {
-                response(handlerContext, koraContext) {
-                    koraContext.withContentType(HttpContentTypes.HTML)
-                    response
-                }
-            }
-
-            is NoContentResponse -> {
-                responseNoContent(handlerContext, koraContext)
-            }
-
-            is HTMLElement -> {
-                response(handlerContext, koraContext) {
-                    // Setting content type to HTML to render HTML page.
-                    koraContext.withContentType(HttpContentTypes.HTML)
-                    response.toString()
-                }
-            }
-
-            is KoraBinaryAsset, is KoraAssetProducer -> {
-                val data: KoraBinaryAsset = if (response is KoraAssetProducer) {
-                    response.getAsset(this@KoraHttpRequestPipeline)
-                } else {
-                    response as KoraBinaryAsset
-                }
-                response(
-                    handlerContext,
-                    koraContext,
-                    assetsManager.createResponse(koraContext, data)
-                )
-            }
-
-            is Throwable -> {
-                responseFull(handlerContext, koraContext) {
-                    koraContext.withContentType(HttpContentTypes.JSON)
-                    KoraHttpErrors.adapter(
-                        koraContext.protocolVersion(),
-                        koraContext.path(),
+        this.responseScope.launch {
+            when (response) {
+                is JSONObject -> {
+                    responseJSON(handlerContext, koraContext) {
                         response
+                    }
+                }
+
+                is String -> {
+                    response(handlerContext, koraContext) {
+                        koraContext.withContentType(HttpContentTypes.HTML)
+                        response
+                    }
+                }
+
+                is NoContentResponse -> {
+                    responseNoContent(handlerContext, koraContext)
+                }
+
+                is HTMLElement -> {
+                    response(handlerContext, koraContext) {
+                        // Setting content type to HTML to render HTML page.
+                        koraContext.withContentType(HttpContentTypes.HTML)
+                        response.toString()
+                    }
+                }
+
+                is KoraBinaryAsset, is KoraAssetProducer -> {
+                    val data: KoraBinaryAsset = if (response is KoraAssetProducer) {
+                        response.getAsset(this@KoraHttpRequestPipeline)
+                    } else {
+                        response as KoraBinaryAsset
+                    }
+                    response(
+                        handlerContext,
+                        koraContext,
+                        assetsManager.createResponse(koraContext, data)
                     )
                 }
-            }
 
-            is KoraHttpContext -> {
-                response(
-                    handlerContext,
-                    koraContext,
-                    assetsManager.createResponse(koraContext)
-                )
-            }
-
-            is Unit -> {
-                responseJSON(handlerContext, koraContext) {
-                    JSONObject()
+                is Throwable -> {
+                    responseFull(handlerContext, koraContext) {
+                        koraContext.withContentType(HttpContentTypes.JSON)
+                        KoraHttpErrors.adapter(
+                            koraContext.protocolVersion(),
+                            koraContext.path(),
+                            response
+                        )
+                    }
                 }
-            }
 
-            is ByteArray -> {
-                responseRaw(handlerContext, koraContext) {
-                    koraContext.withContentType(HttpContentTypes.PLAIN)
-                    response
+                is KoraHttpContext -> {
+                    response(
+                        handlerContext,
+                        koraContext,
+                        assetsManager.createResponse(koraContext)
+                    )
                 }
-            }
 
-            else -> {
-                responseJSON(handlerContext, koraContext) {
-                    JSONEncoder.encode(response)
+                is Unit -> {
+                    responseJSON(handlerContext, koraContext) {
+                        JSONObject()
+                    }
+                }
+
+                is ByteArray -> {
+                    responseRaw(handlerContext, koraContext) {
+                        koraContext.withContentType(HttpContentTypes.PLAIN)
+                        response
+                    }
+                }
+
+                else -> {
+                    responseJSON(handlerContext, koraContext) {
+                        JSONEncoder.encode(response)
+                    }
                 }
             }
         }

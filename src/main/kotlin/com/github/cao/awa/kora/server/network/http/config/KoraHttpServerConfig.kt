@@ -1,8 +1,8 @@
 package com.github.cao.awa.kora.server.network.http.config
 
-import com.github.cao.awa.kora.server.network.config.KoraNetworkConfig
+import com.github.cao.awa.kora.server.network.config.KoraNettyConfig
 
-open class KoraHttpServerConfig: KoraNetworkConfig<KoraHttpServerConfig>() {
+open class KoraHttpServerConfig: KoraNettyConfig<KoraHttpServerConfig>() {
     private var tcpNoDelay: Boolean = true
 
     fun tcpNoDelay(): Boolean = this.tcpNoDelay

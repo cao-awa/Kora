@@ -2,7 +2,7 @@ import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder
 import com.github.cao.awa.kora.server.network.http.builder.http
-import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
+import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import org.apache.logging.log4j.LogManager

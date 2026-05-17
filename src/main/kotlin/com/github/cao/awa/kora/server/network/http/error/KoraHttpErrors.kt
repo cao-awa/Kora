@@ -3,7 +3,7 @@ package com.github.cao.awa.kora.server.network.http.error
 import com.github.cao.awa.kora.server.network.http.argument.exception.TypedHttpArgumentMissingException
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
-import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
+import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion

@@ -6,7 +6,7 @@ import com.github.cao.awa.kora.server.network.http.asset.KoraBinaryAsset
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.file.header.KoraHttpFileExtentions
-import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
+import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
 import com.github.cao.awa.kora.server.network.http.php.KoraHttpPHPNotFoundException
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -20,18 +20,18 @@ class KoraHttpAssetsManager {
     }
 
     private var path: String = ""
-    private var avaliable: Boolean = false
+    private var available: Boolean = false
 
     fun setAssetsPath(path: String) {
-        if (this.avaliable) {
+        if (this.available) {
             throw IllegalArgumentException("Assets path already set")
         } else {
             this.path = path
-            this.avaliable = true
+            this.available = true
         }
     }
 
-    fun avaliable(): Boolean = this.avaliable
+    fun available(): Boolean = this.available
 
     fun hasAsset(context: KoraHttpContext): Boolean {
         return createFileHolder(context.path()).exists()

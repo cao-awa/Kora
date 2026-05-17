@@ -8,6 +8,12 @@ import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
 abstract class KoraContext<B : PathByteBufHolder, C : KoraContext<B, C, A>, A : KoraAbortContext<B>>(private val msg: B) {
+    constructor(context: KoraContext<B, C, A>) : this(context.msg)
+
+    fun release(): Boolean {
+        return this.msg.release()
+    }
+
     fun content(): ByteArray {
         return this.msg.content().copy().let { content ->
             ByteArray(content.readableBytes()).also {

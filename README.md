@@ -267,7 +267,7 @@ Client will get data seems like:
 }
 ```
 
-All abort scope is a copy scope from contexts that Kora auto collecting.\
+All abort scope is a copy scope from source context that Kora auto collecting.\
 You can modifying the scope data in abort context.
 
 ## PHP

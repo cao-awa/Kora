@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
 
-abstract class KoraNetworkConfig<T: KoraNetworkConfig<T>> {
+abstract class KoraNettyConfig<T: KoraNettyConfig<T>> {
     private var backlog: Int = 8192
     private var keepalive: Boolean = true
     private var rcvBuf: Int = 65536
@@ -17,14 +17,14 @@ abstract class KoraNetworkConfig<T: KoraNetworkConfig<T>> {
 
     fun backlog(): Int = this.backlog
 
-    open fun backlog(backlog: Int): KoraNetworkConfig<T> {
+    open fun backlog(backlog: Int): KoraNettyConfig<T> {
         this.backlog = backlog
         return this
     }
 
     fun keepalive(): Boolean = this.keepalive
 
-    open fun keepalive(keepalive: Boolean): KoraNetworkConfig<T> {
+    open fun keepalive(keepalive: Boolean): KoraNettyConfig<T> {
         this.keepalive = keepalive
         return this
     }
@@ -32,28 +32,28 @@ abstract class KoraNetworkConfig<T: KoraNetworkConfig<T>> {
 
     fun rcvBuf(): Int = this.rcvBuf
 
-    open fun rcvBuf(rcvBuf: Int): KoraNetworkConfig<T> {
+    open fun rcvBuf(rcvBuf: Int): KoraNettyConfig<T> {
         this.rcvBuf = rcvBuf
         return this
     }
 
     fun reuseAddr(): Boolean = this.reuseAddr
 
-    open fun reuseAddr(reuseAddr: Boolean): KoraNetworkConfig<T> {
+    open fun reuseAddr(reuseAddr: Boolean): KoraNettyConfig<T> {
         this.reuseAddr = reuseAddr
         return this
     }
 
     fun allocator(): ByteBufAllocator = this.allocator
 
-    open fun allocator(allocator: ByteBufAllocator): KoraNetworkConfig<T> {
+    open fun allocator(allocator: ByteBufAllocator): KoraNettyConfig<T> {
         this.allocator = allocator
         return this
     }
 
     fun writeBufferWaterMark(): WriteBufferWaterMark = this.writeBufferWaterMark
 
-    open fun writeBufferWaterMark(waterMark: WriteBufferWaterMark): KoraNetworkConfig<T> {
+    open fun writeBufferWaterMark(waterMark: WriteBufferWaterMark): KoraNettyConfig<T> {
         this.writeBufferWaterMark = waterMark
         return this
     }

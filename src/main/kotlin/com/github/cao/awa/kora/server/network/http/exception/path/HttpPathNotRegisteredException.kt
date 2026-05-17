@@ -1,7 +1,6 @@
-package com.github.cao.awa.kora.server.network.http.path.exception
+package com.github.cao.awa.kora.server.network.http.exception.path
 
 import com.github.cao.awa.kora.server.network.http.exception.KoraServerException
-import kotlin.jvm.Throws
 
 class HttpPathNotRegisteredException(val msg: String): KoraServerException(msg) {
     companion object {

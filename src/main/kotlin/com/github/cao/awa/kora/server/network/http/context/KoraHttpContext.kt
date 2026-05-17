@@ -21,9 +21,7 @@ import org.jetbrains.annotations.Contract
 import java.nio.charset.StandardCharsets
 
 @Suppress("unused")
-open class KoraHttpContext(
-    val msg: KoraFullHttpRequestHolder
-) : KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>(msg) {
+open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext> {
     companion object {
         private val APPLICATION_JSON: String =
             HttpHeaderValues.APPLICATION_JSON.toString()
@@ -65,26 +63,48 @@ open class KoraHttpContext(
         }
     }
 
-    private val arguments: HttpRequestArguments = produceArguments(this.msg)
-    private val params: HttpRequestParams = produceParams(this.msg)
+    private var arguments: HttpRequestArguments = HttpRequestArguments.EMPTY
+    private var params: HttpRequestParams = HttpRequestParams.EMPTY
     private var promiseClose: Boolean = false
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
     private var protocolVersion: HttpVersion = HttpVersion.HTTP_1_1
-    private val path: String = super.path().let {
-        var result = it
-        if (result.contains("?")) {
-            result = result.substringBefore("?")
-        }
-        if (result.endsWith("/")) {
-            result.substring(0, it.length - 1)
-        } else {
-            result
-        }
-    }
+    private var method: HttpMethod = HttpMethod.GET
+    private var path: String? = null
     private var placeholders: MutableMap<String, Int> = mutableMapOf()
     private var placeholderURL: String = ""
     private var redirectAsset: String = ""
+
+    constructor(msg: KoraFullHttpRequestHolder) : super(msg) {
+        this.arguments = produceArguments(msg)
+        this.params = produceParams(msg)
+        this.path = super.path().let {
+            var result = it
+            if (result.contains("?")) {
+                result = result.substringBefore("?")
+            }
+            if (result.endsWith("/")) {
+                result.substring(0, it.length - 1)
+            } else {
+                result
+            }
+        }
+        this.method = msg.method()
+    }
+
+    constructor(context: KoraHttpContext) : super(context) {
+        this.arguments = context.arguments
+        this.params = context.params
+        this.promiseClose = context.promiseClose
+        this.status = context.status
+        this.contentType = context.contentType
+        this.protocolVersion = context.protocolVersion
+        this.method = context.method
+        this.path = context.path
+        this.placeholders = context.placeholders
+        this.placeholderURL = context.placeholderURL
+        this.redirectAsset = context.redirectAsset
+    }
 
     fun withAsset(redirectAsset: String): KoraAssetProducer {
         this.redirectAsset = redirectAsset
@@ -142,7 +162,7 @@ open class KoraHttpContext(
 
     @Contract(pure = true)
     override fun path(): String {
-        return this.path
+        return this.path!!
     }
 
     fun createAbort(
@@ -211,25 +231,20 @@ open class KoraHttpContext(
         return this.contentType
     }
 
-    fun contentLength():Int{
+    fun contentLength(): Int {
         return content().size
     }
 
     fun method(): HttpMethod {
-        return this.msg.method()
+        return this.method
     }
 
     fun protocolVersion(): HttpVersion {
-        return this.msg.protocolVersion()
+        return this.protocolVersion
     }
 
     override fun createInherited(): KoraHttpContext {
-        return KoraHttpContext(this.msg).also {
-            it.status = this.status
-            it.contentType = this.contentType
-            it.protocolVersion = this.protocolVersion
-            it.promiseClose = this.promiseClose
-        }
+        return KoraHttpContext(this)
     }
 
     override fun createAbort(): KoraAbortHttpContext {

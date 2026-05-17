@@ -2,6 +2,7 @@ package com.github.cao.awa.kora.server.network.http.error
 
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.constant.KoraInformation
+import com.github.cao.awa.kora.server.network.KoraNetworkConfig
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
@@ -29,16 +30,24 @@ class KoraHttpError(
             }
         }
     }
+
     fun createResponse(): FullHttpResponse {
         return KoraHttpResponses.createDefaultResponse(
             httpVersion,
             this.status,
             let {
                 val json = JSONObject {
-                    "error" set "Server protocol (Kora/${KoraInformation.VERSION}, ${httpVersion.text()}) error: ${status.reasonPhrase()}"
+                    "error" set "Server protocol error (Kora/${KoraInformation.VERSION}, ${httpVersion.text()}): ${status.reasonPhrase()}"
                     "internal_error_name" set "${status.reasonPhrase()}"
                     "error_message" set message
-                    fillStacktrace(this, exception)
+                    if (KoraNetworkConfig.responseFillStacktrace) {
+                        fillStacktrace(this, exception)
+                    } else {
+                        val detailsMessage = exception.message
+                        if (detailsMessage != null) {
+                            "error_details_message" set detailsMessage
+                        }
+                    }
                 }
                 let {
                     if (this.context == null) {
@@ -48,7 +57,7 @@ class KoraHttpError(
                             this.httpVersion,
                             this.requestPath
                         )
-                    } else{
+                    } else {
                         KoraHttpRequestPipeline.instructHttpMetadata(
                             json,
                             this.context

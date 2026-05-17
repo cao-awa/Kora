@@ -4,7 +4,7 @@ import com.github.cao.awa.kora.server.network.handler.KoraRequestHandler
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
-import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
+import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
 import com.github.cao.awa.kora.server.network.http.url.KoraPlaceholderURL
 import com.github.cao.awa.kora.server.network.http.url.urlParameterRoute
 import io.netty.handler.codec.http.HttpMethod
