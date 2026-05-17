@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets
 
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
-// E:\baton\baton.exe -u http://127.0.0.1:45678/home/test.html -c 12 -r 5000
+// E:\baton\baton.exe -u http://127.0.0.1:12345/home/test.html -c 12 -r 5000
 fun main() {
     testSimple()
 }
@@ -39,7 +39,7 @@ fun testSimple() {
     }
 
     KoraHttpServer(http).start(
-        port = 45678,
+        port = 12345,
         useEpoll = true
     )
 }
@@ -56,7 +56,7 @@ fun testAssets() {
     }
 
     KoraHttpServer(http).start(
-        port = 45678,
+        port = 12345,
         useEpoll = true
     )
 }
@@ -76,7 +76,7 @@ fun testDataClass() {
     }
 
     KoraHttpServer(http).start(
-        port = 45678,
+        port = 12345,
         useEpoll = true
     )
 }
@@ -140,7 +140,7 @@ fun testPlaceholder() {
     }
 
     KoraHttpServer(http).start(
-        port = 45678,
+        port = 12345,
         useEpoll = true
     )
 }
@@ -181,7 +181,7 @@ fun testNotFound() {
     }
 
     KoraHttpServer(http).start(
-        port = 45678,
+        port = 12345,
         useEpoll = true
     )
 }
@@ -203,7 +203,7 @@ fun testError() {
     }
 
     KoraHttpServer(http).start(
-        port = 45678,
+        port = 12345,
         useEpoll = true
     )
 }
@@ -245,7 +245,7 @@ fun testRender() {
     }
 
     KoraHttpServer(http).start(
-        port = 45678,
+        port = 12345,
         useEpoll = true
     )
 }
