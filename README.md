@@ -110,6 +110,8 @@ This starts an HTTP server on port `12345` with one routes:
 * `GET /test?action=1234`:  `200 OK`
 * `GET /test`:  `400 BAD REQUEST`
 
+HTML rendering powered by [CapterTML](https://github.com/cao-awa/CaperTML), a HTML DSL library. 
+
 ### Case 2
 Define and run a simple HTTP server with only assets routes:
 
@@ -318,7 +320,7 @@ echo '</body></html>';
 Kora can launch HTTP server within 200~500ms, even you are creating a large route, because it's all native code instead of reflection searching.
 
 ## Benchmark test
-Test by [https://github.com/americanexpress/baton](Baton) on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```80000```~```100000``` HTTP requests per second.
+Test by [Baton](https://github.com/americanexpress/baton) on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```80000```~```100000``` HTTP requests per second.
 
 Using the simplest test case:
 ```kotlin
