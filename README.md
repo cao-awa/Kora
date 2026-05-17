@@ -320,7 +320,9 @@ echo '</body></html>';
 Kora can launch HTTP server within 200~500ms, even you are creating a large route, because it's all native code instead of reflection searching.
 
 ## Benchmark test
-Test by [Baton](https://github.com/americanexpress/baton) on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```100000```~```120000``` HTTP requests per second.
+Test by [Baton](https://github.com/americanexpress/baton) on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```100000```~```120000``` HTTP requests per second. (min 109170, max 128003)
+
+With JVM arguments(-server -XX:+UseZGC -Xmx1G -Xms1G）
 
 Using the simplest test case:
 ```kotlin
@@ -350,6 +352,13 @@ fun main() {
     )
 }
 ```
+
+Kora not only can run on 1G memory environment, it also can run on 64M memory environment, but the performance will be reduced to 50000~60000 HTTP requests per second. (min 57159, max 63148)
+
+## Benchmark error
+In 1G memory case, if all request are fetched to error (like 404 Not Found) instead of correctly handled, the performance will be reduced to 70000~80000 HTTP requests per second. (min 70545, max 80148)
+
+In 64M memory case, if all request are fetched to error (like 404 Not Found) instead of correctly handled, the performance will be reduced to 20000~30000 HTTP requests per second. (min 21238, max 37494)
 
 # Design Philosophy
 
