@@ -13,12 +13,18 @@ import kotlin.reflect.KClass
 
 abstract class KoraHttpRequestHandler(val method: HttpMethod) :
     KoraRequestHandler<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>() {
-    private val routes: MutableMap<KoraPlaceholderURL, KoraHttpContext.() -> Any> = mutableMapOf()
+    private val routes: MutableMap<KoraPlaceholderURL, KoraHttpContext.() -> Any> = HashMap()
+    private val noPlaceholderRoutes: MutableMap<String, KoraHttpContext.() -> Any> = HashMap()
     private val exceptionHandlers: MutableMap<KClass<out Throwable>, MutableMap<KoraPlaceholderURL, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any>> =
         mutableMapOf()
 
     fun route(path: String, handler: KoraHttpContext.() -> Any): KoraHttpRequestHandler {
-        this.routes[path.urlParameterRoute()] = handler
+        val url = path.urlParameterRoute()
+        if (url.hasPlaceholder()) {
+            this.routes[url] = handler
+        } else {
+            this.noPlaceholderRoutes[path] = handler
+        }
         return this
     }
 
@@ -35,22 +41,22 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
     }
 
     override fun hasRoute(path: String): Boolean {
-        return this.routes.containsKey(path.urlParameterRoute())
+        return this.noPlaceholderRoutes.containsKey(path) || this.routes.containsKey(path.urlParameterRoute())
     }
 
     override fun handle(context: KoraHttpContext): Any {
-        val url = context.path().urlParameterRoute()
-        var matchPlaceholderHandler: (KoraHttpContext.() -> Any)? = null
-        var placeholderURL: KoraPlaceholderURL? = null
-
-        val specificRoute = this.routes[url]
+        val specificRoute = this.noPlaceholderRoutes[context.path()]
 
         // Pre-fetch to optimization route search speed.
         if (specificRoute != null) {
             return specificRoute(context)
         }
 
+        var matchPlaceholderHandler: (KoraHttpContext.() -> Any)? = null
+        var placeholderURL: KoraPlaceholderURL? = null
+
         // Search route.
+        val url = context.path().urlParameterRoute()
         for ((routeUrl, route) in this.routes) {
             if (routeUrl == url && !routeUrl.hasPlaceholder()) {
                 return route(context)
