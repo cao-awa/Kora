@@ -148,14 +148,14 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
 
                         if (e is KoraServerException) {
                             // Handle server level exception (like 404 NOT_FOUND).
-                            if (!serverAbortHandlers.hasHandler(e::class)) {
-                                response(handlerContext, koraContext, e)
-                            } else {
-                                serverAbortHandlers.handleAbort(abortContext, abortReason) {
-                                    // Response formatted JSON error or user result.
-                                    responseExceptionOrData(handlerContext, koraContext, it, e)
-                                }
-                            }
+                            response(
+                                handlerContext,
+                                koraContext,
+                                serverAbortHandlers.handleAbort(
+                                    abortContext,
+                                    abortReason
+                                )
+                            )
                         } else {
                             // Handle abort control logic.
                             handler.handleAbort(
@@ -226,82 +226,82 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
     }
 
     override fun response(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any) {
-            when (response) {
-                is JSONObject -> {
-                    responseJSON(handlerContext, koraContext) {
+        when (response) {
+            is JSONObject -> {
+                responseJSON(handlerContext, koraContext) {
+                    response
+                }
+            }
+
+            is String -> {
+                response(handlerContext, koraContext) {
+                    koraContext.withContentType(HttpContentTypes.HTML)
+                    response
+                }
+            }
+
+            is NoContentResponse -> {
+                responseNoContent(handlerContext, koraContext)
+            }
+
+            is HTMLElement -> {
+                response(handlerContext, koraContext) {
+                    // Setting content type to HTML to render HTML page.
+                    koraContext.withContentType(HttpContentTypes.HTML)
+                    response.toString()
+                }
+            }
+
+            is KoraBinaryAsset, is KoraAssetProducer -> {
+                val data: KoraBinaryAsset = if (response is KoraAssetProducer) {
+                    response.getAsset(this@KoraHttpRequestPipeline)
+                } else {
+                    response as KoraBinaryAsset
+                }
+                response(
+                    handlerContext,
+                    koraContext,
+                    assetsManager.createResponse(koraContext, data)
+                )
+            }
+
+            is Throwable -> {
+                responseFull(handlerContext, koraContext) {
+                    koraContext.withContentType(HttpContentTypes.JSON)
+                    KoraHttpErrors.adapter(
+                        koraContext.protocolVersion(),
+                        koraContext.path(),
                         response
-                    }
-                }
-
-                is String -> {
-                    response(handlerContext, koraContext) {
-                        koraContext.withContentType(HttpContentTypes.HTML)
-                        response
-                    }
-                }
-
-                is NoContentResponse -> {
-                    responseNoContent(handlerContext, koraContext)
-                }
-
-                is HTMLElement -> {
-                    response(handlerContext, koraContext) {
-                        // Setting content type to HTML to render HTML page.
-                        koraContext.withContentType(HttpContentTypes.HTML)
-                        response.toString()
-                    }
-                }
-
-                is KoraBinaryAsset, is KoraAssetProducer -> {
-                    val data: KoraBinaryAsset = if (response is KoraAssetProducer) {
-                        response.getAsset(this@KoraHttpRequestPipeline)
-                    } else {
-                        response as KoraBinaryAsset
-                    }
-                    response(
-                        handlerContext,
-                        koraContext,
-                        assetsManager.createResponse(koraContext, data)
                     )
                 }
+            }
 
-                is Throwable -> {
-                    responseFull(handlerContext, koraContext) {
-                        koraContext.withContentType(HttpContentTypes.JSON)
-                        KoraHttpErrors.adapter(
-                            koraContext.protocolVersion(),
-                            koraContext.path(),
-                            response
-                        )
-                    }
-                }
+            is KoraHttpContext -> {
+                response(
+                    handlerContext,
+                    koraContext,
+                    assetsManager.createResponse(koraContext)
+                )
+            }
 
-                is KoraHttpContext -> {
-                    response(
-                        handlerContext,
-                        koraContext,
-                        assetsManager.createResponse(koraContext)
-                    )
+            is Unit -> {
+                responseJSON(handlerContext, koraContext) {
+                    JSONObject()
                 }
+            }
 
-                is Unit -> {
-                    responseJSON(handlerContext, koraContext) {
-                        JSONObject()
-                    }
+            is ByteArray -> {
+                responseRaw(handlerContext, koraContext) {
+                    koraContext.withContentType(HttpContentTypes.PLAIN)
+                    response
                 }
+            }
 
-                is ByteArray -> {
-                    responseRaw(handlerContext, koraContext) {
-                        koraContext.withContentType(HttpContentTypes.PLAIN)
-                        response
-                    }
+            else -> {
+                responseJSON(handlerContext, koraContext) {
+                    JSONEncoder.encode(response)
                 }
-
-                else -> {
-                    responseJSON(handlerContext, koraContext) {
-                        JSONEncoder.encode(response)
-                    }
-                }
+            }
         }
     }
 
