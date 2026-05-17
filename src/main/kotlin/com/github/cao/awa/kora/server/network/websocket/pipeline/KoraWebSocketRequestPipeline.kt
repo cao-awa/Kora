@@ -2,8 +2,6 @@ package com.github.cao.awa.kora.server.network.websocket.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
-import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
-import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.error.KoraHttpErrors
 import com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline
 import com.github.cao.awa.kora.server.network.websocket.context.KoraWebSocketContext
@@ -33,7 +31,7 @@ class KoraWebSocketRequestPipeline :
     fun routeExceptionHandler(
         path: String,
         type: KClass<out Throwable>,
-        handler: KoraAbortWebSocketContext.(AbortReason<out Throwable>) -> Any
+        handler: KoraAbortWebSocketContext.(Throwable) -> Any
     ) {
         this.handler.routeExceptionHandler(path, type, handler)
     }

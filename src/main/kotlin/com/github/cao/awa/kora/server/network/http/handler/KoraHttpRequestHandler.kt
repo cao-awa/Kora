@@ -3,7 +3,6 @@ package com.github.cao.awa.kora.server.network.http.handler
 import com.github.cao.awa.kora.server.network.handler.KoraRequestHandler
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
-import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.path.exception.HttpPathNotRegisteredException
 import com.github.cao.awa.kora.server.network.http.url.KoraPlaceholderURL
@@ -15,7 +14,7 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
     KoraRequestHandler<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext>() {
     private val routes: MutableMap<KoraPlaceholderURL, KoraHttpContext.() -> Any> = HashMap()
     private val noPlaceholderRoutes: MutableMap<String, KoraHttpContext.() -> Any> = HashMap()
-    private val exceptionHandlers: MutableMap<KClass<out Throwable>, MutableMap<KoraPlaceholderURL, KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any>> =
+    private val exceptionHandlers: MutableMap<KClass<out Throwable>, MutableMap<KoraPlaceholderURL, KoraAbortHttpContext.(Throwable) -> Any>> =
         mutableMapOf()
 
     fun route(path: String, handler: KoraHttpContext.() -> Any): KoraHttpRequestHandler {
@@ -31,7 +30,7 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
     fun routeExceptionHandler(
         path: String,
         type: KClass<out Throwable>,
-        handler: KoraAbortHttpContext.(AbortReason<out Throwable>) -> Any
+        handler: KoraAbortHttpContext.(Throwable) -> Any
     ): KoraHttpRequestHandler {
         if (!this.exceptionHandlers.containsKey(type)) {
             this.exceptionHandlers[type] = mutableMapOf()
@@ -76,23 +75,23 @@ abstract class KoraHttpRequestHandler(val method: HttpMethod) :
         routeNotFound(context)
     }
 
-    override fun hasAbortHandler(abortReason: AbortReason<out Throwable>): Boolean {
-        return (this.exceptionHandlers[abortReason.exception::class]?.size ?: 0) > 0
+    override fun hasAbortHandler(exception: Throwable): Boolean {
+        return (this.exceptionHandlers[exception::class]?.size ?: 0) > 0
     }
 
     override fun handleAbort(
         abortScope: KoraAbortHttpContext,
-        abortReason: AbortReason<out Throwable>,
+        exception: Throwable,
         responser: (Any) -> Unit
     ): Any {
-        val handlers = this.exceptionHandlers[abortReason.exception::class]
+        val handlers = this.exceptionHandlers[exception::class]
 
         val handler = handlers?.get(abortScope.path().urlParameterRoute())
 
         if (handler != null) {
-            return responser(handler(abortScope, abortReason))
+            return responser(handler(abortScope, exception))
         } else if (handlers == null) {
-            throw abortReason.exception
+            throw exception
         } else {
             routeNotFound(abortScope)
         }

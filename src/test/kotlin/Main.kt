@@ -122,8 +122,8 @@ fun testPlaceholder() {
             }
         }
 
-        ifAbort(HttpPathNotRegisteredException::class) { context ->
-            LOGGER.error(context.exception)
+        ifAbort(HttpPathNotRegisteredException::class) { exception ->
+            LOGGER.error(exception)
 
             // Render HTML page.
             html {
@@ -163,8 +163,8 @@ fun testNotFound() {
             }
         }
 
-        ifAbort(HttpPathNotRegisteredException::class) { context ->
-            LOGGER.error(context.exception)
+        ifAbort(HttpPathNotRegisteredException::class) { exception ->
+            LOGGER.error(exception)
 
             // Render HTML page.
             html {
@@ -192,8 +192,8 @@ fun testError() {
             get {
                 // Simulation code wrongs.
                 abortWith(NullPointerException("Test if logic error occurs NPE"), HttpResponseStatus.BAD_REQUEST, this)
-            }.ifAbort(NullPointerException::class) { context ->
-                LOGGER.error(context.exception)
+            }.ifAbort(NullPointerException::class) { exception ->
+                LOGGER.error(exception)
                 val httpProtocolVersion: HttpVersion = protocolVersion()
                 LOGGER.error("Http protocol version: $httpProtocolVersion")
                 val status: HttpResponseStatus = status()

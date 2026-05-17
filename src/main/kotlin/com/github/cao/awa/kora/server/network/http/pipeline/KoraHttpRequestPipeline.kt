@@ -2,7 +2,6 @@ package com.github.cao.awa.kora.server.network.http.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
-import com.github.cao.awa.kora.server.network.control.abort.reason.AbortReason
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.asset.KoraBinaryAsset
 import com.github.cao.awa.kora.server.network.http.asset.KoraAssetProducer
@@ -93,7 +92,6 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         }
     private val assetsManager: KoraHttpAssetsManager = KoraHttpAssetsManager()
     private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    var handledCount: Int = 0
 
     fun setAssetsPath(path: String) {
         this.assetsManager.setAssetsPath(path)
@@ -140,10 +138,6 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                         }
 
                         // Let user handle error if user registered error handler.
-                        // Make abort reason.
-                        val abortReason = AbortReason(
-                            e, e.message ?: "Unhandled exception"
-                        )
                         val abortContext = koraContext.createAbort(httpStatus, koraContext)
 
                         if (e is KoraServerException) {
@@ -153,14 +147,14 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                                 koraContext,
                                 serverAbortHandlers.handleAbort(
                                     abortContext,
-                                    abortReason
+                                    e
                                 )
                             )
                         } else {
                             // Handle abort control logic.
                             handler.handleAbort(
                                 abortContext,
-                                abortReason
+                                e
                             ) {
                                 // Response formatted JSON error or user result.
                                 responseExceptionOrData(handlerContext, koraContext, it, e)
