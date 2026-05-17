@@ -320,7 +320,7 @@ echo '</body></html>';
 Kora can launch HTTP server within 200~500ms, even you are creating a large route, because it's all native code instead of reflection searching.
 
 ## Benchmark test
-Test by [Baton](https://github.com/americanexpress/baton) on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```80000```~```100000``` HTTP requests per second.
+Test by [Baton](https://github.com/americanexpress/baton) on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```100000```~```120000``` HTTP requests per second.
 
 Using the simplest test case:
 ```kotlin
