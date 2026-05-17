@@ -27,7 +27,6 @@ class KoraHttpServer {
         var instructTimestamp: Boolean = false
         var instructRequestType: Boolean = true
         var instructRequestPath: Boolean = true
-        var enableSecondRequestsCounter = true
     }
 
     private val serverBuilder: KoraHttpServerBuilder

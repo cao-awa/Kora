@@ -170,13 +170,11 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 }
             } else {
                 // Notice user doesn't register this method handler (like POST, GET or ETC.) and let Kora framework handle this error.
-                handledCount++
                 throw NotSupportedHttpMethodException("${koraContext.method().name()} handler not registered")
             }
 
-//            response(handlerContext, koraContext, "{}")
-//            println("Request completed in ${System.currentTimeMillis() - start}ms /")
-            handledCount++
+            // Release the msg let GC could be clears,
+            koraContext.msg.release()
         }
     }
 

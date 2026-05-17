@@ -15,18 +15,6 @@ import io.netty.handler.codec.http.FullHttpRequest
 class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : ChannelInboundHandlerAdapter() {
     constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestPipeline(KoraHttpRequestServerAbortHandler(builder.abortHandlers))) {
         builder.applyRoute(this)
-
-        if (KoraHttpServer.enableSecondRequestsCounter) {
-            println("Start counter thread")
-
-            Thread.startVirtualThread {
-                while (true) {
-                    println("Kora completed ${pipeline.handledCount} requests in 1 second")
-                    pipeline.handledCount = 0
-                    Thread.sleep(1000)
-                }
-            }
-        }
     }
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
