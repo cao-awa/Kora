@@ -1,8 +1,8 @@
 # Kora
 
-> Currently, software ecosystem of Kora are not completed,\
-> You can consider this project is an experimental project of the JVM web server.\
-> Main focus to more FP, more control flow contextualization, and more zero reflections.
+> Currently, the software ecosystem of Kora is not complete.\
+> You can consider this project an experimental JVM web server project.\
+> The main focus is more FP, more control flow contextualization, and more zero-reflection design.
 
 **Kora** is a high-performance, type-safe Kotlin web server framework built on Netty.
 
@@ -24,7 +24,7 @@ Kora is a **Kotlin-first**, expression-based web framework that emphasizes:
 * Explicit control flow over annotation-driven behavior
 * Reloadable graphs over global state
 
-It is built on Netty for performance and IO efficiency, and uses Kotlin coroutines as its execution model.
+It is built on Netty for performance and IO efficiency and uses Kotlin coroutines as its execution model.
 
 > In Kora, annotations never control routing, execution order, or lifecycle.
 > When present, they are used only as **descriptive schema at data boundaries**.
@@ -35,12 +35,12 @@ It is built on Netty for performance and IO efficiency, and uses Kotlin coroutin
 
 Most web frameworks optimize for **runtime flexibility**.
 
-Kora also can be flexible, but it primarily optimizes for **compile-time correctness** and **semantic clarity**.
+Kora can also be flexible, but it primarily optimizes for **compile-time correctness** and **semantic clarity**.
 
 * Routes are **values**, not side effects
 * Parameters are **typed**, not string-based
 * Handlers are **functions**, not magic containers
-* **Reloading** in Kora is a **graph replacement**, not class redefinition. Code is recompiled. The JVM is not mutated.
+* **Reloading** in Kora is **graph replacement**, not class redefinition. Code is recompiled. The JVM is not mutated.
 
 Kora is not a general-purpose application container.\
 It does not manage object lifecycles or dependency graphs.\
@@ -53,13 +53,16 @@ It is a **language-shaped web framework**.
 > In Kora, routing is an expression that produces a value.
 
 # Quick Start
-## Test cases
-Some cases is written in [https://https://github.com/cao-awa/Kora/blob/main/src/test/kotlin/Main.kt](here).
 
-Here is some test cases shown:
+## Test Cases
+
+Some cases are written [here](https://github.com/cao-awa/Kora/blob/main/src/test/kotlin/Main.kt).
+
+Here are some test cases:
 
 ### Case 1
-Define and run a simple HTTP server with one routes:
+
+Define and run a simple HTTP server with one route:
 
 ```kotlin
 fun main() {
@@ -105,23 +108,24 @@ fun main() {
 }
 ```
 
-This starts an HTTP server on port `12345` with one routes:
+This starts an HTTP server on port `12345` with one route:
 
-* `GET /test?action=1234`:  `200 OK`
-* `GET /test`:  `400 BAD REQUEST`
+* `GET /test?action=1234`: `200 OK`
+* `GET /test`: `400 BAD REQUEST`
 
-HTML rendering powered by [CapterTML](https://github.com/cao-awa/CaperTML), a HTML DSL library. 
+HTML rendering is powered by [CapterTML](https://github.com/cao-awa/CaperTML), an HTML DSL library.
 
 ### Case 2
-Define and run a simple HTTP server with only assets routes:
+
+Define and run a simple HTTP server with only asset routes:
 
 ```kotlin
 fun main() {
     val http = http {
-        // Setup static assets path. 
+        // Setup static assets path.
         assets("assets/")
 
-        // Redirect all no registered query to 404 page.
+        // Redirect all unregistered queries to the 404 page.
         ifAbort(HttpPathNotRegisteredException::class) {
             withAsset(redirectAsset = "error/404.html")
         }
@@ -138,10 +142,10 @@ fun main() {
 
 By default, Kora treats HTTP responses as **structured data**.
 
-When a handler returns a Kotlin object, Kora serializes it and **instructs HTTP metadata** into the response payload:
+When a handler returns a Kotlin object, Kora serializes it and **injects HTTP metadata** into the response payload:
 
 But Kora does not encourage embedding transport concerns into domain models.\
-HTTP metadata instruction is a transport-level concern and is configurable.
+HTTP metadata injection is a transport-level concern and is configurable.
 
 ```json
 {
@@ -162,12 +166,12 @@ This unified response model allows:
 Transport metadata is always derived from the response description.\
 It never influences handler semantics.
 
-HTTP metadata instruction is configurable and can be disabled for stricter HTTP/body separation:
+HTTP metadata injection is configurable and can be disabled for stricter HTTP/body separation:
 
 ```kotlin
 fun main() {
-    // NOTE: Disable HTTP metadata instruct ('instructHttpMetadata')
-    // will auto disabled status code and version instruction.
+    // NOTE: Disable HTTP metadata injection ('instructHttpMetadata')
+    // This will automatically disable status code and version injection.
     KoraHttpServer.instructHttpMetadata = false
     KoraHttpServer.instructHttpStatusCode = false
     KoraHttpServer.instructHttpVersionCode = false
@@ -202,7 +206,7 @@ fun main() {
 }
 ```
 
-or missing return value, Kora will automatically return 204 NO CONTENT response.
+Or if a return value is missing, Kora will automatically return a `204 NO CONTENT` response.
 
 ## Abort
 
@@ -211,7 +215,7 @@ Kora uses a scoped abort model where execution and error handling are strictly s
 In Kora, aborting execution is not an exceptional case.\
 It is a first-class, structured control flow with explicit scope boundaries.
 
-The ```abortWith()``` or ```abortIf()``` defines when to abort, and ```.ifAbort { }``` defines how aborted execution is rendered into a
+The `abortWith()` or `abortIf()` methods define when to abort, and `.ifAbort { }` defines how aborted execution is rendered into a
 response:
 
 ```kotlin
@@ -238,7 +242,7 @@ fun main() {
 }
 ```
 
-Client will get data seems like:
+The client will receive data similar to:
 
 ```json
 {
@@ -267,13 +271,15 @@ Client will get data seems like:
 }
 ```
 
-All abort scope is a copy scope from source context that Kora auto collecting.\
-You can modifying the scope data in abort context.
+All abort scopes are copied from the source context, which Kora automatically collects.\
+You can modify the scope data in the abort context.
 
 ## PHP
-Currently, Kora can execute PHP script by PHP-CGI, but doesn't completely support, only can be use to single file PHP script.
+
+Currently, Kora can execute PHP scripts through PHP-CGI, but support is incomplete and can currently only be used for single-file PHP scripts.
 
 Simple sample:
+
 ```php
 <?php
 
@@ -316,15 +322,19 @@ echo '</body></html>';
 ```
 
 # Performance
-## Startup time
-Kora can launch HTTP server within 200~500ms, even you are creating a large route, because it's all native code instead of reflection searching.
 
-## Benchmark test
-Test by [Baton](https://github.com/americanexpress/baton) on ```AMD Ryzen 7 8845HS w```, Windows 10, with default settings: ```100000```~```120000``` HTTP requests per second. (min 109170, max 128003)
+## Startup Time
 
-With JVM arguments(-server -XX:+UseZGC -Xmx1G -Xms1G）
+Kora can launch an HTTP server within 200~500ms, even when creating a large route graph, because it uses native code instead of reflection scanning.
+
+## Benchmark Test
+
+Tested by [Baton](https://github.com/americanexpress/baton) on an `AMD Ryzen 7 8845HS`, Windows 10, with default settings: `100000`~`120000` HTTP requests per second. (min 109170, max 128003)
+
+With JVM arguments (`-server -XX:+UseZGC -Xmx1G -Xms1G`)
 
 Using the simplest test case:
+
 ```kotlin
 fun main() {
     val html = html {
@@ -353,12 +363,13 @@ fun main() {
 }
 ```
 
-Kora not only can run on 1G memory environment, it also can run on 64M memory environment, but the performance will be reduced to 50000~60000 HTTP requests per second. (min 57159, max 63148)
+Kora can not only run in a 1G memory environment, but also in a 64M memory environment, although performance will be reduced to 50000~60000 HTTP requests per second. (min 57159, max 63148)
 
-## Benchmark error
-In 1G memory case, if all request are fetched to error (like 404 Not Found) instead of correctly handled, the performance will be reduced to 70000~80000 HTTP requests per second. (min 70545, max 80148)
+## Error benchmark
 
-In 64M memory case, if all request are fetched to error (like 404 Not Found) instead of correctly handled, the performance will be reduced to 20000~30000 HTTP requests per second. (min 21238, max 37494)
+In the 1G memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduced to 70000~80000 HTTP requests per second. (min 70545, max 80148)
+
+In the 64M memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduced to 20000~30000 HTTP requests per second. (min 21238, max 37494)
 
 # Design Philosophy
 
@@ -410,8 +421,8 @@ Because routes are values:
 
 ## 4. Minimize Annotations and Reflection
 
-Annotations hide logic.
-Reflection hides cost.
+Annotations hide logic.\
+Reflections hide cost.
 
 Kora relies on:
 
@@ -483,4 +494,3 @@ Kora intentionally does **not** aim to be:
 Kora focuses on doing **one thing extremely well**:
 
 > **Building safe, expressive, reloadable web servers in Kotlin.**
-
