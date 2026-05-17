@@ -1,17 +1,32 @@
 package com.github.cao.awa.kora.server.network.http.adapter
 
+import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestServerAbortHandler
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
+import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.handler.codec.http.FullHttpRequest
 
+@ChannelHandler.Sharable
 class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : ChannelInboundHandlerAdapter() {
     constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestPipeline(KoraHttpRequestServerAbortHandler(builder.abortHandlers))) {
         builder.applyRoute(this)
+
+        if (KoraHttpServer.enableSecondRequestsCounter) {
+            println("Start counter thread")
+
+            Thread.startVirtualThread {
+                while (true) {
+                    println("Kora completed ${pipeline.handledCount} requests in 1 second")
+                    pipeline.handledCount = 0
+                    Thread.sleep(1000)
+                }
+            }
+        }
     }
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {

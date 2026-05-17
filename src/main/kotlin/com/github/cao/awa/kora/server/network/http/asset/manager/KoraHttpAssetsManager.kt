@@ -20,13 +20,21 @@ class KoraHttpAssetsManager {
     }
 
     private var path: String = ""
+    private var avaliable: Boolean = false
 
     fun setAssetsPath(path: String) {
-        if (this.path != "") {
+        if (this.avaliable) {
             throw IllegalArgumentException("Assets path already set")
         } else {
             this.path = path
+            this.avaliable = true
         }
+    }
+
+    fun avaliable(): Boolean = this.avaliable
+
+    fun hasAsset(context: KoraHttpContext): Boolean {
+        return createFileHolder(context.path()).exists()
     }
 
     fun getAsset(context: KoraHttpContext): KoraBinaryAsset {
@@ -35,11 +43,15 @@ class KoraHttpAssetsManager {
         } else {
             context.redirectAsset()
         }
-        val assetFile = File("${this.path}/${assetName}")
+        val assetFile = createFileHolder(context.path())
         if (assetFile.isFile && assetFile.exists()) {
             return KoraBinaryAsset(assetFile)
         }
         HttpPathNotRegisteredException.notFound(assetName, "auto redirect")
+    }
+
+    fun createFileHolder(path: String): File {
+        return File("${this.path}/${path}")
     }
 
     fun handlePhp(context: KoraHttpContext, asset: KoraAsset<*>): String {

@@ -5,14 +5,14 @@ import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
 
 abstract class KoraNetworkConfig<T: KoraNetworkConfig<T>> {
-    private var backlog: Int = 2048
+    private var backlog: Int = 8192
     private var keepalive: Boolean = true
     private var rcvBuf: Int = 65536
     private var reuseAddr: Boolean = true
     private var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT
     private var writeBufferWaterMark: WriteBufferWaterMark = WriteBufferWaterMark(
-        32 * 1024,
-        64 * 1024
+        32 * 1024 * 1024,
+        64 * 1024 * 1024
     )
 
     fun backlog(): Int = this.backlog

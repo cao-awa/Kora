@@ -27,6 +27,7 @@ class KoraHttpServer {
         var instructTimestamp: Boolean = false
         var instructRequestType: Boolean = true
         var instructRequestPath: Boolean = true
+        var enableSecondRequestsCounter = true
     }
 
     private val serverBuilder: KoraHttpServerBuilder
@@ -44,9 +45,11 @@ class KoraHttpServer {
         val threadFactory = KoraEventLoopGroupFactory.remote(
             useEpoll
         )
-        val bossGroup: EventLoopGroup = threadFactory.createEventLoopGroup(1)
-        val workerGroup: EventLoopGroup =
-            threadFactory.createEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2)
+        val bossGroup: EventLoopGroup = threadFactory.createEventLoopGroup(2)
+        val workerGroup: EventLoopGroup = threadFactory.createEventLoopGroup(
+            Runtime.getRuntime().availableProcessors() * 2
+        )
+        val adapter = KoraHttpInboundHandlerAdapter(this.serverBuilder)
         try {
             val bootstrap = ServerBootstrap()
                 .group(
@@ -72,11 +75,11 @@ class KoraHttpServer {
                     @Override
                     override fun initChannel(channel: SocketChannel) {
                         channel.pipeline().apply {
-                            addLast(HttpRequestDecoder())
+                            addLast( HttpRequestDecoder())
                             addLast(HttpResponseEncoder())
                             // Only aggregate 1MB http request.
-                            addLast(HttpObjectAggregator(KoraInformation.MB))
-                            addLast(KoraHttpInboundHandlerAdapter(serverBuilder))
+                            addLast( HttpObjectAggregator(KoraInformation.MB))
+                            addLast(adapter)
                         }
                     }
                 })

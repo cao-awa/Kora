@@ -9,11 +9,39 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.github.cao.awa.com.github.cao.awa.capertml.html
 import org.github.cao.awa.com.github.cao.awa.capertml.style.width.DEVICE_WIDTH
+import java.nio.charset.StandardCharsets
 
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
+// E:\baton\baton.exe -u http://127.0.0.1:45678/home/test.html -c 12 -r 5000
 fun main() {
-    testAssets()
+    testSimple()
+}
+
+fun testSimple() {
+    val html = html {
+        head {
+            charset(StandardCharsets.UTF_8)
+        }
+        body {
+            p {
+                +"Hello world!"
+            }
+        }
+    }
+
+    val http = http {
+        route("/test") {
+            get {
+                html
+            }
+        }
+    }
+
+    KoraHttpServer(http).start(
+        port = 45678,
+        useEpoll = true
+    )
 }
 
 fun testAssets() {
@@ -28,7 +56,7 @@ fun testAssets() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
+        port = 45678,
         useEpoll = true
     )
 }
@@ -48,7 +76,7 @@ fun testDataClass() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
+        port = 45678,
         useEpoll = true
     )
 }
@@ -112,7 +140,7 @@ fun testPlaceholder() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
+        port = 45678,
         useEpoll = true
     )
 }
@@ -153,7 +181,7 @@ fun testNotFound() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
+        port = 45678,
         useEpoll = true
     )
 }
@@ -175,7 +203,7 @@ fun testError() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
+        port = 45678,
         useEpoll = true
     )
 }
@@ -217,7 +245,7 @@ fun testRender() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
+        port = 45678,
         useEpoll = true
     )
 }
