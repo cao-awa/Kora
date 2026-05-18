@@ -33,21 +33,25 @@ class KoraHttpAssetsManager {
 
     fun available(): Boolean = this.available
 
-    fun hasAsset(context: KoraHttpContext): Boolean {
-        return createFileHolder(context.path()).exists()
+    fun hasAsset(context: KoraHttpContext):  Boolean{
+        return createFileHolder(context.path()).isFile
     }
 
-    fun getAsset(context: KoraHttpContext): KoraBinaryAsset {
+    fun getAsset(context: KoraHttpContext): KoraAsset<*> {
         val assetName = if (context.redirectAsset() == "") {
             context.path()
         } else {
             context.redirectAsset()
         }
-        val assetFile = createFileHolder(assetName)
+        return getAsset(assetName)
+    }
+
+    fun getAsset(name: String): KoraAsset<*> {
+        val assetFile = createFileHolder(name)
         if (assetFile.isFile && assetFile.exists()) {
             return KoraBinaryAsset(assetFile)
         }
-        HttpPathNotRegisteredException.notFound(assetName, "auto redirect")
+        HttpPathNotRegisteredException.notFound(name, "auto redirect")
     }
 
     fun createFileHolder(name: String): File {

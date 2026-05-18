@@ -8,10 +8,13 @@ import java.io.File
 
 class KoraLaunchConfig {
     companion object {
-        fun readConfig(file: File): KoraLaunchConfig {
+        fun createConfig(file: File): KoraLaunchConfig {
             val config = KoraLaunchConfig()
-            if (file.exists()) {
+            if (file.isFile) {
                 JSONParser.parseObject(file.readText(Charsets.UTF_8)).let {
+                    it.getBoolean("print_config_details")?.let { printConfigDetails ->
+                        config.printConfigDetails = printConfigDetails
+                    }
                     it.getInt("server_port")?.let { serverPort ->
                         config.serverPort = serverPort
                     }
@@ -34,12 +37,13 @@ class KoraLaunchConfig {
                         it.mkdirs()
                     }
                 }
-                file.writeText(config.toJSON().toString(true, "    "))
             }
+            file.writeText(config.toJSON().toString(true, "    "))
             return config
         }
     }
 
+    var printConfigDetails: Boolean = true
     var serverPort: Int = 12345
     var serverHost: String = "localhost"
     var assetPath: String = "assets/"
@@ -48,6 +52,7 @@ class KoraLaunchConfig {
 
     fun toJSON(): JSONObject {
         return JSONObject {
+            "print_config_details" set printConfigDetails
             "server_port" set serverPort
             "server_host" set serverHost
             "asset_path" set assetPath

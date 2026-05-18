@@ -53,6 +53,10 @@ It is a **language-shaped web framework**.
 > In Kora, routing is an expression that produces a value.
 
 # Quick Start
+## No coding start
+Use java command ``java -jar Kora-1.0.0.jar -server`` to run a Kora server with [Assets manager mode](#assets-manager-mode).
+
+It can automatically response html or other files in assets path, or redirect path to "path/index.html" file.
 
 ## Test Cases
 
@@ -273,6 +277,29 @@ The client will receive data similar to:
 
 All abort scopes are copied from the source context, which Kora automatically collects.\
 You can modify the scope data in the abort context.
+
+## Assets manager mode
+Use ``-jar Kora.jar`` to run Kora server will automatically running on assets manager mode, if kora running on assets manager mode, when url not fetch (such as ``http://127.0.0.1/test``), then Kora will automatically redirect to ``http://127.0.0.1/test/index.html``, if still not found, finally, it will got an error response,
+
+Or write code like this and run the code: 
+```kotlin
+fun main() {
+    val http = http {
+        // Setup static asset path.
+        assets("assets/")
+
+        // Redirect all no registered query to 404 page.
+        ifAbort(HttpPathNotRegisteredException::class) {
+            withAsset(redirectAsset = "error/404.html")
+        }
+    }
+
+    KoraHttpServer(http).start(
+        port = 12345,
+        useEpoll = true
+    )
+}
+```
 
 ## PHP
 

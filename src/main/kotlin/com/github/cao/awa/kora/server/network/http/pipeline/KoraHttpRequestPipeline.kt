@@ -3,6 +3,7 @@ package com.github.cao.awa.kora.server.network.http.pipeline
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
+import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
 import com.github.cao.awa.kora.server.network.http.asset.KoraBinaryAsset
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.asset.manager.KoraHttpAssetsManager
@@ -100,7 +101,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         this.assetsManager.setAssetsPath(path)
     }
 
-    fun getAsset(context: KoraHttpContext): KoraBinaryAsset {
+    fun getAsset(context: KoraHttpContext): KoraAsset<*> {
         return this.assetsManager.getAsset(context)
     }
 
@@ -124,8 +125,13 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                         var httpStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
 
                         if (e is HttpPathNotRegisteredException) {
-                            if (assetsManager.available() && assetsManager.hasAsset(koraContext)) {
-                                val asset: KoraBinaryAsset = assetsManager.getAsset(koraContext)
+                            if (assetsManager.available()) {
+                                var asset: KoraAsset<*>
+                                if (assetsManager.hasAsset(koraContext)) {
+                                    asset = assetsManager.getAsset(koraContext)
+                                } else {
+                                    asset = assetsManager.getAsset(koraContext.path() + "/index.html")
+                                }
 
                                 // If asset not null. response the asset.
                                 response(
@@ -249,11 +255,11 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 }
             }
 
-            is KoraBinaryAsset, is KoraAssetProducer -> {
-                val data: KoraBinaryAsset = if (response is KoraAssetProducer) {
+            is KoraAsset<*>, is KoraAssetProducer -> {
+                val data: KoraAsset<*> = if (response is KoraAssetProducer) {
                     response.getAsset(this@KoraHttpRequestPipeline)
                 } else {
-                    response as KoraBinaryAsset
+                    response as KoraAsset<*>
                 }
                 response(
                     handlerContext,

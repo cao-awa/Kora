@@ -1,6 +1,7 @@
 package com.github.cao.awa.kora.entry
 
 import com.github.cao.awa.kora.config.KoraLaunchConfig
+import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
@@ -13,7 +14,8 @@ object KoraKotlinEntryPoint {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        val config = KoraLaunchConfig.readConfig(File(("config/launch.json")))
+        val config = KoraLaunchConfig.createConfig(File(("config/launch.json")))
+        val httpConfig = config.httpServerConfig
 
         val http = http {
             // Setup static asset path.
@@ -25,19 +27,21 @@ object KoraKotlinEntryPoint {
             }
         }
 
-        LOGGER.info("Starting Kora server...")
-        LOGGER.info("Config 'server_port': {}", config.serverPort)
-        LOGGER.info("Config 'server_host': {}", config.serverHost)
-        LOGGER.info("Config 'asset_path': {}", config.assetPath)
-        LOGGER.info("Config 'error_page': {}", config.errorPage)
+        LOGGER.info("Starting Kora({}) server...", KoraInformation.VERSION)
+        if (config.printConfigDetails) {
+            LOGGER.info("Config 'print_config_details': {}", config.printConfigDetails)
+            LOGGER.info("Config 'server_port': {}", config.serverPort)
+            LOGGER.info("Config 'server_host': {}", config.serverHost)
+            LOGGER.info("Config 'asset_path': {}", config.assetPath)
+            LOGGER.info("Config 'error_page': {}", config.errorPage)
 
-        val httpConfig = config.httpServerConfig
-        LOGGER.info("Config 'use_epoll': {}", httpConfig.useEpoll())
-        LOGGER.info("Config 'backlog': {}", httpConfig.backlog())
-        LOGGER.info("Config 'keep_alive': {}", httpConfig.keepalive())
-        LOGGER.info("Config 'rcv_buffer': {}", httpConfig.rcvBuf())
-        LOGGER.info("Config 'reuse_address': {}", httpConfig.reuseAddr())
-        LOGGER.info("Config 'tcp_no_delay': {}", httpConfig.tcpNoDelay())
+            LOGGER.info("Config 'use_epoll': {}", httpConfig.useEpoll())
+            LOGGER.info("Config 'backlog': {}", httpConfig.backlog())
+            LOGGER.info("Config 'keep_alive': {}", httpConfig.keepalive())
+            LOGGER.info("Config 'rcv_buffer': {}", httpConfig.rcvBuf())
+            LOGGER.info("Config 'reuse_address': {}", httpConfig.reuseAddr())
+            LOGGER.info("Config 'tcp_no_delay': {}", httpConfig.tcpNoDelay())
+        }
 
         KoraHttpServer(http).start(
             port = config.serverPort,
