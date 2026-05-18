@@ -1,10 +1,12 @@
 package com.github.cao.awa.kora.server.network.config
 
+import com.github.cao.awa.cason.obj.JSONObject
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
 
 abstract class KoraNettyConfig<T: KoraNettyConfig<T>> {
+    private var useEpoll: Boolean = true
     private var backlog: Int = 8192
     private var keepalive: Boolean = true
     private var rcvBuf: Int = 65536
@@ -14,6 +16,14 @@ abstract class KoraNettyConfig<T: KoraNettyConfig<T>> {
         32 * 1024 * 1024,
         64 * 1024 * 1024
     )
+    private var tcpNoDelay: Boolean = true
+
+    fun useEpoll(): Boolean = this.useEpoll
+
+    open fun useEpoll(useEpoll: Boolean): KoraNettyConfig<T> {
+        this.useEpoll = useEpoll
+        return this
+    }
 
     fun backlog(): Int = this.backlog
 
@@ -58,6 +68,13 @@ abstract class KoraNettyConfig<T: KoraNettyConfig<T>> {
         return this
     }
 
+    fun tcpNoDelay(): Boolean = this.tcpNoDelay
+
+    open fun tcpNoDelay(noDelay: Boolean): KoraNettyConfig<T> {
+        this.tcpNoDelay = noDelay
+        return this
+    }
+
     fun copy(instance: T): T {
         instance.backlog(backlog())
         instance.keepalive(keepalive())
@@ -66,6 +83,16 @@ abstract class KoraNettyConfig<T: KoraNettyConfig<T>> {
         instance.allocator(allocator())
         instance.writeBufferWaterMark(writeBufferWaterMark())
         return instance
+    }
+
+    open fun toJSON(): JSONObject {
+        return JSONObject {
+            "backlog" set backlog
+            "keep_alive" set keepalive
+            "rcv_buffer" set rcvBuf
+            "reuse_address" set reuseAddr
+            "tcp_noDelay" set tcpNoDelay
+        }
     }
 
     abstract fun copy(): T

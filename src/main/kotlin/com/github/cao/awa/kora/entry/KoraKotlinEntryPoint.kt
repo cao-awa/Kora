@@ -30,20 +30,20 @@ object KoraKotlinEntryPoint {
         LOGGER.info("Config 'server_host': {}", config.serverHost)
         LOGGER.info("Config 'asset_path': {}", config.assetPath)
         LOGGER.info("Config 'error_page': {}", config.errorPage)
-        LOGGER.info("Config 'use_epoll': {}", config.useEpoll)
 
         val httpConfig = config.httpServerConfig
-        LOGGER.info("Config 'tcp_no_delay': {}", httpConfig.tcpNoDelay())
+        LOGGER.info("Config 'use_epoll': {}", httpConfig.useEpoll())
         LOGGER.info("Config 'backlog': {}", httpConfig.backlog())
         LOGGER.info("Config 'keep_alive': {}", httpConfig.keepalive())
         LOGGER.info("Config 'rcv_buffer': {}", httpConfig.rcvBuf())
         LOGGER.info("Config 'reuse_address': {}", httpConfig.reuseAddr())
+        LOGGER.info("Config 'tcp_no_delay': {}", httpConfig.tcpNoDelay())
 
         KoraHttpServer(http).start(
             port = config.serverPort,
             address = config.serverHost,
-            useEpoll = config.useEpoll,
-            config = config.httpServerConfig
+            useEpoll = httpConfig.useEpoll(),
+            config = httpConfig
         )
     }
 }

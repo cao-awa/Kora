@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.config
 
+import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.cason.serialize.parser.JSONParser
 import com.github.cao.awa.kora.server.network.http.config.KoraHttpDefaultServerConfig
 import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
@@ -23,13 +24,12 @@ class KoraLaunchConfig {
                     it.getString("error_page")?.let { errorPage ->
                         config.errorPage = errorPage
                     }
-                    it.getBoolean("use_epoll")?.let { useEpoll ->
-                        config.useEpoll = useEpoll
-                    }
                     it.getJSON("http")?.let { http ->
                         config.httpServerConfig = KoraHttpServerConfig.createFromJSON(http)
                     }
                 }
+            } else {
+                file.writeText(config.toJSON().toString(true, "    "))
             }
             return config
         }
@@ -37,8 +37,17 @@ class KoraLaunchConfig {
 
     var serverPort: Int = 12345
     var serverHost: String = "localhost"
-    var assetPath: String = ""
+    var assetPath: String = "/assets"
     var errorPage: String = ""
-    var useEpoll: Boolean = true
     var httpServerConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
+
+    fun toJSON(): JSONObject {
+        return JSONObject {
+            "server_port" set serverPort
+            "server_host" set serverHost
+            "asset_path" set assetPath
+            "error_page" set errorPage
+            "netty" set httpServerConfig.toJSON()
+        }
+    }
 }
