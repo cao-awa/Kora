@@ -61,5 +61,17 @@ test {
     useJUnitPlatform()
 }
 
+tasks.named("distTar") {
+    dependsOn shadowJar
+}
+
+tasks.named("startScripts"){
+    dependsOn shadowJar
+}
+
+tasks.named("startShadowScripts") {
+    dependsOn jar
+}
+
 sourceCompatibility = JavaVersion.VERSION_24
 targetCompatibility = JavaVersion.VERSION_24
