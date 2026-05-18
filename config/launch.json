@@ -2,6 +2,7 @@
     "server_port": 12345,
     "server_host": "127.0.0.1",
     "asset_path": "/assets",
+    "error_page":"error/404.html",
     "use_epoll": true,
     "http": {
         "tcp_no_delay": true,
