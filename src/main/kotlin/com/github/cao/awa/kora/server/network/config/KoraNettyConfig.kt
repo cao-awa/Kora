@@ -91,7 +91,7 @@ abstract class KoraNettyConfig<T: KoraNettyConfig<T>> {
             "keep_alive" set keepalive
             "rcv_buffer" set rcvBuf
             "reuse_address" set reuseAddr
-            "tcp_noDelay" set tcpNoDelay
+            "tcp_no_delay" set tcpNoDelay
         }
     }
 
