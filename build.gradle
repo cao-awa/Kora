@@ -1,13 +1,28 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.2.21'
-    id 'com.gradleup.shadow' version '9.2.1'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'application'
     id 'java'
     id 'maven-publish'
 }
 
+apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
+
 group = project.group_id
 version = project.version_name
+
+publishing {
+    publications {
+        gpr(MavenPublication) {
+            groupId = project.group_id
+            artifactId = project.artifact_id
+            version = project.version_name
+
+            from components.java
+        }
+    }
+}
 
 repositories {
     mavenCentral()
@@ -30,10 +45,6 @@ dependencies {
 
 application {
     mainClass = 'com.github.cao.awa.kora.KoraEntryPoint'
-}
-
-if (tasks.named("shadowJar") == null) {
-    tasks.register("shadowJar")
 }
 
 shadowJar {
