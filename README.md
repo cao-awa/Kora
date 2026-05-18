@@ -15,6 +15,22 @@ Kora is designed for developers who want correctness, predictability, and explic
 
 ![](https://count.getloli.com/@@cao-awa.kora?name=%40cao-awa.kora&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
 
+# Use kora
+Add these codes to your ``build.gradle`` file:
+```groovy
+repositories {
+    maven {
+        url 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    implementation 'com.github.cao-awa:Kora:1.0.0'
+}
+```
+
+And creating your Kora programs!
+
 # What Kora Is
 
 Kora is a **Kotlin-first**, expression-based web framework that emphasizes:
