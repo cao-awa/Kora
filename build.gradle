@@ -30,6 +30,8 @@ application {
     mainClass = 'com.github.cao.awa.kora.KoraEntryPoint'
 }
 
+tasks.register("shadowJar")
+
 shadowJar {
     archiveBaseName.set('Kora')
     archiveVersion.set(project.version_name)
