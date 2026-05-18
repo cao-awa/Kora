@@ -1,0 +1,13 @@
+{
+    "server_port": 12345,
+    "server_host": "127.0.0.1",
+    "asset_path": "/assets",
+    "use_epoll": true,
+    "http": {
+        "tcp_no_delay": true,
+        "backlog": 8192,
+        "keep_alive": true,
+        "rcv_buffer": 65536,
+        "reuse_address": true
+    }
+}

@@ -46,7 +46,7 @@ fun testSimple() {
 
 fun testAssets() {
     val http = http {
-        // Setup static assets path.
+        // Setup static asset path.
         assets("assets/")
 
         // Redirect all no registered query to 404 page.
