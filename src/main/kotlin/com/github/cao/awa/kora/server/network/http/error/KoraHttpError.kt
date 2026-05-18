@@ -21,7 +21,7 @@ class KoraHttpError(
     companion object {
         private fun fillStacktrace(json: JSONObject, exception: Throwable) {
             json.instruct {
-                array("stacktrace") {
+                arr("stacktrace") {
                     +exception.toString()
                     exception.stackTrace.forEach {
                         +" - at $it"

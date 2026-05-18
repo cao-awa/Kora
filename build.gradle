@@ -1,5 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+    id 'com.gradleup.shadow' version '9.2.1'
+    id 'application'
 }
 
 group = project.group_id
@@ -18,10 +20,20 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
     implementation 'com.google.guava:guava:33.5.0-jre'
     implementation 'io.netty:netty-all:4.2.13.Final'
-    implementation 'com.github.cao-awa:Cason:1.0.25'
+    implementation 'com.github.cao-awa:Cason:1.0.27'
     implementation 'com.github.cao-awa:CaperTML:1.0.0'
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
+}
+
+application {
+    mainClass = 'com.github.cao.awa.kora.KoraEntryPoint'
+}
+
+shadowJar {
+    archiveBaseName.set('Kora')
+    archiveVersion.set(project.version_name)
+    archiveClassifier.set('')
 }
 
 kotlin {

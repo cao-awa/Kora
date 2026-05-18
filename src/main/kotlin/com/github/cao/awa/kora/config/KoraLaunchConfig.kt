@@ -20,6 +20,9 @@ class KoraLaunchConfig {
                     it.getString("asset_path")?.let { assetPath ->
                         config.assetPath = assetPath
                     }
+                    it.getString("error_page")?.let { errorPage ->
+                        config.errorPage = errorPage
+                    }
                     it.getBoolean("use_epoll")?.let { useEpoll ->
                         config.useEpoll = useEpoll
                     }
@@ -35,6 +38,7 @@ class KoraLaunchConfig {
     var serverPort: Int = 12345
     var serverHost: String = "localhost"
     var assetPath: String = ""
+    var errorPage: String = ""
     var useEpoll: Boolean = true
     var httpServerConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
 }

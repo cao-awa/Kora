@@ -1,3 +1,4 @@
+import com.github.cao.awa.kora.KoraEntryPoint
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder
@@ -15,7 +16,7 @@ private val LOGGER: Logger = LogManager.getLogger("Test")
 
 // E:\baton\baton.exe -u http://127.0.0.1:12345/home/test.html -c 12 -r 5000
 fun main() {
-    testSimple()
+    KoraEntryPoint.main()
 }
 
 fun testSimple() {
