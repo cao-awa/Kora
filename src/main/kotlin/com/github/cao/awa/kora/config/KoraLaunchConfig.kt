@@ -29,6 +29,11 @@ class KoraLaunchConfig {
                     }
                 }
             } else {
+                file.parentFile.let {
+                    if (!it.exists()) {
+                        it.mkdirs()
+                    }
+                }
                 file.writeText(config.toJSON().toString(true, "    "))
             }
             return config
