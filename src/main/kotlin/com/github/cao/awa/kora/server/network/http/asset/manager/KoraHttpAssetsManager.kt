@@ -26,7 +26,7 @@ class KoraHttpAssetsManager {
         if (this.available) {
             throw IllegalArgumentException("Assets path already set")
         } else {
-            this.path = path
+            this.path = File(path).absolutePath
             this.available = true
         }
     }
@@ -43,15 +43,15 @@ class KoraHttpAssetsManager {
         } else {
             context.redirectAsset()
         }
-        val assetFile = createFileHolder(context.path())
+        val assetFile = createFileHolder(assetName)
         if (assetFile.isFile && assetFile.exists()) {
             return KoraBinaryAsset(assetFile)
         }
         HttpPathNotRegisteredException.notFound(assetName, "auto redirect")
     }
 
-    fun createFileHolder(path: String): File {
-        return File("${this.path}/${path}")
+    fun createFileHolder(name: String): File {
+        return File("${this.path}/${name}")
     }
 
     fun handlePhp(context: KoraHttpContext, asset: KoraAsset<*>): String {

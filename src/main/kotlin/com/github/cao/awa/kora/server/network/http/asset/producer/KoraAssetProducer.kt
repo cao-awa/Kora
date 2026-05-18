@@ -1,5 +1,6 @@
-package com.github.cao.awa.kora.server.network.http.asset
+package com.github.cao.awa.kora.server.network.http.asset.producer
 
+import com.github.cao.awa.kora.server.network.http.asset.KoraBinaryAsset
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 

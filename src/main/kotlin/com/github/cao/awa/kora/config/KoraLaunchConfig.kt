@@ -42,7 +42,7 @@ class KoraLaunchConfig {
 
     var serverPort: Int = 12345
     var serverHost: String = "localhost"
-    var assetPath: String = "/assets"
+    var assetPath: String = "assets/"
     var errorPage: String = ""
     var httpServerConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
 

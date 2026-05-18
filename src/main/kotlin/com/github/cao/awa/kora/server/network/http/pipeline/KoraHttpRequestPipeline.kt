@@ -4,7 +4,7 @@ import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.asset.KoraBinaryAsset
-import com.github.cao.awa.kora.server.network.http.asset.KoraAssetProducer
+import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.asset.manager.KoraHttpAssetsManager
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
@@ -289,7 +289,6 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
 
             is ByteArray -> {
                 responseRaw(handlerContext, koraContext) {
-                    koraContext.withContentType(HttpContentTypes.PLAIN)
                     response
                 }
             }

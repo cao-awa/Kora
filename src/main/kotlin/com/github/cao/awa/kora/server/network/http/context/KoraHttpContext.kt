@@ -7,7 +7,7 @@ import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
-import com.github.cao.awa.kora.server.network.http.asset.KoraAssetProducer
+import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
