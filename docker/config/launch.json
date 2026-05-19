@@ -1,0 +1,14 @@
+{
+    "error_page": "",
+    "server_host": "0.0.0.0",
+    "print_config_details": true,
+    "server_port": 12345,
+    "asset_path": "assets/",
+    "netty": {
+        "reuse_address": true,
+        "backlog": 8192,
+        "keep_alive": true,
+        "rcv_buffer": 65536,
+        "tcp_no_delay": true
+    }
+}

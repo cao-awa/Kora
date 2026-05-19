@@ -5,18 +5,13 @@ import io.netty.channel.*
 import io.netty.channel.epoll.Epoll
 import io.netty.channel.epoll.EpollIoHandler
 import io.netty.channel.epoll.EpollServerSocketChannel
-import io.netty.channel.epoll.EpollSocketChannel
 import io.netty.channel.kqueue.KQueue
 import io.netty.channel.kqueue.KQueueIoHandler
 import io.netty.channel.kqueue.KQueueServerSocketChannel
-import io.netty.channel.kqueue.KQueueSocketChannel
-import io.netty.channel.local.LocalChannel
 import io.netty.channel.local.LocalIoHandler
 import io.netty.channel.local.LocalServerChannel
 import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.nio.NioServerSocketChannel
-import io.netty.channel.socket.nio.NioSocketChannel
-import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 
 abstract class KoraEventLoopGroupFactory internal constructor(
@@ -24,7 +19,7 @@ abstract class KoraEventLoopGroupFactory internal constructor(
     val channel: Class<out ServerChannel>
 ) {
     companion object {
-        private val THREAD_FACTORY: ThreadFactory = Thread.ofVirtual().factory()
+        private val THREAD_FACTORY: ThreadFactory = Thread.ofPlatform().factory()
         private val NIO: KoraEventLoopGroupFactory =
             object :
                 KoraEventLoopGroupFactory("NIO", NioServerSocketChannel::class.java) {
@@ -45,16 +40,22 @@ abstract class KoraEventLoopGroupFactory internal constructor(
 
         fun remote(useEpoll: Boolean): KoraEventLoopGroupFactory {
             if (useEpoll) {
+                if (Epoll.isAvailable()) {
+                    return EPOLL
+                }
                 if (KQueue.isAvailable()) {
                     return KQUEUE
                 }
 
-                if (Epoll.isAvailable()) {
-                    return EPOLL
-                }
             }
             return NIO
         }
+
+        fun nio(): KoraEventLoopGroupFactory = NIO
+
+        fun epoll(): KoraEventLoopGroupFactory = EPOLL
+
+        fun kqueue(): KoraEventLoopGroupFactory = KQUEUE
 
         fun local(): KoraEventLoopGroupFactory = LOCAL
     }

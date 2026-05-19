@@ -406,13 +406,13 @@ fun main() {
 }
 ```
 
-Kora is not can only run in a 1G or more memory environment, it also can run in a 64M memory environment, although performance will be reduced to 50000~60000 HTTP requests per second. (min 57159, max 63148)
+Kora is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although performance will be reduced to 50000~60000 HTTP requests per second. (min 57159, max 63148)
 
 ## Error benchmark
 
 In the 1G memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduced to 70000~80000 HTTP requests per second. (min 70545, max 80148)
 
-In the 64M memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduced to 20000~30000 HTTP requests per second. (min 21238, max 37494)
+In the 128M memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduced to 20000~30000 HTTP requests per second. (min 21238, max 37494)
 
 # Design Philosophy
 
