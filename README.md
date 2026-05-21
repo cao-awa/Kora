@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.cao-awa:Kora:1.0.3'
+    implementation 'com.github.cao-awa:Kora:1.0.4'
 }
 ```
 
@@ -161,7 +161,7 @@ fun main() {
 ## Case 3
 Use Kora's libraries loader features, change the ``entrypoint`` key in your config to ``com.github.cao.awa.kora.external.SampleEntrypoint#entry``.
 
-And use ``java -jar Kora-1.0.3.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
+And use ``java -jar Kora-1.0.4.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
 
 For details, see [Entrypoint](https://github.com/cao-awa/Kora/blob/main/docs/entrypoint/README.md) document.
 
