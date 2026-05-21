@@ -45,7 +45,7 @@ object SampleEntrypoint {
 > If you are using the libraries that aren't Kora integrated,\
 > Then you must put the library build jar into the '{working_path}/libs/' path.
 
-And build a  jar, and put it into ``'{working_path}/libs/ `` path, don't use shadow jar, shadow jar will pack useless classes that already provided by Kora jar.
+And build a  jar, and put it into ``{working_path}/libs/ `` path, don't use shadow jar, shadow jar will pack useless classes that already provided by Kora jar.
 
 The ``entrypoint`` config must declare full package name and class name, use symbol '#' to split entrypoint method.
 
