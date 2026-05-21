@@ -41,8 +41,8 @@ object SampleEntrypoint {
 }
 ```
 
-> NOTICE:
-> If you are using the libraries that aren't Kora integrated,
+> NOTICE:\
+> If you are using the libraries that aren't Kora integrated,\
 > Then you must put the library build jar into the '{working_path}/libs/' path.
 
 And build a  jar, and put it into ``'{working_path}/libs/ `` path, don't use shadow jar, shadow jar will pack useless classes that already provided by Kora jar.

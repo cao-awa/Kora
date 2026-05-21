@@ -11,7 +11,7 @@ Kora treats HTTP APIs as **typed programs**, not runtime configurations.
 Instead of assembling routing tables, annotations, and containers at runtime, Kora encourages developers to **describe
 APIs as values**, composed through Kotlin expressions and verified as early as possible—preferably at compile time.
 
-Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using the fewest reflection in launch stage to [bootstrap users code](https://github.com/cao-awa/Kora/blob/docs/entrypoint/README.md).
+Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using the fewest reflection in launch stage to [bootstrap users code](https://github.com/cao-awa/Kora/blob/main/docs/entrypoint/README.md).
 
 ![](https://count.getloli.com/@@cao-awa.kora?name=%40cao-awa.kora&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
 
@@ -163,7 +163,7 @@ Use Kora's libraries loader features, change the ``entrypoint`` key in your conf
 
 And use ``java -jar Kora-1.0.3.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
 
-For details, see [Entrypoint](https://github.com/cao-awa/Kora/blob/docs/entrypoint/README.md) document.
+For details, see [Entrypoint](https://github.com/cao-awa/Kora/blob/main/docs/entrypoint/README.md) document.
 
 You can also build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services! 
 
