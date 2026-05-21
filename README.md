@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.cao-awa:Kora:1.0.2-fix'
+    implementation 'com.github.cao-awa:Kora:1.0.3'
 }
 ```
 
