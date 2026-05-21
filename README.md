@@ -11,7 +11,7 @@ Kora treats HTTP APIs as **typed programs**, not runtime configurations.
 Instead of assembling routing tables, annotations, and containers at runtime, Kora encourages developers to **describe
 APIs as values**, composed through Kotlin expressions and verified as early as possible—preferably at compile time.
 
-Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic.
+Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using the fewest reflection in launch stage to [bootstrap users code](https://github.com/cao-awa/Kora/blob/docs/entrypoint/README.md).
 
 ![](https://count.getloli.com/@@cao-awa.kora?name=%40cao-awa.kora&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
 

@@ -1,15 +1,15 @@
 {
+    "error_page": "",
+    "server_host": "0.0.0.0",
     "print_config_details": true,
+    "entrypoint": "",
     "server_port": 12345,
-    "server_host": "127.0.0.1",
-    "asset_path": "/assets",
-    "error_page":"error/404.html",
-    "use_epoll": true,
-    "http": {
-        "tcp_no_delay": true,
+    "asset_path": "assets/",
+    "netty": {
+        "reuse_address": true,
         "backlog": 8192,
         "keep_alive": true,
         "rcv_buffer": 65536,
-        "reuse_address": true
+        "tcp_no_delay": true
     }
 }

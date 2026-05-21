@@ -23,19 +23,19 @@ abstract class KoraEventLoopGroupFactory internal constructor(
         private val NIO: KoraEventLoopGroupFactory =
             object :
                 KoraEventLoopGroupFactory("NIO", NioServerSocketChannel::class.java) {
-                override fun newFactory(): IoHandlerFactory = NioIoHandler.newFactory()
+                override fun newIoHandlerFactory(): IoHandlerFactory = NioIoHandler.newFactory()
             }
         private val EPOLL: KoraEventLoopGroupFactory =
             object : KoraEventLoopGroupFactory("Epoll", EpollServerSocketChannel::class.java) {
-                override fun newFactory(): IoHandlerFactory = EpollIoHandler.newFactory()
+                override fun newIoHandlerFactory(): IoHandlerFactory = EpollIoHandler.newFactory()
             }
         private val KQUEUE: KoraEventLoopGroupFactory =
             object : KoraEventLoopGroupFactory("Kqueue", KQueueServerSocketChannel::class.java) {
-                override fun newFactory(): IoHandlerFactory = KQueueIoHandler.newFactory()
+                override fun newIoHandlerFactory(): IoHandlerFactory = KQueueIoHandler.newFactory()
             }
         private val LOCAL: KoraEventLoopGroupFactory =
             object : KoraEventLoopGroupFactory("Local", LocalServerChannel::class.java) {
-                override fun newFactory(): IoHandlerFactory = LocalIoHandler.newFactory()
+                override fun newIoHandlerFactory(): IoHandlerFactory = LocalIoHandler.newFactory()
             }
 
         fun remote(useEpoll: Boolean): KoraEventLoopGroupFactory {
@@ -60,7 +60,7 @@ abstract class KoraEventLoopGroupFactory internal constructor(
         fun local(): KoraEventLoopGroupFactory = LOCAL
     }
 
-    protected abstract fun newFactory(): IoHandlerFactory
+    protected abstract fun newIoHandlerFactory(): IoHandlerFactory
 
     private fun createThreadFactory(): ThreadFactory {
         return ThreadFactoryBuilder()
@@ -73,7 +73,7 @@ abstract class KoraEventLoopGroupFactory internal constructor(
     fun createEventLoopGroup(count: Int = 1): EventLoopGroup {
         synchronized(this) {
             val threadFactory: ThreadFactory = createThreadFactory()
-            return MultiThreadIoEventLoopGroup(count, threadFactory, newFactory())
+            return MultiThreadIoEventLoopGroup(count, threadFactory, newIoHandlerFactory())
         }
     }
 }

@@ -6,8 +6,9 @@ import com.github.cao.awa.kora.server.network.http.config.KoraHttpDefaultServerC
 import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import java.io.File
 
-class KoraLaunchConfig {
+open class KoraLaunchConfig {
     companion object {
+        @JvmStatic
         fun createConfig(file: File): KoraLaunchConfig {
             val config = KoraLaunchConfig()
             if (file.isFile) {
@@ -30,6 +31,9 @@ class KoraLaunchConfig {
                     it.getJSON("http")?.let { http ->
                         config.httpServerConfig = KoraHttpServerConfig.createFromJSON(http)
                     }
+                    it.getString("entrypoint")?.let { entrypoint ->
+                        config.entrypoint = entrypoint
+                    }
                 }
             } else {
                 file.parentFile.let {
@@ -49,6 +53,11 @@ class KoraLaunchConfig {
     var assetPath: String = "assets/"
     var errorPage: String = ""
     var httpServerConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
+    var entrypoint: String = ""
+
+    fun isDefaultEntrypoint(): Boolean {
+        return this.entrypoint.isEmpty() || this.entrypoint == "com.github.cao.awa.kora.entry.KoraKotlinEntryPoint#entry"
+    }
 
     fun toJSON(): JSONObject {
         return JSONObject {
@@ -58,6 +67,7 @@ class KoraLaunchConfig {
             "asset_path" set assetPath
             "error_page" set errorPage
             "netty" set httpServerConfig.toJSON()
+            "entrypoint" set entrypoint
         }
     }
 }
