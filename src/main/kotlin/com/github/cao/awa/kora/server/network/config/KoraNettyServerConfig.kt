@@ -4,6 +4,7 @@ import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
+import io.netty.buffer.UnpooledByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
 
 abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
@@ -31,7 +32,8 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
             json.getString("allocator")?.let { allocator ->
                 config.allocator(
                     when (allocator) {
-                        "default" -> PooledByteBufAllocator.DEFAULT
+                        "default", "pooled" -> PooledByteBufAllocator.DEFAULT
+                        "unpolled" -> UnpooledByteBufAllocator.DEFAULT
                         else -> throw IllegalArgumentException("Unknown allocator type: $allocator")
                     }
                 )
@@ -147,6 +149,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
             "tcp_no_delay" set tcpNoDelay
             "allocator" set when (allocator) {
                 PooledByteBufAllocator.DEFAULT -> "default"
+                UnpooledByteBufAllocator.DEFAULT -> "unpooled"
                 else -> "default"
             }
         }
