@@ -4,6 +4,7 @@ import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
 import com.github.cao.awa.kora.server.network.context.abort.KoraAbortContext
 import com.github.cao.awa.kora.server.network.holder.PathByteBufHolder
+import io.netty.util.ReferenceCountUtil
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
@@ -11,7 +12,7 @@ abstract class KoraContext<B : PathByteBufHolder, C : KoraContext<B, C, A>, A : 
     constructor(context: KoraContext<B, C, A>) : this(context.msg)
 
     fun release(): Boolean {
-        return this.msg.release()
+        return ReferenceCountUtil.release(this.msg)
     }
 
     fun content(): ByteArray {
