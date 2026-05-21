@@ -158,6 +158,15 @@ fun main() {
 }
 ```
 
+## Case 3
+Use Kora's libraries loader features, change the ``entrypoint`` key in your config to ``com.github.cao.awa.kora.external.SampleEntrypoint#entry``.
+
+And use ``java -jar Kora-1.0.3.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
+
+For details, see [Entrypoint](https://github.com/cao-awa/Kora/blob/docs/entrypoint/README.md) document.
+
+You can also build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services! 
+
 ## Structured Responses and HTTP Metadata
 
 By default, Kora treats HTTP responses as **structured data**.

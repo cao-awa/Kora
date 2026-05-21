@@ -72,8 +72,7 @@ abstract class KoraEventLoopGroupFactory internal constructor(
 
     fun createEventLoopGroup(count: Int = 1): EventLoopGroup {
         synchronized(this) {
-            val threadFactory: ThreadFactory = createThreadFactory()
-            return MultiThreadIoEventLoopGroup(count, threadFactory, newIoHandlerFactory())
+            return MultiThreadIoEventLoopGroup(count,  createThreadFactory(), newIoHandlerFactory())
         }
     }
 }
