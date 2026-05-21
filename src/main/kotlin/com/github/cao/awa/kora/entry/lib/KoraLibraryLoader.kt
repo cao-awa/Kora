@@ -11,8 +11,6 @@ import kotlin.sequences.forEach
 object KoraLibraryLoader {
     private val LOGGER: Logger = LogManager.getLogger("KoraLibraryLoader")
     private var urlClassLoader: URLClassLoader? = null
-    val classLoader: URLClassLoader
-        get() = this.urlClassLoader!!
 
     @JvmStatic
     fun loadJars() {
