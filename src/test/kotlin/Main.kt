@@ -1,4 +1,4 @@
-import com.github.cao.awa.kora.KoraEntryPoint
+import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder
@@ -14,9 +14,9 @@ import java.nio.charset.StandardCharsets
 
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
-// E:\baton\baton.exe -u http://127.0.0.1:12345/home/test.html -c 12 -r 5000
+// oha -n 10000 -c 128 --latency-correction http://127.0.0.1:12345/test
 fun main() {
-    KoraEntryPoint.main()
+    KoraEntrypoint.main()
 }
 
 fun testSimple() {

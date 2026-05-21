@@ -1,11 +1,11 @@
 package com.github.cao.awa.kora.server.network.http
 
 import com.github.cao.awa.kora.constant.KoraInformation
+import com.github.cao.awa.kora.server.network.config.KoraNettyServerConfig
+import com.github.cao.awa.kora.server.network.config.KoraNettyServerDefaultConfig
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
-import com.github.cao.awa.kora.server.network.http.config.KoraHttpDefaultServerConfig
-import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
@@ -16,7 +16,6 @@ import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.io.File
 
 class KoraHttpServer {
     companion object {
@@ -24,7 +23,6 @@ class KoraHttpServer {
         var instructHttpMetadata: Boolean = true
         var instructHttpStatusCode: Boolean = true
         var instructHttpVersionCode: Boolean = true
-        var instructTimestamp: Boolean = false
         var instructRequestType: Boolean = true
         var instructRequestPath: Boolean = true
     }
@@ -39,7 +37,7 @@ class KoraHttpServer {
         port: Int,
         address: String = "localhost",
         useEpoll: Boolean = true,
-        config: KoraHttpServerConfig = KoraHttpDefaultServerConfig
+        config: KoraNettyServerConfig<*> = KoraNettyServerDefaultConfig
     ) {
         val threadFactory = KoraEventLoopGroupFactory.remote(
             useEpoll
@@ -87,7 +85,6 @@ class KoraHttpServer {
                 address,
                 port
             ).sync()
-            LOGGER.info("Kora running on directory '{}'", File("").absolutePath)
             LOGGER.info("Kora HTTP server started on port {} on {}", port, address)
             future.channel().closeFuture().addListener {
                 LOGGER.info("Kora HTTP server stopped")

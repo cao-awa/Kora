@@ -2,9 +2,9 @@ package com.github.cao.awa.kora.server.network.http.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
+import com.github.cao.awa.kora.server.network.KoraNetworkConfig
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
-import com.github.cao.awa.kora.server.network.http.asset.KoraBinaryAsset
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.asset.manager.KoraHttpAssetsManager
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
@@ -66,7 +66,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
             requestPath: String
         ): JSONObject {
             json.instruct {
-                if (KoraHttpServer.instructTimestamp) {
+                if (KoraNetworkConfig.instructTimestamp) {
                     "timestamp" set System.currentTimeMillis()
                 }
                 if (KoraHttpServer.instructRequestType) {
@@ -115,6 +115,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                 // Handle program logics.
                 abortable(handlerContext, koraContext, handler) {
                     try {
+                        // Try to create a result and response the result.
                         response(
                             handlerContext,
                             koraContext,
@@ -124,24 +125,26 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
                         // When error, default status is 500 INTERNAL_SERVER_ERROR.
                         var httpStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR
 
+                        // When path not registered, use asset manager to delegate the response.
                         if (e is HttpPathNotRegisteredException) {
                             if (assetsManager.available()) {
-                                var asset: KoraAsset<*>
-                                if (assetsManager.hasAsset(koraContext)) {
-                                    asset = assetsManager.getAsset(koraContext)
+                                val asset: KoraAsset<*>? = if (assetsManager.hasAsset(koraContext)) {
+                                    assetsManager.getAsset(koraContext)
                                 } else {
-                                    asset = assetsManager.getAsset(koraContext.path() + "/index.html")
+                                    assetsManager.getAsset(koraContext.path() + "/index.html")
                                 }
 
                                 // If asset not null. response the asset.
-                                response(
-                                    handlerContext,
-                                    koraContext,
-                                    asset
-                                )
+                                if (asset != null) {
+                                    response(
+                                        handlerContext,
+                                        koraContext,
+                                        asset
+                                    )
+                                }
                                 return@abortable
                             } else {
-                                // When error is page path not registered, it should be 404 NOT_FOUND.
+                                // When error is page path not registered and asset manager are not available, it should be 404 NOT_FOUND.
                                 httpStatus = HttpResponseStatus.NOT_FOUND
                             }
                         }

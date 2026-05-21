@@ -1,6 +1,5 @@
 package com.github.cao.awa.kora.server.network.http.adapter
 
-import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
@@ -20,6 +19,7 @@ class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : Cha
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         when (msg) {
             is FullHttpRequest -> {
+                // Handle full http request,
                 this.pipeline.handleFull(ctx, KoraHttpContext(KoraFullHttpRequestHolder(msg)))
             }
 

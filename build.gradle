@@ -44,7 +44,7 @@ dependencies {
 }
 
 application {
-    mainClass = 'com.github.cao.awa.kora.KoraEntryPoint'
+    mainClass = project.mainClass
 }
 
 shadowJar {

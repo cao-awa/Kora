@@ -18,7 +18,7 @@ object KoraHttpDefaultServerConfig: KoraHttpServerConfig() {
         return this
     }
 
-    override fun tcpNoDelay(tcpNoDelay: Boolean): KoraHttpServerConfig {
+    override fun tcpNoDelay(noDelay: Boolean): KoraHttpServerConfig {
         throwWhenSet()
         return this
     }

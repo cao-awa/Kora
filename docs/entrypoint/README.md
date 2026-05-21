@@ -49,7 +49,7 @@ And build a  jar, and put it into ``{working_path}/libs/ `` path, don't use shad
 
 The ``entrypoint`` config must declare full package name and class name, use symbol '#' to split entrypoint method.
 
-Kora bootstrap must receive a  ``KoraLaunchConfig`` instance or ``Array<String>`` argument, and must annotated by ``@JvmStatic``, it also must is an kotlin object instead of kotlin class.
+Kora bootstrap must receive a  ``KoraLaunchConfig`` instance or ``Array<String>`` argument or empty parameter, and must annotated by ``@JvmStatic``, it also must is an kotlin object instead of kotlin class.
 
 The ``entry`` name can be other anything, just modify the name declare before '#' symbol.
 
