@@ -23,16 +23,18 @@ object KoraLibraryLoader {
     }
 
     fun collectJars(file: File, jarFiles: MutableList<File>): MutableList<File> {
-        for (file in file.listFiles()) {
-            if (file.isFile && file.extension == "jar") {
-                if (file.isFile) {
-                    jarFiles.add(file)
+        val files = file.listFiles()
+        if (files != null) {
+            for (file in files) {
+                if (file.isFile && file.extension == "jar") {
+                    if (file.isFile) {
+                        jarFiles.add(file)
+                    }
+                } else if (file.isDirectory) {
+                    collectJars(file, jarFiles)
                 }
-            } else if (file.isDirectory) {
-                collectJars(file, jarFiles)
             }
         }
-
         return jarFiles
     }
 

@@ -381,7 +381,7 @@ Kora can launch an HTTP server within 200~500ms, even when creating a large rout
 
 ## Benchmark Test
 
-Tested by [Baton](https://github.com/americanexpress/baton) on an `AMD Ryzen 7 8845HS`, Windows 10, with default settings: `100000`~`120000` HTTP requests per second. (min 109170, max 128003)
+Tested by [OHA](https://crates.io/crates/oha) on an `AMD Ryzen 7 8845HS`, Windows 10, with default settings: `100000`~`120000` HTTP requests per second. (min 109170, max 128003)
 
 With JVM options (`-server -XX:+UseZGC -Xmx1G -Xms1G`)
 
