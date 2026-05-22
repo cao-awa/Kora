@@ -1,8 +1,8 @@
 package com.github.cao.awa.kora.server.network.http
 
+import com.github.cao.awa.kora.config.KoraLaunchConfig
+import com.github.cao.awa.kora.config.KoraLaunchDefaultConfig
 import com.github.cao.awa.kora.constant.KoraInformation
-import com.github.cao.awa.kora.server.network.config.KoraNettyServerConfig
-import com.github.cao.awa.kora.server.network.config.KoraNettyServerDefaultConfig
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
@@ -36,17 +36,16 @@ class KoraHttpServer {
     fun start(
         port: Int,
         address: String = "localhost",
-        useEpoll: Boolean = true,
-        config: KoraNettyServerConfig<*> = KoraNettyServerDefaultConfig
+        io: KoraEventLoopGroupFactory = KoraEventLoopGroupFactory.remote(),
+        launchConfig: KoraLaunchConfig = KoraLaunchDefaultConfig
     ) {
-        val threadFactory = KoraEventLoopGroupFactory.remote(
-            useEpoll
-        )
+        val nettyConfig = launchConfig.nettyServerConfig()
+        val threadFactory = KoraEventLoopGroupFactory.validate(io)
         val bossGroup: EventLoopGroup = threadFactory.createEventLoopGroup(2)
         val workerGroup: EventLoopGroup = threadFactory.createEventLoopGroup(
             Runtime.getRuntime().availableProcessors() * 2
         )
-        val adapter = KoraHttpInboundHandlerAdapter(this.serverBuilder)
+        val adapter = KoraHttpInboundHandlerAdapter(this.serverBuilder, launchConfig)
         try {
             val bootstrap = ServerBootstrap()
                 .group(
@@ -55,19 +54,19 @@ class KoraHttpServer {
                 ).channel(
                     threadFactory.channel
                 ).option(
-                    ChannelOption.SO_BACKLOG, config.backlog()
+                    ChannelOption.SO_BACKLOG, nettyConfig.backlog()
                 ).childOption(
-                    ChannelOption.TCP_NODELAY, config.tcpNoDelay()
+                    ChannelOption.TCP_NODELAY, nettyConfig.tcpNoDelay()
                 ).childOption(
-                    ChannelOption.SO_KEEPALIVE, config.keepalive()
+                    ChannelOption.SO_KEEPALIVE, nettyConfig.keepalive()
                 ).childOption(
-                    ChannelOption.SO_RCVBUF, config.rcvBuf()
+                    ChannelOption.SO_RCVBUF, nettyConfig.rcvBuf()
                 ).childOption(
-                    ChannelOption.SO_REUSEADDR, config.reuseAddr()
+                    ChannelOption.SO_REUSEADDR, nettyConfig.reuseAddr()
                 ).childOption(
-                    ChannelOption.WRITE_BUFFER_WATER_MARK, config.writeBufferWaterMark()
+                    ChannelOption.WRITE_BUFFER_WATER_MARK, nettyConfig.writeBufferWaterMark()
                 ).childOption(
-                    ChannelOption.ALLOCATOR, config.allocator()
+                    ChannelOption.ALLOCATOR, nettyConfig.allocator()
                 ).childHandler(object : ChannelInitializer<SocketChannel>() {
                     @Override
                     override fun initChannel(channel: SocketChannel) {

@@ -16,55 +16,49 @@ object KoraKotlinEntrypoint {
 
     @JvmStatic
     fun entry(config: KoraLaunchConfig) {
-        val nettyConfig = config.nettyServerConfig
+        val nettyConfig = config.nettyServerConfig()
 
-        val assetManagerConfig = config.assetManagerConfig
+        val assetManagerConfig = config.assetManagerConfig()
 
         val http = http {
             // Setup static asset path.
-            assets(assetManagerConfig.assetPath)
+            assets(assetManagerConfig.assetPath())
 
             // Redirect all no registered query to 404 page.
             ifAbort(HttpPathNotRegisteredException::class) {
-                withAsset(redirectAsset = assetManagerConfig.errorPage)
+                withAsset(redirectAsset = assetManagerConfig.errorPage())
             }
         }
 
         KoraHttpServer(http).start(
-            port = config.serverPort,
-            address = config.serverHost,
-            useEpoll = nettyConfig.useEpoll(),
-            config = nettyConfig
+            port = config.serverPort(),
+            address = config.serverHost(),
+            io = nettyConfig.io(),
+            launchConfig = config
         )
-        config.entrypoint.also { entryPoint ->
-            println(entryPoint.substring(0, entryPoint.indexOf("#")))
-            Class.forName(entryPoint.substring(0, entryPoint.indexOf("#"))).methods.forEach {
-
-            }
-        }
     }
 
     @JvmStatic
     fun printConfigs(config: KoraLaunchConfig) {
-        val nettyConfig = config.nettyServerConfig
-        val assetManagerConfig = config.assetManagerConfig
+        val nettyConfig = config.nettyServerConfig()
+        val assetManagerConfig = config.assetManagerConfig()
         // Print configs if 'printConfigDetails' is enabled
-        if (config.printConfigDetails) {
+        if (config.printConfigDetails()) {
             // Root configs.
             LOGGER.info("-- Basic configs --")
-            LOGGER.info("Config 'print_config_details': {}", config.printConfigDetails)
-            LOGGER.info("Config 'server_port': {}", config.serverPort)
-            LOGGER.info("Config 'server_host': {}", config.serverHost)
-            LOGGER.info("Config 'entrypoint': {}", config.entrypoint)
+            LOGGER.info("Config 'print_config_details': {}", config.printConfigDetails())
+            LOGGER.info("Config 'server_port': {}", config.serverPort())
+            LOGGER.info("Config 'server_host': {}", config.serverHost())
+            LOGGER.info("Config 'entrypoint': {}", config.entrypoint())
 
             // Asset manager configs
             LOGGER.info("-- Asset manager configs --")
-            LOGGER.info("Config 'asset_path': {}", assetManagerConfig.assetPath)
-            LOGGER.info("Config 'error_page': {}", assetManagerConfig.errorPage)
+            LOGGER.info("Config 'asset_path': {}", assetManagerConfig.assetPath())
+            LOGGER.info("Config 'error_page': {}", assetManagerConfig.errorPage())
 
             // Netty configs.
             LOGGER.info("-- Netty configs --")
-            LOGGER.info("Config 'use_epoll': {}", nettyConfig.useEpoll())
+            LOGGER.info("Config 'io': {}", nettyConfig.ioName())
             LOGGER.info("Config 'backlog': {}", nettyConfig.backlog())
             LOGGER.info("Config 'keep_alive': {}", nettyConfig.keepalive())
             LOGGER.info("Config 'rcv_buffer': {}", nettyConfig.rcvBuf())
@@ -85,16 +79,29 @@ object KoraKotlinEntrypoint {
         config: KoraLaunchConfig,
         args: Array<String>,
     ) {
-        val entryPoint: String = config.entrypoint
-        if (!entryPoint.contains("#")) {
+        for (entrypoint in config.entrypoint()) {
+            entryToDeclared(
+                config,
+                args,
+                entrypoint
+            )
+        }
+    }
+
+    fun entryToDeclared(
+        config: KoraLaunchConfig,
+        args: Array<String>,
+        entrypoint: String
+    ) {
+        if (!entrypoint.contains("#")) {
             throw IllegalArgumentException("Entrypoint doesn't contain a method declare")
         }
 
-        LOGGER.info("Launching Kora server({}) with declared entrypoint '{}'", KoraInformation.VERSION, entryPoint)
+        LOGGER.info("Launching declared entrypoint '{}'", entrypoint)
 
         val classLoader = KoraLibraryLoader.classLoader!!
-        val entryClassName = entryPoint.substring(0, entryPoint.indexOf("#"))
-        val entryMethodName = entryPoint.substring(entryPoint.indexOf("#") + 1)
+        val entryClassName = entrypoint.substring(0, entrypoint.indexOf("#"))
+        val entryMethodName = entrypoint.substring(entrypoint.indexOf("#") + 1)
         try {
             val entryClass = classLoader.loadClass(entryClassName)
             var method: Method?
@@ -122,9 +129,9 @@ object KoraKotlinEntrypoint {
                 }
             }
         } catch (_: ClassNotFoundException) {
-            entryPointNotFount(entryPoint)
+            entryPointNotFount(entrypoint)
         } catch (_: NoSuchMethodException) {
-            throw IllegalArgumentException("Cannot found valid entrypoint, please ensure method '$entryMethodName' received a 'KoraLaunchConfig' or 'Array<String>' and be static and @JvmStatic annotated")
+            throw IllegalArgumentException("Cannot found valid entrypoint, please ensure method '$entryMethodName' received a 'KoraLaunchConfig' or 'Array<String>' or empty parameter and be static and @JvmStatic annotated")
         }
     }
 }

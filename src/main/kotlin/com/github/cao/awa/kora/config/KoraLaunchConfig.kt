@@ -1,7 +1,9 @@
 package com.github.cao.awa.kora.config
 
 import com.github.cao.awa.cason.obj.JSONObject
+import com.github.cao.awa.cason.primary.JSONString
 import com.github.cao.awa.cason.serialize.parser.JSONParser
+import com.github.cao.awa.kora.kt.extent.onlyContains
 import com.github.cao.awa.kora.server.network.config.KoraNettyServerConfig
 import com.github.cao.awa.kora.server.network.config.KoraNettyServerDefaultConfig
 import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManagerConfig
@@ -9,6 +11,7 @@ import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManager
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
+import java.util.LinkedList
 
 open class KoraLaunchConfig {
     companion object {
@@ -36,7 +39,18 @@ open class KoraLaunchConfig {
                         config.nettyServerConfig = KoraNettyServerConfig.createFromJSON(http)
                     }
                     it.getString("entrypoint")?.let { entrypoint ->
-                        config.entrypoint = entrypoint
+                        config.entrypoint.clear()
+                        config.entrypoint.add(entrypoint)
+                    } ?: it.getArray("entrypoint")?.let { entrypoints ->
+                        config.entrypoint.clear()
+                        entrypoints.forEach { entrypoint ->
+                            if (!entrypoint.isString()) {
+                                throw IllegalArgumentException("Entrypoint definition must be string")
+                            }
+                            if (entrypoint is JSONString) {
+                                config.entrypoint.add(entrypoint.asString())
+                            }
+                        }
                     }
                 }
             } else {
@@ -52,12 +66,13 @@ open class KoraLaunchConfig {
         }
     }
 
-    var printConfigDetails: Boolean = true
-    var serverPort: Int = 12345
-    var serverHost: String = "localhost"
-    var assetManagerConfig: KoraAssetManagerConfig = KoraAssetManagerDefaultConfig
-    var nettyServerConfig: KoraNettyServerConfig<*> = KoraNettyServerDefaultConfig
-    var entrypoint: String = "com.github.cao.awa.kora.entry.KoraKotlinEntryPoint#entry"
+    private var printConfigDetails: Boolean = true
+    private var serverPort: Int = 12345
+    private var serverHost: String = "localhost"
+    private var assetManagerConfig: KoraAssetManagerConfig = KoraAssetManagerDefaultConfig
+    private var nettyServerConfig: KoraNettyServerConfig<*> = KoraNettyServerDefaultConfig
+    private var entrypoint: LinkedHashSet<String> =
+        linkedSetOf("com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry")
 
     fun printConfigDetails(): Boolean {
         return this.printConfigDetails
@@ -104,17 +119,17 @@ open class KoraLaunchConfig {
         return this
     }
 
-    fun entrypoint(): String {
+    fun entrypoint(): LinkedHashSet<String> {
         return this.entrypoint
     }
 
-    open fun entrypoint(entrypoint: String): KoraLaunchConfig {
+    open fun entrypoint(entrypoint: LinkedHashSet<String>): KoraLaunchConfig {
         this.entrypoint = entrypoint
         return this
     }
 
     fun isDefaultEntrypoint(): Boolean {
-        return this.entrypoint.isEmpty() || this.entrypoint == "com.github.cao.awa.kora.entry.KoraKotlinEntryPoint#entry"
+        return this.entrypoint.isEmpty() || this.entrypoint.onlyContains("com.github.cao.awa.kora.entry.KoraKotlinEntryPoint#entry")
     }
 
     fun toJSON(): JSONObject {
@@ -124,7 +139,11 @@ open class KoraLaunchConfig {
             "server_host" set serverHost
             "asset_manager" set assetManagerConfig.toJSON()
             "netty" set nettyServerConfig.toJSON()
-            "entrypoint" set entrypoint
+            arr("entrypoint") {
+                for (entry in entrypoint) {
+                    +entry
+                }
+            }
         }
     }
 }

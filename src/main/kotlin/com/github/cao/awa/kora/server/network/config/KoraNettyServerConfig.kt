@@ -1,18 +1,29 @@
 package com.github.cao.awa.kora.server.network.config
 
 import com.github.cao.awa.cason.obj.JSONObject
+import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.buffer.UnpooledByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
+import java.util.concurrent.ThreadFactory
 
 abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
     companion object {
         fun createFromJSON(json: JSONObject): KoraHttpServerConfig {
             val config = KoraHttpServerConfig()
-            json.getBoolean("use_epoll")?.let { useEpoll ->
-                config.useEpoll(useEpoll)
+            json.getString("io")?.let { io ->
+                config.io(
+                    when (io) {
+                        "default", "epoll" -> KoraEventLoopGroupFactory.epoll()
+                        "nio" -> KoraEventLoopGroupFactory.nio()
+                        "kqueue" -> KoraEventLoopGroupFactory.kqueue()
+                        "local" -> KoraEventLoopGroupFactory.local()
+                        "default" -> KoraEventLoopGroupFactory.epoll()
+                        else -> throw IllegalArgumentException("No such io event loop group factory: '$io'")
+                    }
+                )
             }
             json.getInt("backlog")?.let {
                 config.backlog(it)
@@ -42,7 +53,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
         }
     }
 
-    private var useEpoll: Boolean = true
+    private var io: KoraEventLoopGroupFactory = KoraEventLoopGroupFactory.epoll()
     private var backlog: Int = 8192
     private var keepalive: Boolean = true
     private var rcvBuf: Int = 65536
@@ -54,10 +65,20 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
     )
     private var tcpNoDelay: Boolean = true
 
-    fun useEpoll(): Boolean = this.useEpoll
+    fun io(): KoraEventLoopGroupFactory = this.io
 
-    open fun useEpoll(useEpoll: Boolean): KoraNettyServerConfig<T> {
-        this.useEpoll = useEpoll
+    fun ioName(): String {
+        return when (KoraEventLoopGroupFactory.validate(this.io)) {
+            KoraEventLoopGroupFactory.epoll() -> "epoll"
+            KoraEventLoopGroupFactory.nio() -> "nio"
+            KoraEventLoopGroupFactory.kqueue() -> "kqueue"
+            KoraEventLoopGroupFactory.local() -> "local"
+            else -> "default"
+        }
+    }
+
+    open fun io(io: KoraEventLoopGroupFactory): KoraNettyServerConfig<T> {
+        this.io = io
         return this
     }
 
@@ -98,8 +119,9 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
     }
 
     fun allocatorName(): String {
-        return when(this.allocator) {
-            PooledByteBufAllocator.DEFAULT -> "default"
+        return when (this.allocator) {
+            is PooledByteBufAllocator -> "default"
+            is UnpooledByteBufAllocator -> "unpooled"
             else -> "default"
         }
     }
@@ -119,7 +141,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
     }
 
     fun copy(instance: T): T {
-        instance.useEpoll(useEpoll())
+        instance.io(io())
         instance.backlog(backlog())
         instance.keepalive(keepalive())
         instance.rcvBuf(rcvBuf())
@@ -130,7 +152,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
     }
 
     fun copy(config: KoraNettyServerConfig<*>) {
-        config.useEpoll = this.useEpoll
+        config.io = this.io
         config.backlog = this.backlog
         config.keepalive = this.keepalive
         config.reuseAddr = this.reuseAddr
@@ -141,17 +163,13 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
 
     open fun toJSON(): JSONObject {
         return JSONObject {
-            "use_epoll" to useEpoll
+            "io" to ioName()
             "backlog" set backlog
             "keep_alive" set keepalive
             "rcv_buffer" set rcvBuf
             "reuse_address" set reuseAddr
             "tcp_no_delay" set tcpNoDelay
-            "allocator" set when (allocator) {
-                PooledByteBufAllocator.DEFAULT -> "default"
-                UnpooledByteBufAllocator.DEFAULT -> "unpooled"
-                else -> "default"
-            }
+            "allocator" set allocatorName()
         }
     }
 }

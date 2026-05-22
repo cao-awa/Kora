@@ -7,6 +7,9 @@ open class KoraAssetManagerConfig {
         @JvmStatic
         fun createFromJSON(json: JSONObject): KoraAssetManagerConfig {
             val config = KoraAssetManagerConfig()
+            json.getBoolean("enable")?.let { enable ->
+                config.enable = enable
+            }
             json.getString("asset_path")?.let { assetPath ->
                 config.assetPath = assetPath
             }
@@ -17,8 +20,18 @@ open class KoraAssetManagerConfig {
         }
     }
 
-    var assetPath: String = "assets/"
-    var errorPage: String = ""
+    private var enable: Boolean = true
+    private var assetPath: String = "assets/"
+    private var errorPage: String = ""
+
+    fun enable(): Boolean {
+        return this.enable
+    }
+
+    open fun enable(enabled: Boolean): KoraAssetManagerConfig {
+        this.enable = enabled
+        return this
+    }
 
     fun assetPath(): String {
         return this.assetPath
@@ -40,6 +53,7 @@ open class KoraAssetManagerConfig {
 
     fun toJSON(): JSONObject {
         return JSONObject {
+            "enable" to enable
             "asset_path" set assetPath
             "error_page" set errorPage
         }

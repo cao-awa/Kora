@@ -24,15 +24,14 @@ class KoraWebSocketServer {
         this.serverBuilder = builder
     }
 
+    // TODO websocket special supports.
     fun start(
         port: Int,
         address: String = "localhost",
         useEpoll: Boolean = true,
         config: KoraHttpServerConfig = KoraHttpDefaultServerConfig
     ) {
-        val threadFactory = KoraEventLoopGroupFactory.remote(
-            useEpoll
-        )
+        val threadFactory = KoraEventLoopGroupFactory.remote()
         val bossGroup: EventLoopGroup = threadFactory.createEventLoopGroup(1)
         val workerGroup: EventLoopGroup =
             threadFactory.createEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2)

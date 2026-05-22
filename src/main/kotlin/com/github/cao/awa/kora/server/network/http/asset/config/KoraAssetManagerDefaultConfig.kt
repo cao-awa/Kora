@@ -5,6 +5,11 @@ object KoraAssetManagerDefaultConfig: KoraAssetManagerConfig() {
         error("Cannot set config in default server config instance")
     }
 
+    override fun enable(enabled: Boolean): KoraAssetManagerConfig {
+        throwWhenSet()
+        return this
+    }
+
     override fun assetPath(assetPath: String): KoraAssetManagerConfig {
         throwWhenSet()
         return this

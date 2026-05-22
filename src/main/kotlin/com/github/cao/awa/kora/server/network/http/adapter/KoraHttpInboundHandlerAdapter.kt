@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.server.network.http.adapter
 
+import com.github.cao.awa.kora.config.KoraLaunchConfig
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
@@ -12,7 +13,12 @@ import io.netty.handler.codec.http.FullHttpRequest
 
 @ChannelHandler.Sharable
 class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : ChannelInboundHandlerAdapter() {
-    constructor(builder: KoraHttpServerBuilder) : this(KoraHttpRequestPipeline(KoraHttpRequestServerAbortHandler(builder.abortHandlers))) {
+    constructor(builder: KoraHttpServerBuilder, launchConfig: KoraLaunchConfig) : this(
+        KoraHttpRequestPipeline(
+            KoraHttpRequestServerAbortHandler(builder.abortHandlers),
+            launchConfig
+        )
+    ) {
         builder.applyRoute(this)
     }
 

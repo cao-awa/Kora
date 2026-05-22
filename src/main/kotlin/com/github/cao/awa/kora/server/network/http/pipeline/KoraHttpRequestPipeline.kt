@@ -2,9 +2,11 @@ package com.github.cao.awa.kora.server.network.http.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
+import com.github.cao.awa.kora.config.KoraLaunchConfig
 import com.github.cao.awa.kora.server.network.KoraNetworkConfig
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
+import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManagerConfig
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.asset.manager.KoraHttpAssetsManager
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
@@ -37,7 +39,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
 
-class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestServerAbortHandler) :
+class KoraHttpRequestPipeline(
+    private val serverAbortHandlers: KoraHttpRequestServerAbortHandler,
+    private val launchConfig: KoraLaunchConfig
+) :
     KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
     companion object {
         fun instructHttpMetadata(json: JSONObject, context: KoraHttpContext): JSONObject {
@@ -89,6 +94,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
         }
     }
 
+    private val assetManagerConfig: KoraAssetManagerConfig = this.launchConfig.assetManagerConfig()
     private val handlers: Map<HttpMethod, KoraHttpRequestHandler> =
         HashMap<HttpMethod, KoraHttpRequestHandler>().apply {
             put(HttpMethod.GET, KoraHttpGetHandler())
@@ -127,7 +133,7 @@ class KoraHttpRequestPipeline(private val serverAbortHandlers: KoraHttpRequestSe
 
                         // When path not registered, use asset manager to delegate the response.
                         if (e is HttpPathNotRegisteredException) {
-                            if (assetsManager.available()) {
+                            if (assetManagerConfig.enable() && assetsManager.available()) {
                                 val asset: KoraAsset<*>? = if (assetsManager.hasAsset(koraContext)) {
                                     assetsManager.getAsset(koraContext)
                                 } else {

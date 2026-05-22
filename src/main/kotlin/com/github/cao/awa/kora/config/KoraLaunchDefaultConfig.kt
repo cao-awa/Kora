@@ -34,7 +34,7 @@ object KoraLaunchDefaultConfig: KoraLaunchConfig() {
         return this
     }
 
-    override fun entrypoint(entrypoint: String): KoraLaunchConfig {
+    override fun entrypoint(entrypoint: LinkedHashSet<String>): KoraLaunchConfig {
         throwWhenSet()
         return this
     }

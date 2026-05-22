@@ -40,8 +40,7 @@ fun testSimple() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
-        useEpoll = true
+        port = 12345
     )
 }
 
@@ -57,8 +56,7 @@ fun testAssets() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
-        useEpoll = true
+        port = 12345
     )
 }
 
@@ -77,8 +75,7 @@ fun testDataClass() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
-        useEpoll = true
+        port = 12345
     )
 }
 
@@ -141,8 +138,7 @@ fun testPlaceholder() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
-        useEpoll = true
+        port = 12345
     )
 }
 
@@ -182,8 +178,7 @@ fun testNotFound() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
-        useEpoll = true
+        port = 12345
     )
 }
 
@@ -204,8 +199,7 @@ fun testError() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
-        useEpoll = true
+        port = 12345
     )
 }
 
@@ -246,7 +240,6 @@ fun testRender() {
     }
 
     KoraHttpServer(http).start(
-        port = 12345,
-        useEpoll = true
+        port = 12345
     )
 }

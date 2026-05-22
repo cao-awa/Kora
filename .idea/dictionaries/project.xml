@@ -3,9 +3,12 @@
     <words>
       <w>capertml</w>
       <w>cason</w>
+      <w>entrypoints</w>
       <w>kora</w>
+      <w>pooledbytebufallocator</w>
       <w>texinfo</w>
       <w>troff</w>
+      <w>unpooledbytebufallocator</w>
     </words>
   </dictionary>
 </component>

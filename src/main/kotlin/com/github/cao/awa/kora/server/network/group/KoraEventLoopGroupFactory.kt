@@ -38,15 +38,12 @@ abstract class KoraEventLoopGroupFactory internal constructor(
                 override fun newIoHandlerFactory(): IoHandlerFactory = LocalIoHandler.newFactory()
             }
 
-        fun remote(useEpoll: Boolean): KoraEventLoopGroupFactory {
-            if (useEpoll) {
-                if (Epoll.isAvailable()) {
-                    return EPOLL
-                }
-                if (KQueue.isAvailable()) {
-                    return KQUEUE
-                }
-
+        fun remote(): KoraEventLoopGroupFactory {
+            if (Epoll.isAvailable()) {
+                return EPOLL
+            }
+            if (KQueue.isAvailable()) {
+                return KQUEUE
             }
             return NIO
         }
@@ -58,6 +55,22 @@ abstract class KoraEventLoopGroupFactory internal constructor(
         fun kqueue(): KoraEventLoopGroupFactory = KQUEUE
 
         fun local(): KoraEventLoopGroupFactory = LOCAL
+
+        fun validate(io: KoraEventLoopGroupFactory): KoraEventLoopGroupFactory {
+            if (io == local()) {
+                return io
+            }
+
+            if (io == epoll() && Epoll.isAvailable()) {
+                return io
+            }
+
+            if (io == kqueue() && KQueue.isAvailable()) {
+                return io
+            }
+
+            return NIO
+        }
     }
 
     protected abstract fun newIoHandlerFactory(): IoHandlerFactory
@@ -72,7 +85,7 @@ abstract class KoraEventLoopGroupFactory internal constructor(
 
     fun createEventLoopGroup(count: Int = 1): EventLoopGroup {
         synchronized(this) {
-            return MultiThreadIoEventLoopGroup(count,  createThreadFactory(), newIoHandlerFactory())
+            return MultiThreadIoEventLoopGroup(count, createThreadFactory(), newIoHandlerFactory())
         }
     }
 }

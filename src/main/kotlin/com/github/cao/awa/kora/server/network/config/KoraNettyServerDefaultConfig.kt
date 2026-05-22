@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.server.network.config
 
+import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import io.netty.buffer.ByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
 
@@ -8,7 +9,7 @@ object KoraNettyServerDefaultConfig: KoraNettyServerConfig<KoraNettyServerDefaul
         error("Cannot set config in default server config instance")
     }
 
-    override fun useEpoll(useEpoll: Boolean): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun io(io: KoraEventLoopGroupFactory): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
         throwWhenSet()
         return this
     }
