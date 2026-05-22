@@ -159,7 +159,14 @@ fun main() {
 ```
 
 ## Case 3
-Use Kora's libraries loader features, change the ``entrypoint`` key in your config to ``com.github.cao.awa.kora.external.SampleEntrypoint#entry``.
+Use Kora's libraries loader features, change the ``entrypoint`` key in your config to:
+```json
+"entrypoint": [
+    "com.github.cao.awa.com.github.cao.awa.kora.redis.entrypoint.RedisPluginBootstrap#init",
+    "com.github.cao.awa.kora.external.SampleEntrypoint#entry",
+    "com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry"
+]
+```
 
 And use ``java -jar Kora-1.0.5.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
 
