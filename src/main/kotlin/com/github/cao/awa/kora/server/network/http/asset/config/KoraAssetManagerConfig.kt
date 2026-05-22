@@ -1,22 +1,27 @@
 package com.github.cao.awa.kora.server.network.http.asset.config
 
 import com.github.cao.awa.cason.obj.JSONObject
+import com.github.cao.awa.kora.config.KoraConfig
 
-open class KoraAssetManagerConfig {
+open class KoraAssetManagerConfig : KoraConfig() {
     companion object {
         @JvmStatic
         fun createFromJSON(json: JSONObject): KoraAssetManagerConfig {
-            val config = KoraAssetManagerConfig()
-            json.getBoolean("enable")?.let { enable ->
-                config.enable = enable
+            return createConfig(json) {
+                val config = KoraAssetManagerConfig()
+
+                ifBoolean("enable") {
+                    config.enable = this
+                }
+                ifString("asset_path") {
+                    config.assetPath = this
+                }
+                ifString("error_page") {
+                    config.errorPage = this
+                }
+
+                config
             }
-            json.getString("asset_path")?.let { assetPath ->
-                config.assetPath = assetPath
-            }
-            json.getString("error_page")?.let { errorPage ->
-                config.errorPage = errorPage
-            }
-            return config
         }
     }
 
@@ -51,7 +56,7 @@ open class KoraAssetManagerConfig {
         return this;
     }
 
-    fun toJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         return JSONObject {
             "enable" to enable
             "asset_path" set assetPath

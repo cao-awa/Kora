@@ -1,8 +1,8 @@
-package com.github.cao.awa.kora.config
+package com.github.cao.awa.kora.launch.config
 
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.cason.primary.JSONString
-import com.github.cao.awa.cason.serialize.parser.JSONParser
+import com.github.cao.awa.kora.config.KoraConfig
 import com.github.cao.awa.kora.kt.extent.onlyContains
 import com.github.cao.awa.kora.server.network.config.KoraNettyServerConfig
 import com.github.cao.awa.kora.server.network.config.KoraNettyServerDefaultConfig
@@ -11,58 +11,47 @@ import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManager
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
-import java.util.LinkedList
 
-open class KoraLaunchConfig {
+open class KoraLaunchConfig: KoraConfig() {
     companion object {
         private val LOGGER: Logger = LogManager.getLogger("KoraLaunchConfig")
 
         @JvmStatic
         fun createConfig(file: File): KoraLaunchConfig {
-            val config = KoraLaunchConfig()
-            if (file.isFile) {
-                LOGGER.info("Creating config from file '{}'", file.absolutePath)
-                JSONParser.parseObject(file.readText(Charsets.UTF_8)).let {
-                    it.getBoolean("print_config_details")?.let { printConfigDetails ->
-                        config.printConfigDetails = printConfigDetails
-                    }
-                    it.getInt("server_port")?.let { serverPort ->
-                        config.serverPort = serverPort
-                    }
-                    it.getString("server_host")?.let { serverHost ->
-                        config.serverHost = serverHost
-                    }
-                    it.getJSON("asset_manager")?.let { assetManager ->
-                        config.assetManagerConfig = KoraAssetManagerConfig.createFromJSON(assetManager)
-                    }
-                    it.getJSON("netty")?.let { http ->
-                        config.nettyServerConfig = KoraNettyServerConfig.createFromJSON(http)
-                    }
-                    it.getString("entrypoint")?.let { entrypoint ->
-                        config.entrypoint.clear()
-                        config.entrypoint.add(entrypoint)
-                    } ?: it.getArray("entrypoint")?.let { entrypoints ->
-                        config.entrypoint.clear()
-                        entrypoints.forEach { entrypoint ->
-                            if (!entrypoint.isString()) {
-                                throw IllegalArgumentException("Entrypoint definition must be string")
-                            }
-                            if (entrypoint is JSONString) {
-                                config.entrypoint.add(entrypoint.asString())
-                            }
+            return createConfig(file)  {
+                val config = KoraLaunchConfig()
+                ifBoolean("print_config_details") {
+                    config.printConfigDetails = this
+                }
+                ifInt("server_port") {
+                    config.serverPort = this
+                }
+                ifString("server_host") {
+                    config.serverHost = this
+                }
+                ifJSON("asset_manager") {
+                    config.assetManagerConfig = KoraAssetManagerConfig.createFromJSON(this)
+                }
+                ifJSON("netty") {
+                    config.nettyServerConfig = KoraNettyServerConfig.createFromJSON(this)
+                }
+                getString("entrypoint")?.let { entrypoint ->
+                    config.entrypoint.clear()
+                    config.entrypoint.add(entrypoint)
+                } ?: getArray("entrypoint")?.let { entrypoints ->
+                    config.entrypoint.clear()
+                    entrypoints.forEach { entrypoint ->
+                        if (!entrypoint.isString()) {
+                            throw IllegalArgumentException("Entrypoint definition must be string")
+                        }
+                        if (entrypoint is JSONString) {
+                            config.entrypoint.add(entrypoint.asString())
                         }
                     }
                 }
-            } else {
-                LOGGER.info("Config not found, creating config to file '{}'", file.absolutePath)
-                file.parentFile.let {
-                    if (!it.exists()) {
-                        it.mkdirs()
-                    }
-                }
+
+                config
             }
-            file.writeText(config.toJSON().toString(true, "    "))
-            return config
         }
     }
 
@@ -132,7 +121,7 @@ open class KoraLaunchConfig {
         return this.entrypoint.isEmpty() || this.entrypoint.onlyContains("com.github.cao.awa.kora.entry.KoraKotlinEntryPoint#entry")
     }
 
-    fun toJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         return JSONObject {
             "print_config_details" set printConfigDetails
             "server_port" set serverPort

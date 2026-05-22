@@ -1,6 +1,7 @@
 package com.github.cao.awa.kora.server.network.config
 
 import com.github.cao.awa.cason.obj.JSONObject
+import com.github.cao.awa.kora.config.KoraConfig
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import io.netty.buffer.ByteBufAllocator
@@ -9,47 +10,49 @@ import io.netty.buffer.UnpooledByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
 import java.util.concurrent.ThreadFactory
 
-abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
+abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig() {
     companion object {
         fun createFromJSON(json: JSONObject): KoraHttpServerConfig {
-            val config = KoraHttpServerConfig()
-            json.getString("io")?.let { io ->
-                config.io(
-                    when (io) {
-                        "default", "epoll" -> KoraEventLoopGroupFactory.epoll()
-                        "nio" -> KoraEventLoopGroupFactory.nio()
-                        "kqueue" -> KoraEventLoopGroupFactory.kqueue()
-                        "local" -> KoraEventLoopGroupFactory.local()
-                        "default" -> KoraEventLoopGroupFactory.epoll()
-                        else -> throw IllegalArgumentException("No such io event loop group factory: '$io'")
-                    }
-                )
+            return createConfig(json) {
+                val config = KoraHttpServerConfig()
+                ifString("io") {
+                    config.io(
+                        when (this) {
+                            "default", "epoll" -> KoraEventLoopGroupFactory.epoll()
+                            "nio" -> KoraEventLoopGroupFactory.nio()
+                            "kqueue" -> KoraEventLoopGroupFactory.kqueue()
+                            "local" -> KoraEventLoopGroupFactory.local()
+                            else -> throw IllegalArgumentException("No such io event loop group factory: '$this'")
+                        }
+                    )
+                }
+                ifInt("backlog") {
+                    config.backlog(this)
+                }
+                ifBoolean("keep_alive") {
+                    config.keepalive(this)
+                }
+                ifInt("rcv_buffer") {
+                    config.rcvBuf(this)
+                }
+                ifBoolean("reuse_address") {
+                    config.reuseAddr(this)
+                }
+                ifBoolean("tcp_no_delay") {
+                    config.tcpNoDelay(this)
+                }
+                ifString("allocator") {
+                    config.allocator(
+                        when (this) {
+                            "default", "pooled" -> PooledByteBufAllocator.DEFAULT
+                            "unpolled" -> UnpooledByteBufAllocator.DEFAULT
+                            else -> throw IllegalArgumentException("Unknown allocator type: $this")
+                        }
+                    )
+                }
+
+                config
             }
-            json.getInt("backlog")?.let {
-                config.backlog(it)
-            }
-            json.getBoolean("keep_alive")?.let {
-                config.keepalive(it)
-            }
-            json.getInt("rcv_buffer")?.let {
-                config.rcvBuf(it)
-            }
-            json.getBoolean("reuse_address")?.let {
-                config.reuseAddr(it)
-            }
-            json.getBoolean("tcp_no_delay")?.let {
-                config.tcpNoDelay(it)
-            }
-            json.getString("allocator")?.let { allocator ->
-                config.allocator(
-                    when (allocator) {
-                        "default", "pooled" -> PooledByteBufAllocator.DEFAULT
-                        "unpolled" -> UnpooledByteBufAllocator.DEFAULT
-                        else -> throw IllegalArgumentException("Unknown allocator type: $allocator")
-                    }
-                )
-            }
-            return config
         }
     }
 
@@ -161,7 +164,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> {
         config.writeBufferWaterMark = this.writeBufferWaterMark
     }
 
-    open fun toJSON(): JSONObject {
+    override fun toJSON(): JSONObject {
         return JSONObject {
             "io" to ioName()
             "backlog" set backlog

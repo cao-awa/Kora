@@ -1,6 +1,6 @@
 package com.github.cao.awa.kora.server.network.http.adapter
 
-import com.github.cao.awa.kora.config.KoraLaunchConfig
+import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext

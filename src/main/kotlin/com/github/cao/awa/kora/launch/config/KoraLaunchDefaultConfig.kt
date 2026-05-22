@@ -1,4 +1,4 @@
-package com.github.cao.awa.kora.config
+package com.github.cao.awa.kora.launch.config
 
 import com.github.cao.awa.kora.server.network.config.KoraNettyServerConfig
 import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManagerConfig

@@ -1,6 +1,6 @@
 package com.github.cao.awa.kora;
 
-import com.github.cao.awa.kora.config.KoraLaunchConfig;
+import com.github.cao.awa.kora.launch.config.KoraLaunchConfig;
 import com.github.cao.awa.kora.constant.KoraInformation;
 import com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint;
 import com.github.cao.awa.kora.entrypoint.lib.KoraLibraryLoader;
@@ -16,7 +16,7 @@ public class KoraEntrypoint {
         LOGGER.info("Starting Kora({}) server...", KoraInformation.VERSION);
         LOGGER.info("Kora running on directory '{}'", new File("").getAbsolutePath());
 
-        KoraLaunchConfig config = KoraLaunchConfig.createConfig(new File("config/launch.json"));
+        KoraLaunchConfig config = KoraLaunchConfig.createConfig(new File("configs/launch.json"));
         KoraKotlinEntrypoint.printConfigs(config);
         if (config.isDefaultEntrypoint()) {
             KoraKotlinEntrypoint.entry(config);

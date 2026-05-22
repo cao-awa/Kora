@@ -1,0 +1,34 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.2.21'
+    id 'java'
+}
+
+group = rootProject.group_id
+version = rootProject.version_name
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.logging.log4j:log4j-api:2.25.4'
+    implementation 'org.apache.logging.log4j:log4j-core:2.25.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
+    implementation 'com.google.guava:guava:33.5.0-jre'
+    implementation 'io.netty:netty-all:4.2.13.Final'
+    implementation "com.github.cao-awa:Cason:$rootProject.cason_version"
+    implementation 'com.github.cao-awa:CaperTML:1.0.0'
+
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+
+    implementation project(":")
+    implementation project(':kora-redis')
+}
+
+kotlin {
+    jvmToolchain(24)
+}
+
+test {
+    useJUnitPlatform()
+}

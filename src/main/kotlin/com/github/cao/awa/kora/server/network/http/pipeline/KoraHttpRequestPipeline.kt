@@ -2,7 +2,7 @@ package com.github.cao.awa.kora.server.network.http.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
-import com.github.cao.awa.kora.config.KoraLaunchConfig
+import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.server.network.KoraNetworkConfig
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
