@@ -168,7 +168,7 @@ Use Kora's libraries loader features, change the ``entrypoint`` key in your conf
 ]
 ```
 
-And use ``java -jar Kora-1.0.5.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
+Put ``libs/``(in this repo) to your jar location and use ``java -jar Kora-1.0.5.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
 
 For details, see [Entrypoint](https://github.com/cao-awa/Kora/blob/main/docs/entrypoint/README.md) document.
 
