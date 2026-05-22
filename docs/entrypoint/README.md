@@ -2,41 +2,27 @@
 You can declare an entrypoint in config with ``entrypoint`` key:
 ```json
 {
-    "entrypoint": "com.github.cao.awa.kora.entry.SampleEntrypoint#entry"
+    "entrypoint": [
+        "com.github.xxx.entry.SampleEntrypoint#entry"
+    ]
 }
 ```
 
 And writes code like this:
 
 ```kotlin
-package com.github.cao.awa.kora.entry
+package com.github.xxx.entry
 
-import com.github.cao.awa.kora.config.KoraLaunchConfig
-import com.github.cao.awa.kora.server.network.http.KoraHttpServer
-import com.github.cao.awa.kora.server.network.http.builder.http
-import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
+import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 object SampleEntrypoint {
+    private val LOGGER: Logger = LogManager.getLogger("SampleEntrypoint")
+
     @JvmStatic
-    fun entry(config: KoraLaunchConfig) {
-        val httpConfig = config.httpServerConfig
-
-        val http = http {
-            // Setup static asset path.
-            assets(config.assetPath)
-
-            // Redirect all no registered query to 404 page.
-            ifAbort(HttpPathNotRegisteredException::class) {
-                withAsset(redirectAsset = config.errorPage)
-            }
-        }
-
-        KoraHttpServer(http).start(
-            port = config.serverPort,
-            address = config.serverHost,
-            useEpoll = httpConfig.useEpoll(),
-            config = httpConfig
-        )
+    fun entry(launchConfig: KoraLaunchConfig) {
+        LOGGER.info("External plugin test success!")
     }
 }
 ```
@@ -64,3 +50,16 @@ If ``entrypoint`` config are missing or defined to empty:
 `````
 
 Kora will automatically start an asset manager web server, you may need to configure the ``asset_path``, ``error_page`` and other configs.
+
+## Multi entrypoint
+Clone Kora's repo in your IDE, and run the ``src/test/kotlin/Main.kt`` file, Kora's repo contains these plugins in path ``libs/``, you will got multiple plugins test output and finally run the Kora default asset manager web server:
+
+```json
+{
+    "entrypoint": [
+        "com.github.cao.awa.com.github.cao.awa.kora.redis.entrypoint.RedisPluginBootstrap#init",
+        "com.github.cao.awa.kora.external.SampleEntrypoint#entry",
+        "com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry"
+    ]
+}
+```
