@@ -83,8 +83,12 @@ class KoraRedisClient(private val config: KoraRedisClientConfig) {
 
             '*' -> {
                 val count = line.substring(1).toInt()
-                if (count == -1) null
-                else List(count) { readResponse() }
+                if (count == -1) {
+                    null
+                }
+                else {
+                    List(count) { readResponse() }
+                }
             }
 
             else -> throw IllegalArgumentException("Unknown response type: $type")

@@ -1,1 +1,1 @@
-docker run -d --name redis-server -p 6379:6379 -v redis-data:/data my-redis
+docker run -m 128m -d --name redis-server -p 6379:6379 -v redis-data:/data my-redis

@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora;
 
+import com.github.cao.awa.kora.entrypoint.exception.KoraEntrypointStageFailedException;
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig;
 import com.github.cao.awa.kora.constant.KoraInformation;
 import com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint;
@@ -13,16 +14,26 @@ public class KoraEntrypoint {
     private static final Logger LOGGER = LogManager.getLogger("KoraEntryPoint");
 
     public static void main(String... args) {
-        LOGGER.info("Starting Kora({}) server...", KoraInformation.VERSION);
-        LOGGER.info("Kora running on directory '{}'", new File("").getAbsolutePath());
+        LOGGER.info("Starting Kora({}) server...",
+                    KoraInformation.VERSION
+        );
+        LOGGER.info("Kora running on directory '{}'",
+                    new File("").getAbsolutePath()
+        );
 
-        KoraLaunchConfig config = KoraLaunchConfig.createConfig(new File("configs/launch.json"));
-        KoraKotlinEntrypoint.printConfigs(config);
-        if (config.isDefaultEntrypoint()) {
-            KoraKotlinEntrypoint.entry(config);
-        } else  {
-            KoraLibraryLoader.loadJars();
-            KoraKotlinEntrypoint.entryToDeclared(config, args);
+        try {
+            KoraLaunchConfig config = KoraLaunchConfig.createConfig(new File("configs/launch.json"));
+            KoraKotlinEntrypoint.printConfigs(config);
+            if (config.isDefaultEntrypoint()) {
+                KoraKotlinEntrypoint.entry(config);
+            } else {
+                KoraLibraryLoader.loadJars();
+                KoraKotlinEntrypoint.entryToDeclared(config,
+                                                     args
+                );
+            }
+        } catch (KoraEntrypointStageFailedException ex) {
+            LOGGER.error("Failed to startup Kora server on entrypoint stage: '{}'", ex.stage, ex.cause);
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.entrypoint
 
+import com.github.cao.awa.kora.entrypoint.exception.KoraEntrypointStageFailedException
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.entrypoint.lib.KoraLibraryLoader
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
@@ -7,6 +8,7 @@ import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import kotlin.jvm.Throws
 
@@ -48,10 +50,18 @@ object KoraKotlinEntrypoint {
             LOGGER.info("Config 'print_config_details': {}", config.printConfigDetails())
             LOGGER.info("Config 'server_port': {}", config.serverPort())
             LOGGER.info("Config 'server_host': {}", config.serverHost())
-            LOGGER.info("Config 'entrypoint': {}", config.entrypoint())
+            if (config.entrypoint().size == 1) {
+                LOGGER.info("Config 'entrypoint': {}", config.entrypoint().first)
+            } else {
+                LOGGER.info("Config 'entrypoint': ")
+                for (entrypoint in config.entrypoint()) {
+                    LOGGER.info(" + '$entrypoint'")
+                }
+            }
 
             // Asset manager configs
             LOGGER.info("-- Asset manager configs --")
+            LOGGER.info("Config 'enable': {}", assetManagerConfig.enable())
             LOGGER.info("Config 'asset_path': {}", assetManagerConfig.assetPath())
             LOGGER.info("Config 'error_page': {}", assetManagerConfig.errorPage())
 
@@ -131,6 +141,9 @@ object KoraKotlinEntrypoint {
             entryPointNotFount(entrypoint)
         } catch (_: NoSuchMethodException) {
             throw IllegalArgumentException("Cannot found valid entrypoint, please ensure method '$entryMethodName' received a 'KoraLaunchConfig' or 'Array<String>' or empty parameter and be static and @JvmStatic annotated")
+        } catch (invocationException: InvocationTargetException) {
+            val throwError = invocationException.cause ?: invocationException
+            throw KoraEntrypointStageFailedException(entrypoint, throwError)
         }
     }
 }

@@ -35,12 +35,15 @@ open class KoraLaunchConfig: KoraConfig() {
                 ifJSON("netty") {
                     config.nettyServerConfig = KoraNettyServerConfig.createFromJSON(this)
                 }
-                getString("entrypoint")?.let { entrypoint ->
+                ifString("entrypoint") {
+                    if (this != "") {
+                        config.entrypoint.clear()
+                        config.entrypoint.add(this)
+                    }
+                }
+                ifArray("entrypoint") {
                     config.entrypoint.clear()
-                    config.entrypoint.add(entrypoint)
-                } ?: getArray("entrypoint")?.let { entrypoints ->
-                    config.entrypoint.clear()
-                    entrypoints.forEach { entrypoint ->
+                    forEach { entrypoint ->
                         if (!entrypoint.isString()) {
                             throw IllegalArgumentException("Entrypoint definition must be string")
                         }
