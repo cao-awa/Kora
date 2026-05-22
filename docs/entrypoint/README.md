@@ -52,6 +52,9 @@ If ``entrypoint`` config are missing or defined to empty:
 Kora will automatically start an asset manager web server, you may need to configure the ``asset_path``, ``error_page`` and other configs.
 
 ## Multi entrypoint
+> NOTE:\
+> This test case need user launch Redis to initialize first plugin 'RedisPluginBootstrap'
+
 Clone Kora's repo in your IDE, and run the ``src/test/kotlin/Main.kt`` file, Kora's repo contains these plugins in path ``libs/``, you will got multiple plugins test output and finally run the Kora default asset manager web server:
 
 ```json
