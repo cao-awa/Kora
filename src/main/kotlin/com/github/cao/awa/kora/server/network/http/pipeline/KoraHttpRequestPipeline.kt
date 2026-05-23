@@ -39,7 +39,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
 
-class KoraHttpRequestPipeline(
+class
+KoraHttpRequestPipeline(
     private val serverAbortHandlers: KoraHttpRequestServerAbortHandler,
     private val launchConfig: KoraLaunchConfig
 ) :
