@@ -1,5 +1,8 @@
 package com.github.cao.awa.kora.entrypoint.lib
 
+import com.github.cao.awa.cason.primary.JSONString
+import com.github.cao.awa.cason.serialize.parser.JSONParser
+import com.github.cao.awa.kora.KoraEntrypoint
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
@@ -58,7 +61,49 @@ object KoraLibraryLoader {
         LOGGER.info("Loading library file: {}", jarFile.absolutePath)
 
         // Add every class in the jar.
-        JarFile(jarFile).use { jar ->
+        JarFile(jarFile).also { jar ->
+            val pluginDefinition = jar.getJarEntry("META-INF/plugin.json")
+            if (pluginDefinition != null) {
+                LOGGER.info("Loading '{}' as a standard plugin", jarFile.absolutePath)
+                val pluginMetadata = JSONParser.parseObject(
+                    String(
+                        jar.getInputStream(pluginDefinition).readAllBytes()
+                    )
+                )
+                var pluginName = ""
+                pluginMetadata.ifString("name") {
+                    pluginName = this
+                }
+                if (pluginName == "") {
+                    throw IllegalArgumentException("Plugin definition must define a name")
+                }
+                var entrypoint = ""
+                pluginMetadata.ifString("entrypoint") {
+                    entrypoint = this
+                }
+                if (entrypoint == "") {
+                    throw IllegalArgumentException("Plugin definition must define a entrypoint")
+                }
+                var dependsOn = emptyArray<String>()
+                pluginMetadata.ifArray("depends_on") {
+                    dependsOn = this.list.map {
+                        if (it.isString()) {
+                            (it as JSONString).asString()
+                        } else {
+                            throw IllegalArgumentException("Depends data can only be plugin name string, but got ${it::class.simpleName}")
+                        }
+                    }.toTypedArray()
+                }
+
+                KoraEntrypoint.DEPENDENCIES_MANAGER.addPlugin(
+                    pluginName,
+                    entrypoint,
+                    dependsOn
+                )
+            } else {
+                LOGGER.info("Loading '{}' as a unnamed plugin", jarFile.absolutePath)
+            }
+        }.use { jar ->
             jar.entries().asSequence()
                 .filter {
                     it.name.endsWith(".class")

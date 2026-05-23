@@ -83,7 +83,8 @@ KoraHttpRequestPipeline(
                         HttpResponseMetadata(
                             if (KoraHttpServer.instructHttpStatusCode) {
                                 status.code()
-                            } else null, if (KoraHttpServer.instructHttpVersionCode) {
+                            } else null,
+                            if (KoraHttpServer.instructHttpVersionCode) {
                                 protocolVersion.text()
                             } else null
                         )

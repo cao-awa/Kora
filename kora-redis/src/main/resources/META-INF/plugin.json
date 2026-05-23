@@ -1,0 +1,4 @@
+{
+    "name": "kora-redis",
+    "entrypoint": "com.github.cao.awa.kora.redis.entrypoint.RedisPluginBootstrap#init"
+}

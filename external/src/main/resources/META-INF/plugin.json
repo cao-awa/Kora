@@ -1,0 +1,7 @@
+{
+    "name": "kora-external",
+    "entrypoint": "com.github.cao.awa.kora.external.SampleEntrypoint#entry",
+    "depends_on": [
+        "kora-redis"
+    ]
+}

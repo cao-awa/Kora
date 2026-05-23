@@ -2,8 +2,8 @@
     "server_host": "0.0.0.0",
     "print_config_details": true,
     "entrypoint": [
-        "com.github.cao.awa.kora.redis.entrypoint.RedisPluginBootstrap#init",
-        "com.github.cao.awa.kora.external.SampleEntrypoint#entry",
+        "kora-redis",
+        "kora-external",
         "com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry"
     ],
     "server_port": 12345,

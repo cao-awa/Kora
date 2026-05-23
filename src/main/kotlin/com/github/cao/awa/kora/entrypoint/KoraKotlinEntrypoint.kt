@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.entrypoint
 
+import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.entrypoint.exception.KoraEntrypointStageFailedException
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.entrypoint.lib.KoraLibraryLoader
@@ -100,12 +101,40 @@ object KoraKotlinEntrypoint {
     fun entryToDeclared(
         config: KoraLaunchConfig,
         args: Array<String>,
-        entrypoint: String
+        inputEntrypoint: String
     ) {
-        if (!entrypoint.contains("#")) {
-            throw IllegalArgumentException("Entrypoint doesn't contain a method declare")
+        var entrypoint: String
+        val plugin = KoraEntrypoint.DEPENDENCIES_MANAGER.getPlugin(inputEntrypoint)
+        if (!inputEntrypoint.contains("#")) {
+            if (plugin == null) {
+                throw KoraEntrypointStageFailedException(
+                    inputEntrypoint,
+                    IllegalArgumentException("Entrypoint '$inputEntrypoint' doesn't contain a method declare correctly, it not a full method definition or a present plugin name")
+                )
+            } else {
+                entrypoint = plugin.entrypoint
+            }
+        } else {
+            entrypoint = inputEntrypoint
         }
 
+        if (entrypoint == "") {
+            throw KoraEntrypointStageFailedException(
+                inputEntrypoint,
+                IllegalArgumentException("Entrypoint doesn't contain a method declare")
+            )
+        }
+
+        if (plugin != null) {
+            for (dependsOn in plugin.dependsOn) {
+                if (!KoraEntrypoint.DEPENDENCIES_MANAGER.isPluginLoaded(dependsOn)) {
+                    throw KoraEntrypointStageFailedException(
+                        inputEntrypoint,
+                        IllegalStateException("Plugin '${plugin.name}' depends on plugin' $dependsOn' but it doesn't be loaded, please load it first ")
+                    )
+                }
+            }
+        }
         LOGGER.info("Launching declared entrypoint '{}'", entrypoint)
 
         val classLoader = KoraLibraryLoader.classLoader!!
@@ -136,6 +165,10 @@ object KoraKotlinEntrypoint {
 
                     method.invoke(null)
                 }
+            }
+
+            if (plugin != null) {
+                KoraEntrypoint.DEPENDENCIES_MANAGER.onPluginLoad(plugin.name)
             }
         } catch (_: ClassNotFoundException) {
             entryPointNotFount(entrypoint)
