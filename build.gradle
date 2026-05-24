@@ -47,7 +47,7 @@ dependencies {
     implementation 'com.google.guava:guava:33.5.0-jre'
     implementation 'io.netty:netty-all:4.2.13.Final'
     implementation "com.github.cao-awa:Cason:$project.cason_version"
-    implementation 'com.github.cao-awa:CaperTML:1.0.0'
+    implementation "com.github.cao-awa:CaperTML:$project.capertml_version"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }
@@ -63,7 +63,7 @@ shadowJar {
 }
 
 kotlin {
-    jvmToolchain(24)
+    jvmToolchain(21)
 }
 
 test {
@@ -82,5 +82,5 @@ tasks.named("startShadowScripts") {
     dependsOn jar
 }
 
-sourceCompatibility = JavaVersion.VERSION_24
-targetCompatibility = JavaVersion.VERSION_24
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
