@@ -95,10 +95,16 @@ object KoraLibraryLoader {
                     }.toTypedArray()
                 }
 
+                var fallback = ""
+                pluginMetadata.ifString("fallback") {
+                    fallback = this
+                }
+
                 KoraEntrypoint.DEPENDENCIES_MANAGER.addPlugin(
                     pluginName,
                     entrypoint,
-                    dependsOn
+                    dependsOn,
+                    fallback
                 )
             } else {
                 LOGGER.info("Loading '{}' as a unnamed plugin", jarFile.absolutePath)

@@ -1,8 +1,8 @@
 package com.github.cao.awa.kora.external
 
-import com.github.cao.awa.com.github.cao.awa.kora.redis.KoraRedisClient
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.plugin.markPluginLoaded
+import com.github.cao.awa.kora.redis.client.KoraRedisClient
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
@@ -23,5 +23,10 @@ object SampleEntrypoint {
         LOGGER.info("Get key 'test_redis': $result")
 
         markPluginLoaded(NAME)
+    }
+
+    @JvmStatic
+    fun fallback(launchConfig: KoraLaunchConfig) {
+        LOGGER.info("Fallback test success!")
     }
 }

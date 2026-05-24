@@ -17,16 +17,16 @@ dependencies {
     implementation 'com.google.guava:guava:33.5.0-jre'
     implementation 'io.netty:netty-all:4.2.13.Final'
     implementation "com.github.cao-awa:Cason:$rootProject.cason_version"
-    implementation 'com.github.cao-awa:CaperTML:1.0.0'
+    implementation "com.github.cao-awa:CaperTML:$rootProject.capertml_version"
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
 
     implementation project(":")
-    implementation project(':kora-redis')
+    implementation 'com.github.cao-awa:Kora-redis:1.0.7'
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 test {

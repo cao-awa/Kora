@@ -11,6 +11,7 @@ import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManager
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File
+import java.util.LinkedList
 
 open class KoraLaunchConfig: KoraConfig() {
     companion object {
@@ -63,8 +64,11 @@ open class KoraLaunchConfig: KoraConfig() {
     private var serverHost: String = "localhost"
     private var assetManagerConfig: KoraAssetManagerConfig = KoraAssetManagerDefaultConfig
     private var nettyServerConfig: KoraNettyServerConfig<*> = KoraNettyServerDefaultConfig
-    private var entrypoint: LinkedHashSet<String> =
-        linkedSetOf("com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry")
+    private var entrypoint: LinkedList<String> =
+        LinkedList<String>().also {
+            it.add("com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry")
+        }
+    private var error: Throwable? = null
 
     fun printConfigDetails(): Boolean {
         return this.printConfigDetails
@@ -111,12 +115,21 @@ open class KoraLaunchConfig: KoraConfig() {
         return this
     }
 
-    fun entrypoint(): LinkedHashSet<String> {
+    fun entrypoint(): LinkedList<String> {
         return this.entrypoint
     }
 
-    open fun entrypoint(entrypoint: LinkedHashSet<String>): KoraLaunchConfig {
+    open fun entrypoint(entrypoint: LinkedList<String>): KoraLaunchConfig {
         this.entrypoint = entrypoint
+        return this
+    }
+
+    fun error(): Throwable {
+        return this.error!!
+    }
+
+    open fun error(error: Throwable): KoraLaunchConfig {
+        this.error = error
         return this
     }
 

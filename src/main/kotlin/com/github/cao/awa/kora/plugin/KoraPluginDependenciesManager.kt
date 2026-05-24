@@ -18,8 +18,8 @@ class KoraPluginDependenciesManager {
         return loadedPlugin.contains(name)
     }
 
-    fun addPlugin(name: String, entrypoint: String, dependency: Array<String>) {
-        this.plugins[name] = KoraPlugin(name, entrypoint, dependency)
+    fun addPlugin(name: String, entrypoint: String, dependency: Array<String>, fallback: String) {
+        this.plugins[name] = KoraPlugin(name, entrypoint, dependency, fallback)
     }
 
     fun isDependsOn(plugin: String, dependency: String): Boolean {
@@ -41,4 +41,8 @@ class KoraPluginDependenciesManager {
 
 fun markPluginLoaded(name: String) {
     KoraEntrypoint.DEPENDENCIES_MANAGER.onPluginLoad(name)
+}
+
+fun isPluginLoaded(name: String): Boolean {
+    return KoraEntrypoint.DEPENDENCIES_MANAGER.isPluginLoaded(name)
 }

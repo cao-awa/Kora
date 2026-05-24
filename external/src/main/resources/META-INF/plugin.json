@@ -1,6 +1,7 @@
 {
     "name": "kora-external",
     "entrypoint": "com.github.cao.awa.kora.external.SampleEntrypoint#entry",
+    "fallback": "com.github.cao.awa.kora.external.SampleEntrypoint#fallback",
     "depends_on": [
         "kora-redis"
     ]

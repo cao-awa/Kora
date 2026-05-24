@@ -4,6 +4,7 @@ import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.entrypoint.exception.KoraEntrypointStageFailedException
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.entrypoint.lib.KoraLibraryLoader
+import com.github.cao.awa.kora.plugin.KoraPlugin
 import com.github.cao.awa.kora.plugin.markPluginLoaded
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.builder.http
@@ -11,7 +12,7 @@ import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotReg
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import kotlin.jvm.Throws
 
 object KoraKotlinEntrypoint {
@@ -53,7 +54,7 @@ object KoraKotlinEntrypoint {
             LOGGER.info("Config 'server_port': {}", config.serverPort())
             LOGGER.info("Config 'server_host': {}", config.serverHost())
             if (config.entrypoint().size == 1) {
-                LOGGER.info("Config 'entrypoint': {}", config.entrypoint().first)
+                LOGGER.info("Config 'entrypoint': {}", config.entrypoint()[0])
             } else {
                 LOGGER.info("Config 'entrypoint': ")
                 for (entrypoint in config.entrypoint()) {
@@ -82,38 +83,75 @@ object KoraKotlinEntrypoint {
     @JvmStatic
     @Throws(IllegalArgumentException::class)
     fun entryPointNotFount(name: String): Nothing {
-        throw IllegalArgumentException("Entrypoint $name not found, please ensure it present and arguments be right")
+        throw IllegalArgumentException("Entrypoint '$name' not found, please ensure it present and arguments be right")
     }
 
     @JvmStatic
     fun entryToDeclared(
         config: KoraLaunchConfig,
-        args: Array<String>,
+        args: Array<String>
     ) {
+        val repeatDetect = mutableListOf<String>()
+
         for (entrypoint in config.entrypoint()) {
-            entryToDeclared(
-                config,
-                args,
-                entrypoint
-            )
+            if (repeatDetect.contains(entrypoint)) {
+                throw IllegalArgumentException("Entrypoint '$entrypoint' already defined, cannot repeat it again")
+            }
+            repeatDetect.add(entrypoint)
+        }
+
+        println(repeatDetect)
+        println(config.entrypoint())
+
+        for (entrypoint in config.entrypoint()) {
+            val plugin = KoraEntrypoint.DEPENDENCIES_MANAGER.getPlugin(entrypoint)
+
+            try {
+                entryToDeclared(
+                    config,
+                    args,
+                    entrypoint,
+                    plugin,
+                    false
+                )
+            } catch (failedException: KoraEntrypointStageFailedException){
+                if (plugin != null && plugin.fallback != "") {
+                    LOGGER.warn("Plugin '{}' entrypoint '{}' failed, now try fallback '{}'", plugin.name, plugin.entrypoint, plugin.fallback, failedException.cause)
+                    config.error(failedException.cause)
+                    entryToDeclared(
+                        config,
+                        args,
+                        plugin.fallback,
+                        plugin,
+                        true
+                    )
+                } else {
+                    throw failedException
+                }
+            }
         }
     }
 
     fun entryToDeclared(
         config: KoraLaunchConfig,
         args: Array<String>,
-        inputEntrypoint: String
+        inputEntrypoint: String,
+        plugin: KoraPlugin?,
+        isFallback: Boolean,
     ) {
         var entrypoint: String
-        val plugin = KoraEntrypoint.DEPENDENCIES_MANAGER.getPlugin(inputEntrypoint)
         if (!inputEntrypoint.contains("#")) {
-            if (plugin == null) {
-                throw KoraEntrypointStageFailedException(
-                    inputEntrypoint,
-                    IllegalArgumentException("Entrypoint '$inputEntrypoint' doesn't contain a method declare correctly, it not a full method definition or a present plugin name")
-                )
+            if (isFallback){
+                entrypoint = inputEntrypoint
             } else {
-                entrypoint = plugin.entrypoint
+                if (plugin == null) {
+                    throw KoraEntrypointStageFailedException(
+                        inputEntrypoint,
+                        IllegalArgumentException("Entrypoint '$inputEntrypoint' doesn't contain a method declare correctly, it not a full method definition or a present plugin name")
+                    )
+                } else {
+                    entrypoint = plugin.entrypoint
+                }
             }
         } else {
             entrypoint = inputEntrypoint
@@ -128,7 +166,7 @@ object KoraKotlinEntrypoint {
 
         if (plugin != null) {
             for (dependsOn in plugin.dependsOn) {
-                if (!KoraEntrypoint.DEPENDENCIES_MANAGER.isPluginLoaded(dependsOn)) {
+                if (!isFallback && !KoraEntrypoint.DEPENDENCIES_MANAGER.isPluginLoaded(dependsOn)) {
                     throw KoraEntrypointStageFailedException(
                         inputEntrypoint,
                         IllegalStateException("Plugin '${plugin.name}' depends on plugin' $dependsOn' but it doesn't be loaded, please load it first ")
@@ -143,40 +181,45 @@ object KoraKotlinEntrypoint {
         val entryMethodName = entrypoint.substring(entrypoint.indexOf("#") + 1)
         try {
             val entryClass = classLoader.loadClass(entryClassName)
-            var method: Method?
-            try {
-                method = entryClass.getMethod(
-                    entryMethodName,
-                    KoraLaunchConfig::class.java
-                )
+            var executed = false
+            for(method in entryClass.methods) {
+                if (Modifier.isStatic(method.modifiers) && method.name == entryMethodName) {
+                    if (method.parameterCount == 1) {
+                        val parameterType = method.parameterTypes[0].kotlin
+                        if (parameterType == KoraLaunchConfig::class) {
+                            method(null, config)
+                            executed = true
+                            break
+                        }
+                        if (parameterType == Array<String>::class) {
+                            method(null, args)
+                            executed = true
+                            break
+                        }
 
-                method.invoke(null, config)
-            } catch (_: NoSuchMethodException) {
-                try {
-                    method = entryClass.getMethod(
-                        entryMethodName,
-                        Array<String>::class.java
-                    )
-
-                    method.invoke(null, args)
-                } catch (_: NoSuchMethodException) {
-                    method = entryClass.getMethod(
-                        entryMethodName
-                    )
-
-                    method.invoke(null)
+                        if (isFallback && parameterType == Throwable::class) {
+                            method(null, config.error())
+                            executed = true
+                            break
+                        }
+                    } else {
+                        method(null)
+                        executed = true
+                        break
+                    }
                 }
+            }
+
+            if (!executed) {
+                throw IllegalArgumentException("Cannot found valid entrypoint, please ensure method '$entryMethodName' received a 'KoraLaunchConfig' or 'Array<String>' or empty parameter and be static and @JvmStatic annotated")
             }
 
             if (plugin != null) {
                 markPluginLoaded(plugin.name)
-            } else{
-                markPluginLoaded(entrypoint)
             }
+            markPluginLoaded(entrypoint)
         } catch (_: ClassNotFoundException) {
             entryPointNotFount(entrypoint)
-        } catch (_: NoSuchMethodException) {
-            throw IllegalArgumentException("Cannot found valid entrypoint, please ensure method '$entryMethodName' received a 'KoraLaunchConfig' or 'Array<String>' or empty parameter and be static and @JvmStatic annotated")
         } catch (invocationException: InvocationTargetException) {
             val throwError = invocationException.cause ?: invocationException
             throw KoraEntrypointStageFailedException(entrypoint, throwError)
