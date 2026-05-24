@@ -174,6 +174,27 @@ For details, see [Entrypoint](https://github.com/cao-awa/Kora/blob/main/docs/ent
 
 You can also build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services! 
 
+## Plugins
+Kora produced some plugins could be use in your project:
+
+### Redis client
+```groovy
+dependencies {
+    implementation 'com.github.cao-awa:Kora-redis:{version}'
+}
+```
+
+For the versions, see [JitPack](https://jitpack.io/#cao-awa/Kora-redis).
+
+### Mysql client
+```groovy
+dependencies {
+    implementation 'com.github.cao-awa:Kora-mysql:{version}'
+}
+```
+
+For the versions, see [JitPack](https://jitpack.io/#cao-awa/Kora-mysql).
+
 ## Structured Responses and HTTP Metadata
 
 By default, Kora treats HTTP responses as **structured data**.
