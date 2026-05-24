@@ -147,6 +147,7 @@ object TestPlugin {
         throw RuntimeException("Error in main entrypoint")
     }
 
+    @JvmStatic
     fun fallback(config: KoraLaunchConfig) {
         // Handle others code logic here.
     }
