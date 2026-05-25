@@ -176,3 +176,8 @@ object TestPlugin {
 
 ## Repeat definition
 Plugin cannot define twice or more times in ``entrypoint``, it cause fast-fall directly.
+
+## Unnamed plugin
+You can also don't write ``plugin.json`` metadata, but you need to explicit declare the full method name in ``launch.json``, Kora will load it as unnamed plugin.
+
+But if you want to write ``plugin.json``, the ``name`` and ``entrypoint`` is required, ``depends_on`` and ``fallback`` is optional.
