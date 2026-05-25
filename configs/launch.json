@@ -8,8 +8,8 @@
     ],
     "server_port": 12345,
     "asset_manager": {
-        "enable": true,
         "error_page": "error/404.html",
+        "enable": true,
         "asset_path": "assets/"
     },
     "netty": {

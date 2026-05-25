@@ -26,10 +26,15 @@ public class KoraEntrypoint {
         if (launch(args)) {
             while (KoraStatus.isRunning()) {
                 if (KoraStatus.isReloading()) {
-                    DEPENDENCIES_MANAGER.getCleaners().forEach((name, cleaner) ->{
-                        LOGGER.info("Clearing resources for '{}'", name);
-                        cleaner.invoke();
-                    });
+                    DEPENDENCIES_MANAGER.getCleaners()
+                                        .forEach((name, cleaner) -> {
+                                            LOGGER.info("Clearing resources for '{}'",
+                                                        name
+                                            );
+                                            cleaner.invoke();
+                                        });
+
+                    DEPENDENCIES_MANAGER.clearCleaners();
 
                     KoraEntrypoint.reload();
                 }
@@ -59,10 +64,6 @@ public class KoraEntrypoint {
                 );
             }
 
-            if (KoraStatus.isReloading()) {
-                KoraStatus.completeReload();
-            }
-
             return true;
         } catch (KoraEntrypointStageFailedException ex) {
             LOGGER.error("Failed to startup Kora server on entrypoint stage: '{}'",
@@ -78,6 +79,10 @@ public class KoraEntrypoint {
         LOGGER.info("Reloading Kora({}) server...",
                     KoraInformation.VERSION
         );
+
+        if (KoraStatus.isReloading()) {
+            KoraStatus.completeReload();
+        }
 
         launch(launchArgs);
     }
