@@ -125,6 +125,7 @@ object KoraKotlinEntrypoint {
                         plugin,
                         true
                     )
+                    config.resetError()
                 } else {
                     throw failedException
                 }

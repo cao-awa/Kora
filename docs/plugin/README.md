@@ -174,6 +174,9 @@ object TestPlugin {
 }
 ```
 
+## Shared context
+You can put and get data from ``KoraLaunchConfig``, use ``config[key] = data`` to set data, use ``config[key]`` to get data, data key and value can only is `` String``.
+
 ## Repeat definition
 Plugin cannot define twice or more times in ``entrypoint``, it cause fast-fall directly.
 
@@ -181,3 +184,4 @@ Plugin cannot define twice or more times in ``entrypoint``, it cause fast-fall d
 You can also don't write ``plugin.json`` metadata, but you need to explicit declare the full method name in ``launch.json``, Kora will load it as unnamed plugin.
 
 But if you want to write ``plugin.json``, the ``name`` and ``entrypoint`` is required, ``depends_on`` and ``fallback`` is optional.
+

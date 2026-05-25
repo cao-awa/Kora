@@ -69,6 +69,7 @@ open class KoraLaunchConfig: KoraConfig() {
             it.add("com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry")
         }
     private var error: Throwable? = null
+    private var sharedContext: MutableMap<String, String> = mutableMapOf()
 
     fun printConfigDetails(): Boolean {
         return this.printConfigDetails
@@ -131,6 +132,19 @@ open class KoraLaunchConfig: KoraConfig() {
     open fun error(error: Throwable): KoraLaunchConfig {
         this.error = error
         return this
+    }
+
+    fun resetError(): KoraLaunchConfig {
+        this.error = null
+        return this
+    }
+
+    operator fun set(key: String, data: String) {
+        this.sharedContext[key] = data
+    }
+
+    operator fun get(key: String): String? {
+        return this.sharedContext[key]
     }
 
     fun isDefaultEntrypoint(): Boolean {
