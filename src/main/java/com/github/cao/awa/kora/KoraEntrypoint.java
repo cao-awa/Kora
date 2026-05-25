@@ -34,6 +34,7 @@ public class KoraEntrypoint {
                                             cleaner.invoke();
                                         });
 
+                    LOGGER.info("Cleaning cleaners...");
                     DEPENDENCIES_MANAGER.clearCleaners();
 
                     KoraEntrypoint.reload();

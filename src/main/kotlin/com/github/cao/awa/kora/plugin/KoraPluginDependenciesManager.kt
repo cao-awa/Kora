@@ -1,9 +1,12 @@
 package com.github.cao.awa.kora.plugin
 
 import com.github.cao.awa.kora.KoraEntrypoint
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 
 class KoraPluginDependenciesManager {
     companion object {
+        private val LOGGER: Logger = LogManager.getLogger("KoraPluginDependenciesManager")
         private val EMPTY_DEPENDENCIES: Array<String> = emptyArray()
     }
 
@@ -44,6 +47,7 @@ class KoraPluginDependenciesManager {
     }
 
     fun registerCleaner(name: String, cleaner: () -> Unit) {
+        LOGGER.info("Registering resource cleaner for '$name'")
         this.cleaners[name] = cleaner
     }
 
