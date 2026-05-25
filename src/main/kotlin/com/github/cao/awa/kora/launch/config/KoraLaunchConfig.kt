@@ -61,7 +61,7 @@ open class KoraLaunchConfig: KoraConfig() {
 
     private var printConfigDetails: Boolean = true
     private var serverPort: Int = 12345
-    private var serverHost: String = "localhost"
+    private var serverHost: String = "0.0.0.0"
     private var assetManagerConfig: KoraAssetManagerConfig = KoraAssetManagerDefaultConfig
     private var nettyServerConfig: KoraNettyServerConfig<*> = KoraNettyServerDefaultConfig
     private var entrypoint: LinkedList<String> =

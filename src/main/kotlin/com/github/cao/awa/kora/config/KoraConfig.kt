@@ -11,25 +11,34 @@ abstract class KoraConfig {
         private val LOGGER: Logger = LogManager.getLogger("KoraConfig")
         private val EMPTY_CONFIG: JSONObject = JSONObject()
 
-        fun <T: KoraConfig> createConfig(file: File, builder: JSONObject.() -> T): T {
+        fun <T : KoraConfig> createConfig(file: File, builder: JSONObject.() -> T): T {
             val config: T =
-            if (file.isFile) {
-                LOGGER.info("Creating config from file '{}'", file.absolutePath)
-                builder(JSONParser.parseObject(file.readText(Charsets.UTF_8)))
-            } else {
-                LOGGER.info("Config not found, creating config to file '{}'", file.absolutePath)
-                file.parentFile.let {
-                    if (!it.exists()) {
-                        it.mkdirs()
+                if (file.isFile) {
+                    LOGGER.info("Creating config from file '{}'", file.absolutePath)
+                    try {
+                        val config = JSONParser.parseObject(file.readText(Charsets.UTF_8))
+                        builder(config)
+                    } catch (_: Exception) {
+                        configNotFound(file, builder)
                     }
+                } else {
+                    configNotFound(file, builder)
                 }
-                builder(EMPTY_CONFIG)
-            }
             file.writeText(config.toJSON().toString(true, "    "))
             return config
         }
 
-        fun <T: KoraConfig> createConfig(json: JSONObject, builder: JSONObject.() -> T): T {
+        private fun <T : KoraConfig> configNotFound(file: File, builder: JSONObject.() -> T): T {
+            LOGGER.info("Config not found, creating config to file '{}'", file.absolutePath)
+            file.parentFile.let {
+                if (!it.exists()) {
+                    it.mkdirs()
+                }
+            }
+            return builder(EMPTY_CONFIG)
+        }
+
+        fun <T : KoraConfig> createConfig(json: JSONObject, builder: JSONObject.() -> T): T {
             return builder(json)
         }
     }

@@ -58,7 +58,7 @@ open class KoraAssetManagerConfig : KoraConfig() {
 
     override fun toJSON(): JSONObject {
         return JSONObject {
-            "enable" to enable
+            "enable" set enable
             "asset_path" set assetPath
             "error_page" set errorPage
         }

@@ -1,11 +1,13 @@
 package com.github.cao.awa.kora.server.network.http
 
+import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.launch.config.KoraLaunchDefaultConfig
 import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
+import com.github.cao.awa.kora.status.KoraStatus
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
@@ -16,6 +18,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.util.Scanner
 
 class KoraHttpServer {
     companion object {
@@ -28,6 +31,9 @@ class KoraHttpServer {
     }
 
     private val serverBuilder: KoraHttpServerBuilder
+    private var running = false
+    val isRunning: Boolean
+        get() = this.running
 
     constructor(builder: KoraHttpServerBuilder) {
         this.serverBuilder = builder
@@ -84,13 +90,31 @@ class KoraHttpServer {
                 address,
                 port
             ).sync()
+            this.running = true
             LOGGER.info("Kora HTTP server started on port {} on {}", port, address)
             future.channel().closeFuture().addListener {
-                LOGGER.info("Kora HTTP server stopped")
-            }.sync()
+                LOGGER.info("Stopping Kora HTTP server")
+            }
+
+            val scanner = Scanner(System.`in`)
+            while (this.running) {
+                when (val input = scanner.nextLine()) {
+                    "stop", "exit" -> {
+                        this.running = false
+                        KoraStatus.stop()
+                    }
+                    "reload" -> {
+                        this.running = false
+                        KoraStatus.reloading = true
+                    }
+                    else -> LOGGER.info("Unknown command: $input")
+                }
+            }
         } finally {
-            bossGroup.shutdownGracefully()
-            workerGroup.shutdownGracefully()
+            bossGroup.shutdownGracefully().sync()
+            workerGroup.shutdownGracefully().sync()
         }
+
+        LOGGER.info("Kora HTTP server stopped")
     }
 }

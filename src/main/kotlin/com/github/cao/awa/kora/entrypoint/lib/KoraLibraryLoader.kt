@@ -13,7 +13,7 @@ import kotlin.sequences.forEach
 
 object KoraLibraryLoader {
     private val LOGGER: Logger = LogManager.getLogger("KoraLibraryLoader")
-    var classLoader: URLClassLoader? = null
+    lateinit var classLoader: URLClassLoader
 
     @JvmStatic
     fun loadJars() {
@@ -21,6 +21,8 @@ object KoraLibraryLoader {
 
         this.classLoader = customLoader
         Thread.currentThread().contextClassLoader = customLoader
+
+        customLoader.close()
     }
 
     fun collectJars(file: File, jarFiles: MutableList<File>): MutableList<File> {
@@ -100,16 +102,22 @@ object KoraLibraryLoader {
                     fallback = this
                 }
 
+                var unload = ""
+                pluginMetadata.ifString("unload") {
+                    unload = this
+                }
+
                 KoraEntrypoint.DEPENDENCIES_MANAGER.addPlugin(
                     pluginName,
                     entrypoint,
                     dependsOn,
-                    fallback
+                    fallback,
+                    unload
                 )
             } else {
                 LOGGER.info("Loading '{}' as a unnamed plugin", jarFile.absolutePath)
             }
-        }.use { jar ->
+        }.let { jar ->
             jar.entries().asSequence()
                 .filter {
                     it.name.endsWith(".class")
@@ -125,6 +133,8 @@ object KoraLibraryLoader {
                         LOGGER.error("Failed to load class '{}'", className, e)
                     }
                 }
+
+            jar.close()
         }
     }
 }

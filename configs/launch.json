@@ -8,6 +8,7 @@
     ],
     "server_port": 12345,
     "asset_manager": {
+        "enable": true,
         "error_page": "error/404.html",
         "asset_path": "assets/"
     },

@@ -100,9 +100,6 @@ object KoraKotlinEntrypoint {
             repeatDetect.add(entrypoint)
         }
 
-        println(repeatDetect)
-        println(config.entrypoint())
-
         for (entrypoint in config.entrypoint()) {
             val plugin = KoraEntrypoint.DEPENDENCIES_MANAGER.getPlugin(entrypoint)
 
@@ -114,9 +111,15 @@ object KoraKotlinEntrypoint {
                     plugin,
                     false
                 )
-            } catch (failedException: KoraEntrypointStageFailedException){
+            } catch (failedException: KoraEntrypointStageFailedException) {
                 if (plugin != null && plugin.fallback != "") {
-                    LOGGER.warn("Plugin '{}' entrypoint '{}' failed, now try fallback '{}'", plugin.name, plugin.entrypoint, plugin.fallback, failedException.cause)
+                    LOGGER.warn(
+                        "Plugin '{}' entrypoint '{}' failed, now try fallback '{}'",
+                        plugin.name,
+                        plugin.entrypoint,
+                        plugin.fallback,
+                        failedException.cause
+                    )
                     config.error(failedException.cause)
                     entryToDeclared(
                         config,
@@ -140,22 +143,17 @@ object KoraKotlinEntrypoint {
         plugin: KoraPlugin?,
         isFallback: Boolean,
     ) {
-        var entrypoint: String
-        if (!inputEntrypoint.contains("#")) {
-            if (isFallback){
-                entrypoint = inputEntrypoint
+        val entrypoint = if (!inputEntrypoint.contains("#")) {
+            if (isFallback) {
+                inputEntrypoint
             } else {
-                if (plugin == null) {
-                    throw KoraEntrypointStageFailedException(
-                        inputEntrypoint,
-                        IllegalArgumentException("Entrypoint '$inputEntrypoint' doesn't contain a method declare correctly, it not a full method definition or a present plugin name")
-                    )
-                } else {
-                    entrypoint = plugin.entrypoint
-                }
+                plugin?.entrypoint ?: throw KoraEntrypointStageFailedException(
+                    inputEntrypoint,
+                    IllegalArgumentException("Entrypoint '$inputEntrypoint' doesn't contain a method declare correctly, it not a full method definition or a present plugin name")
+                )
             }
         } else {
-            entrypoint = inputEntrypoint
+            inputEntrypoint
         }
 
         if (entrypoint == "") {
@@ -177,13 +175,13 @@ object KoraKotlinEntrypoint {
         }
         LOGGER.info("Launching declared entrypoint '{}'", entrypoint)
 
-        val classLoader = KoraLibraryLoader.classLoader!!
-        val entryClassName = entrypoint.substring(0, entrypoint.indexOf("#"))
-        val entryMethodName = entrypoint.substring(entrypoint.indexOf("#") + 1)
+        val classLoader = KoraLibraryLoader.classLoader
+        val entryClassName = getEntrypointClass(entrypoint)
+        val entryMethodName = getEntrypointMethod(entrypoint)
         try {
             val entryClass = classLoader.loadClass(entryClassName)
             var executed = false
-            for(method in entryClass.methods) {
+            for (method in entryClass.methods) {
                 if (Modifier.isStatic(method.modifiers) && method.name == entryMethodName) {
                     if (method.parameterCount == 1) {
                         val parameterType = method.parameterTypes[0].kotlin
@@ -224,6 +222,30 @@ object KoraKotlinEntrypoint {
         } catch (invocationException: InvocationTargetException) {
             val throwError = invocationException.cause ?: invocationException
             throw KoraEntrypointStageFailedException(entrypoint, throwError)
+        }
+    }
+
+    fun getEntrypointClass(entrypoint: String): String {
+        return entrypoint.substring(0, entrypoint.indexOf("#"))
+    }
+
+    fun getEntrypointMethod(entrypoint: String): String {
+        return entrypoint.substring(entrypoint.indexOf("#") + 1)
+    }
+
+    @JvmStatic
+    fun unloadPlugins() {
+        val classLoader = KoraLibraryLoader.classLoader
+        for ((name, plugin) in KoraEntrypoint.DEPENDENCIES_MANAGER.getPlugins()) {
+            if (plugin.unload.contains("#")) {
+                LOGGER.info("Unloading plugin '{}'", name)
+                val entrypoint = plugin.unload
+                val entryClassName = getEntrypointClass(entrypoint)
+                val entryMethodName = getEntrypointMethod(entrypoint)
+                val entryClass = classLoader.loadClass(entryClassName)
+                val method = entryClass.getMethod(entryMethodName)
+                method(null)
+            }
         }
     }
 }

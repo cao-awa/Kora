@@ -9,6 +9,7 @@ class KoraPluginDependenciesManager {
 
     private val plugins: MutableMap<String, KoraPlugin> = HashMap()
     private val loadedPlugin: MutableList<String> = ArrayList()
+    private val cleaners: MutableMap<String, () -> Unit> = HashMap()
 
     fun onPluginLoad(name: String) {
         this.loadedPlugin.add(name)
@@ -18,8 +19,12 @@ class KoraPluginDependenciesManager {
         return loadedPlugin.contains(name)
     }
 
-    fun addPlugin(name: String, entrypoint: String, dependency: Array<String>, fallback: String) {
-        this.plugins[name] = KoraPlugin(name, entrypoint, dependency, fallback)
+    fun addPlugin(name: String, entrypoint: String, dependency: Array<String>, fallback: String, reload: String) {
+        this.plugins[name] = KoraPlugin(name, entrypoint, dependency, fallback, reload)
+    }
+
+    fun getPlugins(): Map<String, KoraPlugin> {
+        return this.plugins
     }
 
     fun isDependsOn(plugin: String, dependency: String): Boolean {
@@ -37,6 +42,18 @@ class KoraPluginDependenciesManager {
     fun getPlugin(name: String): KoraPlugin? {
         return this.plugins[name]
     }
+
+    fun registerCleaner(name: String, cleaner: () -> Unit) {
+        this.cleaners[name] = cleaner
+    }
+
+    fun getCleaners(): Map<String, () -> Unit> {
+        return this.cleaners
+    }
+
+    fun clearCleaners() {
+        this.cleaners.clear()
+    }
 }
 
 fun markPluginLoaded(name: String) {
@@ -45,4 +62,8 @@ fun markPluginLoaded(name: String) {
 
 fun isPluginLoaded(name: String): Boolean {
     return KoraEntrypoint.DEPENDENCIES_MANAGER.isPluginLoaded(name)
+}
+
+fun registerCleaner(name: String, cleaner: () -> Unit) {
+    KoraEntrypoint.DEPENDENCIES_MANAGER.registerCleaner(name, cleaner)
 }
