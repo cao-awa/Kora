@@ -1,10 +1,10 @@
 # Kora
 
 > Currently, the software ecosystem of Kora is not complete.\
-> You can consider this project an experimental JVM web server project.\
+> You can consider this project an experimental JVM runtime project.\
 > The main focus is more FP, more control flow contextualization, and more zero-reflection design.
 
-**Kora** is a high-performance, type-safe Kotlin web server framework built on Netty.
+**Kora** is a high-performance, type-safe, lifecycle-driven, effect-based JVM runtime for service execution, but currently focus on HTTP services.
 
 Kora treats HTTP APIs as **typed programs**, not runtime configurations.
 
@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.cao-awa:Kora:1.0.5'
+    implementation 'com.github.cao-awa:Kora:1.0.10'
 }
 ```
 
@@ -33,7 +33,7 @@ And creating your Kora programs!
 
 # What Kora Is
 
-Kora is a **Kotlin-first**, expression-based web framework that emphasizes:
+Kora is a **Kotlin-first**, expression-based JVM runtime that emphasizes:
 
 * Compile-time structure over runtime mutation
 * Typed APIs over string-based routing
@@ -42,7 +42,7 @@ Kora is a **Kotlin-first**, expression-based web framework that emphasizes:
 
 It is built on Netty for performance and IO efficiency and uses Kotlin coroutines as its execution model.
 
-> In Kora, annotations never control routing, execution order, or lifecycle.
+> In Kora, annotations never control routing, execution order, or lifecycle.\
 > When present, they are used only as **descriptive schema at data boundaries**.
 >
 > This guarantees that routing behavior and execution logic are always visible in code.
@@ -70,7 +70,7 @@ It is a **language-shaped web framework**.
 
 # Quick Start
 ## No coding start
-Use java command ``java -jar Kora-1.0.5.jar -server`` to run a Kora server with [Assets manager mode](#assets-manager-mode).
+Use java command ``java -jar Kora-1.0.10.jar -server`` to run a Kora server with [Assets manager mode](#assets-manager-mode).
 
 It can automatically response html or other files in assets path, or redirect path to "path/index.html" file.
 
@@ -431,7 +431,11 @@ You can use ``combinator`` in ``arg`` or ``placeholder`` creating to define some
 fun testCombinator() {
     val username = arg<String>("username").combinator { content ->
         if (content.length < 5) {
-            throw IllegalArgumentException("Username length must more than 5 characters")
+            abortWith(
+                IllegalArgumentException("Username length must more than 5 characters"),
+                HttpResponseStatus.BAD_REQUEST,
+                this
+            )
         }
         content
     }
