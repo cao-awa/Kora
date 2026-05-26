@@ -384,6 +384,8 @@ fun testBuild() {
 
 In Kora you can use ``build`` method to build your custom class in request scope, just input the args and constructor.
 
+And build method can only input most 7 args or placeholders, if your code ned more input, maybe you need to think is there a problem with your design architecture? 
+
 ```kotlin
 fun testBuild() {
     val username = arg<String>("username", false)

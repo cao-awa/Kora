@@ -308,6 +308,48 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this])
     }
 
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4: Any,
+            reified T5: Any,
+            reified T6: Any
+            > build(
+        arg1: TypedHttpArgument<T1>,
+        arg2: TypedHttpArgument<T2>,
+        arg3: TypedHttpArgument<T3>,
+        arg4: TypedHttpArgument<T4>,
+        arg5: TypedHttpArgument<T5>,
+        arg6: TypedHttpArgument<T6>,
+        builder: (T1, T2, T3, T4, T5, T6) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this], arg6[this])
+    }
+
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4: Any,
+            reified T5: Any,
+            reified T6: Any,
+            reified T7: Any
+            > build(
+        arg1: TypedHttpArgument<T1>,
+        arg2: TypedHttpArgument<T2>,
+        arg3: TypedHttpArgument<T3>,
+        arg4: TypedHttpArgument<T4>,
+        arg5: TypedHttpArgument<T5>,
+        arg6: TypedHttpArgument<T6>,
+        arg7: TypedHttpArgument<T7>,
+        builder: (T1, T2, T3, T4, T5, T6, T7) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this], arg6[this], arg7[this])
+    }
+
     // Typed placeholder.
     inline fun <reified R : Any, reified T1 : Any> build(
         arg1: TypedHttpUrlPlaceholder<T1>,
@@ -359,5 +401,47 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         builder: (T1, T2, T3, T4, T5) -> R
     ): R {
         return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this])
+    }
+
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4: Any,
+            reified T5: Any,
+            reified T6: Any
+            > build(
+        arg1: TypedHttpUrlPlaceholder<T1>,
+        arg2: TypedHttpUrlPlaceholder<T2>,
+        arg3: TypedHttpUrlPlaceholder<T3>,
+        arg4: TypedHttpUrlPlaceholder<T4>,
+        arg5: TypedHttpUrlPlaceholder<T5>,
+        arg6: TypedHttpUrlPlaceholder<T6>,
+        builder: (T1, T2, T3, T4, T5, T6) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this], arg6[this])
+    }
+
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4: Any,
+            reified T5: Any,
+            reified T6: Any,
+            reified T7: Any
+            > build(
+        arg1: TypedHttpUrlPlaceholder<T1>,
+        arg2: TypedHttpUrlPlaceholder<T2>,
+        arg3: TypedHttpUrlPlaceholder<T3>,
+        arg4: TypedHttpUrlPlaceholder<T4>,
+        arg5: TypedHttpUrlPlaceholder<T5>,
+        arg6: TypedHttpUrlPlaceholder<T6>,
+        arg7: TypedHttpUrlPlaceholder<T7>,
+        builder: (T1, T2, T3, T4, T5, T6, T7) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this], arg6[this], arg7[this])
     }
 }
