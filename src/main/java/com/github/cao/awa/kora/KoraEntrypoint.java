@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.util.Scanner;
 
 public class KoraEntrypoint {
     private static final Logger LOGGER = LogManager.getLogger("KoraEntryPoint");
@@ -23,6 +24,7 @@ public class KoraEntrypoint {
                     KoraInformation.VERSION
         );
 
+        Scanner scanner = new Scanner(System.in);
         if (launch(args)) {
             while (KoraStatus.isRunning()) {
                 if (KoraStatus.isReloading()) {
@@ -38,6 +40,13 @@ public class KoraEntrypoint {
                     DEPENDENCIES_MANAGER.clearCleaners();
 
                     KoraEntrypoint.reload();
+                }
+
+                String command = scanner.nextLine();
+                switch (command) {
+                    case "stop", "exit" -> KoraStatus.stop();
+                    case "reload" -> KoraStatus.reload();
+                    default -> LOGGER.info("Unknown command: {}", command);
                 }
             }
         }

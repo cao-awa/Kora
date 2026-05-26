@@ -1,3 +1,4 @@
+import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder
@@ -15,8 +16,8 @@ private val LOGGER: Logger = LogManager.getLogger("Test")
 
 // oha -n 10000 -c 128 --latency-correction http://127.0.0.1:12345/test
 fun main() {
-//    KoraEntrypoint.main()
-    testCombinator()
+    KoraEntrypoint.main()
+//    testCombinator()
 }
 
 fun testCombinator() {
