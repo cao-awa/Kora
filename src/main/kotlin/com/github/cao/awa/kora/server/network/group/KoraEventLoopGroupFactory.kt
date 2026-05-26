@@ -12,6 +12,9 @@ import io.netty.channel.local.LocalIoHandler
 import io.netty.channel.local.LocalServerChannel
 import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.channel.uring.IoUring
+import io.netty.channel.uring.IoUringIoHandler
+import io.netty.channel.uring.IoUringServerSocketChannel
 import java.util.concurrent.ThreadFactory
 
 abstract class KoraEventLoopGroupFactory internal constructor(
@@ -28,6 +31,10 @@ abstract class KoraEventLoopGroupFactory internal constructor(
         private val EPOLL: KoraEventLoopGroupFactory =
             object : KoraEventLoopGroupFactory("Epoll", EpollServerSocketChannel::class.java) {
                 override fun newIoHandlerFactory(): IoHandlerFactory = EpollIoHandler.newFactory()
+            }
+        private val IO_URING: KoraEventLoopGroupFactory =
+            object : KoraEventLoopGroupFactory("Io_Uring", IoUringServerSocketChannel::class.java) {
+                override fun newIoHandlerFactory(): IoHandlerFactory = IoUringIoHandler.newFactory()
             }
         private val KQUEUE: KoraEventLoopGroupFactory =
             object : KoraEventLoopGroupFactory("Kqueue", KQueueServerSocketChannel::class.java) {
@@ -52,6 +59,8 @@ abstract class KoraEventLoopGroupFactory internal constructor(
 
         fun epoll(): KoraEventLoopGroupFactory = EPOLL
 
+        fun ioUring(): KoraEventLoopGroupFactory = IO_URING
+
         fun kqueue(): KoraEventLoopGroupFactory = KQUEUE
 
         fun local(): KoraEventLoopGroupFactory = LOCAL
@@ -66,6 +75,10 @@ abstract class KoraEventLoopGroupFactory internal constructor(
             }
 
             if (io == kqueue() && KQueue.isAvailable()) {
+                return io
+            }
+
+            if (io == ioUring() && IoUring.isAvailable()) {
                 return io
             }
 

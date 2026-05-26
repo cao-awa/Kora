@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.buffer.UnpooledByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
-import java.util.concurrent.ThreadFactory
+import io.netty.channel.unix.PreferredDirectByteBufAllocator
 
 abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig() {
     companion object {
@@ -22,6 +22,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
                             "nio" -> KoraEventLoopGroupFactory.nio()
                             "kqueue" -> KoraEventLoopGroupFactory.kqueue()
                             "local" -> KoraEventLoopGroupFactory.local()
+                            "io_uring" -> KoraEventLoopGroupFactory.ioUring()
                             else -> throw IllegalArgumentException("No such io event loop group factory: '$this'")
                         }
                     )
@@ -35,6 +36,9 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
                 ifInt("rcv_buffer") {
                     config.rcvBuf(this)
                 }
+                ifInt("snd_buffer") {
+                    config.sndBuf(this)
+                }
                 ifBoolean("reuse_address") {
                     config.reuseAddr(this)
                 }
@@ -46,6 +50,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
                         when (this) {
                             "default", "pooled" -> PooledByteBufAllocator.DEFAULT
                             "unpolled" -> UnpooledByteBufAllocator.DEFAULT
+                            "direct" -> PreferredDirectByteBufAllocator.DEFAULT
                             else -> throw IllegalArgumentException("Unknown allocator type: $this")
                         }
                     )
@@ -61,6 +66,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
     private var keepalive: Boolean = true
     private var rcvBuf: Int = 65536
     private var reuseAddr: Boolean = true
+    private var sndBuf: Int = 65536
     private var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT
     private var writeBufferWaterMark: WriteBufferWaterMark = WriteBufferWaterMark(
         32 * 1024 * 1024,
@@ -76,6 +82,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
             KoraEventLoopGroupFactory.nio() -> "nio"
             KoraEventLoopGroupFactory.kqueue() -> "kqueue"
             KoraEventLoopGroupFactory.local() -> "local"
+            KoraEventLoopGroupFactory.ioUring() -> "io_uring"
             else -> "default"
         }
     }
@@ -107,6 +114,13 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
         return this
     }
 
+    fun sndBuf(): Int = this.sndBuf
+
+    open fun sndBuf(sndBuf: Int): KoraNettyServerConfig<T> {
+        this.sndBuf = sndBuf
+        return this
+    }
+
     fun reuseAddr(): Boolean = this.reuseAddr
 
     open fun reuseAddr(reuseAddr: Boolean): KoraNettyServerConfig<T> {
@@ -125,6 +139,7 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
         return when (this.allocator) {
             is PooledByteBufAllocator -> "default"
             is UnpooledByteBufAllocator -> "unpooled"
+            is PreferredDirectByteBufAllocator -> "direct"
             else -> "default"
         }
     }
@@ -166,10 +181,11 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
 
     override fun toJSON(): JSONObject {
         return JSONObject {
-            "io" to ioName()
+            "io" set ioName()
             "backlog" set backlog
             "keep_alive" set keepalive
             "rcv_buffer" set rcvBuf
+            "snd_buffer" set sndBuf
             "reuse_address" set reuseAddr
             "tcp_no_delay" set tcpNoDelay
             "allocator" set allocatorName()

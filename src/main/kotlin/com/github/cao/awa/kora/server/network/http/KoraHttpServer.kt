@@ -70,6 +70,8 @@ class KoraHttpServer {
                 ).childOption(
                     ChannelOption.SO_REUSEADDR, nettyConfig.reuseAddr()
                 ).childOption(
+                    ChannelOption.SO_SNDBUF, nettyConfig.sndBuf()
+                ).childOption(
                     ChannelOption.WRITE_BUFFER_WATER_MARK, nettyConfig.writeBufferWaterMark()
                 ).childOption(
                     ChannelOption.ALLOCATOR, nettyConfig.allocator()

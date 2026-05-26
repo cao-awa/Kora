@@ -45,7 +45,7 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-core:2.25.4'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
     implementation 'com.google.guava:guava:33.5.0-jre'
-    implementation 'io.netty:netty-all:4.2.13.Final'
+    implementation 'io.netty:netty-all:4.2.14.Final'
     implementation "com.github.cao-awa:Cason:$project.cason_version"
     implementation "com.github.cao-awa:CaperTML:$project.capertml_version"
 

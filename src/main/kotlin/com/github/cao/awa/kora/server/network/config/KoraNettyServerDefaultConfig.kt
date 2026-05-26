@@ -25,6 +25,10 @@ object KoraNettyServerDefaultConfig: KoraNettyServerConfig<KoraNettyServerDefaul
         throwWhenSet()
     }
 
+    override fun sndBuf(sndBuf: Int): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+        throwWhenSet()
+    }
+
     override fun reuseAddr(reuseAddr: Boolean): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
         throwWhenSet()
     }
