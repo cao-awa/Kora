@@ -44,7 +44,7 @@ class KoraHttpServer {
         io: KoraEventLoopGroupFactory = KoraEventLoopGroupFactory.remote(),
         launchConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
     ) {
-        KoraStatus.registerReloadable(this)
+        KoraStatus.registerLifecycle(this)
 
         Thread.startVirtualThread {
             val nettyConfig = launchConfig.nettyServerConfig()

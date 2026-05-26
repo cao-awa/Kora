@@ -11,7 +11,7 @@ Kora treats HTTP APIs as **typed programs**, not runtime configurations.
 Instead of assembling routing tables, annotations, and containers at runtime, Kora encourages developers to **describe
 APIs as values**, composed through Kotlin expressions and verified as early as possible—preferably at compile time.
 
-Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using the fewest reflection in launch stage to [bootstrap users code](https://github.com/cao-awa/Kora/blob/main/docs/entrypoint/README.md).
+Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using the fewest reflection in launch stage to [bootstrap users code](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
 
 ![](https://count.getloli.com/@@cao-awa.kora?name=%40cao-awa.kora&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
 
@@ -25,9 +25,11 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.cao-awa:Kora:1.0.10'
+    implementation 'com.github.cao-awa:Kora:{kora_version}'
 }
 ```
+
+For the versions, see [JitPack](https://jitpack.io/#cao-awa/Kora).
 
 And creating your Kora programs!
 
@@ -70,13 +72,13 @@ It is a **language-shaped web framework**.
 
 # Quick Start
 ## No coding start
-Use java command ``java -jar Kora-1.0.10.jar -server`` to run a Kora server with [Assets manager mode](#assets-manager-mode).
+Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora server with [Assets manager mode](#assets-manager-mode).
 
 It can automatically response html or other files in assets path, or redirect path to "path/index.html" file.
 
 ## Test Cases
 
-Some cases are written [here](https://github.com/cao-awa/Kora/blob/main/src/test/kotlin/Main.kt).
+Some cases are written [here](https://github.com/cao-awa/Kora/tree/main/src/test/kotlin/Main.kt).
 
 Here are some test cases:
 
@@ -170,14 +172,16 @@ Use Kora's libraries loader features, change the ``entrypoint`` key in your conf
 }
 ```
 
-Put ``libs/``(in this repo) to your jar location and use ``java -jar Kora-1.0.5.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
+Put ``libs/``(in this repo) to your jar location and use ``java -jar Kora-{kora_version}.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
 
-For details, see [Entrypoint](https://github.com/cao-awa/Kora/blob/main/docs/entrypoint/README.md) document.
+For details, see [Entrypoint](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md) document.
 
 You can also build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services! 
 
 ## Plugins
-Kora produced some plugins could be use in your project:
+Kora produced some plugins could be use in your project.
+
+If you want to develop plugins, please see [the document](https://github.com/cao-awa/Kora/tree/main/docs/plugin/README.md) 
 
 ### Redis client
 ```groovy

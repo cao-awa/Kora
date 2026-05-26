@@ -46,7 +46,7 @@ object KoraStatus {
         }
     }
 
-    fun registerReloadable(reloadable: Any) {
+    fun registerLifecycle(reloadable: Any) {
         synchronized(this) {
             this.locker.registerLifecycle(reloadable)
         }

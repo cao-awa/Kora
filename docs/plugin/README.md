@@ -48,6 +48,11 @@ or
 }
 ```
 
+## Notice
+Resident services like http server or other resident services must call ``KoraStatus.registerLifecycle``,  ``KoraStatus.registerReloadListener``, ``KoraStatus.registerStopListener``, and when stopped, must call ``KoraStatus.completedLifecyle``.
+
+If plugin is only simple logics, don't register the lifecycles.
+
 ## Method requirement
 
 The plugin entrypoint must in a kotlin object class instead of kotlin class, and must annotate with ``@JvmStatic``,
