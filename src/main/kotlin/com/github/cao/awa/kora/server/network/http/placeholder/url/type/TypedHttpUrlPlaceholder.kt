@@ -1,6 +1,5 @@
 package com.github.cao.awa.kora.server.network.http.placeholder.url.type
 
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderBooleanInitializeValidator
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderByteInitializeValidator
@@ -14,7 +13,7 @@ import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validato
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderInitializeValidator
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.placeholder.url.exception.TypedHttpUrlMissingException
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.combinator.TypedHttpUrlPlaceholderCombinator
 import kotlin.reflect.KClass
 
 class TypedHttpUrlPlaceholder<T : Any> {
@@ -58,7 +57,7 @@ class TypedHttpUrlPlaceholder<T : Any> {
     val name: String
     private val type: KClass<T>
     private val initializeValidator: TypedHttpUrlPlaceholderInitializeValidator<T>
-    private var customValidator: MutableList<TypedHttpUrlPlaceholderValidator<T>> = mutableListOf()
+    private var combinators: MutableList<TypedHttpUrlPlaceholderCombinator<T>> = mutableListOf()
 
     constructor(name: String, type: KClass<T>, initializeValidator: TypedHttpUrlPlaceholderInitializeValidator<T>) {
         this.name = name
@@ -77,8 +76,8 @@ class TypedHttpUrlPlaceholder<T : Any> {
 
         val content = contentList[seq]
         var value: T =  this.initializeValidator[this.name, content, context.path()]
-        for (validator in customValidator) {
-            value = validator.validate(value)
+        for (validator in combinators) {
+            value = validator.combinate(value)
         }
         return value
     }
@@ -91,16 +90,16 @@ class TypedHttpUrlPlaceholder<T : Any> {
         return get(context)
     }
 
-    fun validator(validator: TypedHttpUrlPlaceholderValidator<T>): TypedHttpUrlPlaceholder<T> {
-        this.customValidator.add(validator)
+    fun combinator(validator: TypedHttpUrlPlaceholderCombinator<T>): TypedHttpUrlPlaceholder<T> {
+        this.combinators.add(validator)
         return this
     }
 
-    fun validator(validator: (T) -> T): TypedHttpUrlPlaceholder<T> {
-        validator(
-            object : TypedHttpUrlPlaceholderValidator<T> {
-                override fun validate(value: T): T {
-                    return validator(value)
+    fun combinator(combinator: (T) -> T): TypedHttpUrlPlaceholder<T> {
+        combinator(
+            object : TypedHttpUrlPlaceholderCombinator<T> {
+                override fun combinate(value: T): T {
+                    return combinator(value)
                 }
             }
         )

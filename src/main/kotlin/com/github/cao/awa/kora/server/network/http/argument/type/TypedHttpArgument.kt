@@ -12,7 +12,7 @@ import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentShortInitializeValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.string.TypedHttpArgumentStringInitializeValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentInitializeValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.combinator.TypedHttpArgumentCombinator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
 import com.github.cao.awa.kora.server.network.http.argument.type.value.TypedHttpArgumentDefaultValues
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
@@ -65,7 +65,7 @@ class TypedHttpArgument<T : Any> {
     private val type: KClass<T>
     private var defaultValue: T? = null
     private val initializeValidator: TypedHttpArgumentInitializeValidator<T>
-    private var customValidator: MutableList<TypedHttpArgumentValidator<T>> = mutableListOf()
+    private var combinators: MutableList<TypedHttpArgumentCombinator<T>> = mutableListOf()
 
     constructor(
         name: String,
@@ -84,8 +84,8 @@ class TypedHttpArgument<T : Any> {
         val content: String = context.arguments()[this.name]
             ?: TypedHttpArgumentMissingException.missing("Required argument '${this.name}' is missing, type is ${this.type.simpleName}")
         var value: T = this.initializeValidator[this.name, content]
-        for (validator in customValidator) {
-            value = validator.validate(value)
+        for (validator in combinators) {
+            value = validator.combinate(value)
         }
         return value
     }
@@ -111,16 +111,16 @@ class TypedHttpArgument<T : Any> {
         return this
     }
 
-    fun validator(validator: TypedHttpArgumentValidator<T>): TypedHttpArgument<T> {
-        this.customValidator.add(validator)
+    fun combinator(combinator: TypedHttpArgumentCombinator<T>): TypedHttpArgument<T> {
+        this.combinators.add(combinator)
         return this
     }
 
-    fun validator(validator: (T) -> T): TypedHttpArgument<T> {
-        validator(
-            object : TypedHttpArgumentValidator<T> {
-                override fun validate(value: T): T {
-                    return validator(value)
+    fun combinator(combinator: (T) -> T): TypedHttpArgument<T> {
+        combinator(
+            object : TypedHttpArgumentCombinator<T> {
+                override fun combinate(value: T): T {
+                    return combinator(value)
                 }
             }
         )

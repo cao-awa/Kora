@@ -4,11 +4,11 @@ Support to ``io_uring`` IO module.
 ## Netty
 Add ``snd_buffer`` option to set sending buffer.
 
-## Custom validator
-The ``arg`` and ``placeholder`` can use custom validator now:
+## Custom combinator
+The ``arg`` and ``placeholder`` can use custom combinator now:
 ```kotlin
-fun testValidator() {
-    val username = arg<String>("username").validator { content ->
+fun testCombinator() {
+    val username = arg<String>("username").combinator { content ->
         if (content.length < 5) {
             throw IllegalArgumentException("Username length must more than 5 characters")
         }
@@ -36,4 +36,4 @@ fun testValidator() {
     )
 }
 ```
-It also can have multiple validators instead of single validator, just repeat call ``validator`` method again.
+It also can have multiple combinators instead of single combinator, just repeat call ``combinator`` method again.

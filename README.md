@@ -422,12 +422,12 @@ fun testBuild() {
 
 it can also use in ``placeholder``, but cannot mix uses.
 
-## Custom validator
-You can use ``validator`` in ``arg`` or ``placeholder`` creating to define some custom validate logics, you can have multiple validators instead of single validator, just repeat call ``validator`` method again.
+## Custom combinator
+You can use ``combinator`` in ``arg`` or ``placeholder`` creating to define some custom combinate logics, you can have multiple combinators instead of single combinator, just repeat call ``combinator`` method again.
 
 ```kotlin
-fun testValidator() {
-    val username = arg<String>("username").validator { content ->
+fun testCombinator() {
+    val username = arg<String>("username").combinator { content ->
         if (content.length < 5) {
             throw IllegalArgumentException("Username length must more than 5 characters")
         }
