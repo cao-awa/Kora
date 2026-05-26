@@ -66,6 +66,7 @@ class TypedHttpArgument<T : Any> {
     private var defaultValue: T? = null
     private val initializeValidator: TypedHttpArgumentInitializeValidator<T>
     private var combinators: MutableList<TypedHttpArgumentCombinator<T>> = mutableListOf()
+    private lateinit var context: KoraHttpContext
 
     constructor(
         name: String,
@@ -84,6 +85,7 @@ class TypedHttpArgument<T : Any> {
         val content: String = context.arguments()[this.name]
             ?: TypedHttpArgumentMissingException.missing("Required argument '${this.name}' is missing, type is ${this.type.simpleName}")
         var value: T = this.initializeValidator[this.name, content]
+        this.context = context
         for (validator in combinators) {
             value = validator.combinate(value)
         }
@@ -111,16 +113,16 @@ class TypedHttpArgument<T : Any> {
         return this
     }
 
-    fun combinator(combinator: TypedHttpArgumentCombinator<T>): TypedHttpArgument<T> {
+    private fun combinator(combinator: TypedHttpArgumentCombinator<T>): TypedHttpArgument<T> {
         this.combinators.add(combinator)
         return this
     }
 
-    fun combinator(combinator: (T) -> T): TypedHttpArgument<T> {
+    fun combinator(combinator: KoraHttpContext.(T) -> T): TypedHttpArgument<T> {
         combinator(
             object : TypedHttpArgumentCombinator<T> {
                 override fun combinate(value: T): T {
-                    return combinator(value)
+                    return combinator(this@TypedHttpArgument.context, value)
                 }
             }
         )

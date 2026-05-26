@@ -10,7 +10,11 @@ The ``arg`` and ``placeholder`` can use custom combinator now:
 fun testCombinator() {
     val username = arg<String>("username").combinator { content ->
         if (content.length < 5) {
-            throw IllegalArgumentException("Username length must more than 5 characters")
+            abortWith(
+                IllegalArgumentException("Username length must more than 5 characters"),
+                HttpResponseStatus.BAD_REQUEST,
+                this
+            )
         }
         content
     }
