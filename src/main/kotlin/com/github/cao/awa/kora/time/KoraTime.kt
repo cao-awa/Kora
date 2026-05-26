@@ -36,7 +36,7 @@ object KoraTime {
             if (hours > 0) append("${hours}h, ")
             if (minutes > 0) append("${minutes}m, ")
             if (seconds > 0) append("${seconds}s, ")
-            if (ms > 0) append("$ms ms")
+            if (ms > 0) append("${ms}ms")
         }
     }
 }

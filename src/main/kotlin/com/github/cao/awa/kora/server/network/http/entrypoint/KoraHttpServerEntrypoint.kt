@@ -51,7 +51,7 @@ object KoraHttpServerEntrypoint {
             port = serverConfig.serverPort(),
             address = serverConfig.serverHost(),
             io = nettyConfig.io(),
-            launchConfig = serverConfig
+            httpServerConfig = serverConfig
         )
     }
 }

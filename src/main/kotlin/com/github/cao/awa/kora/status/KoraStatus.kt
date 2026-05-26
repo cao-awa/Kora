@@ -40,12 +40,16 @@ object KoraStatus {
         this.locker.clear()
     }
 
-    fun registerLifecycle(reloadable: Any) {
-        this.locker.registerLifecycle(reloadable)
+    fun registerLifecycle(name: String, reloadable: Any) {
+        this.locker.registerLifecycle(name, reloadable)
     }
 
-    fun completedLifecycle(reloadable: Any) {
-        this.locker.completedLifecycle(reloadable)
+    fun completedLifecycle(name: String) {
+        this.locker.completedLifecycle(name)
+    }
+
+    fun completedLifecycle(reloadableHolder: Any) {
+        this.locker.completedLifecycle(reloadableHolder)
     }
 
     fun registerReloadListener(listener: () -> Unit) {
@@ -54,5 +58,9 @@ object KoraStatus {
 
     fun registerStopListener(listener: () -> Unit) {
         this.stopListeners.add(listener)
+    }
+
+    fun registeredLifecycle(): Map<String, Any> {
+        return this.locker.registeredLifecycle()
     }
 }

@@ -4,18 +4,32 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
 class KoraStatusLocker {
-    private val lifecycleStatus: MutableList<Any> = mutableListOf()
+    private val lifecycleStatus: MutableMap<String, Any> = mutableMapOf()
+    private val lifecycleStatusLookup: MutableMap<Any, String> = mutableMapOf()
     private val queue: BlockingQueue<Boolean> = LinkedBlockingQueue()
 
-    fun registerLifecycle(lifecycleHolder: Any) {
-        this.lifecycleStatus.add(lifecycleHolder)
+    fun registerLifecycle(name: String, lifecycleHolder: Any) {
+        this.lifecycleStatus[name] = lifecycleHolder
+        this.lifecycleStatusLookup[lifecycleHolder] = name
     }
 
-    fun completedLifecycle(lifecycleHolder: Any) {
-        this.lifecycleStatus.remove(lifecycleHolder)
+    fun completedLifecycle(name: String) {
+        val source = this.lifecycleStatus.remove(name)
+        this.lifecycleStatusLookup.remove(source)
         if (this.lifecycleStatus.isEmpty()){
             this.queue.offer(true)
         }
+    }
+
+    fun completedLifecycle(reloadableHolder: Any) {
+        val name = this.lifecycleStatusLookup[reloadableHolder]
+        if (name != null) {
+            completedLifecycle(name)
+        }
+    }
+
+    fun registeredLifecycle(): Map<String, Any> {
+        return this.lifecycleStatus
     }
 
     @Throws(InterruptedException::class)
@@ -25,5 +39,6 @@ class KoraStatusLocker {
 
     fun clear() {
         this.lifecycleStatus.clear()
+        this.lifecycleStatusLookup.clear()
     }
 }

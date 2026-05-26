@@ -42,18 +42,18 @@ class KoraHttpServer {
         port: Int,
         address: String = "localhost",
         io: KoraEventLoopGroupFactory = KoraEventLoopGroupFactory.remote(),
-        launchConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
+        httpServerConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
     ) {
-        KoraStatus.registerLifecycle(this)
+        KoraStatus.registerLifecycle("KoraHttpServer-" + httpServerConfig.serverPort(), this)
 
         Thread.startVirtualThread {
-            val nettyConfig = launchConfig.nettyServerConfig()
+            val nettyConfig = httpServerConfig.nettyServerConfig()
             val threadFactory = KoraEventLoopGroupFactory.validate(io)
             val bossGroup: EventLoopGroup = threadFactory.createEventLoopGroup(2)
             val workerGroup: EventLoopGroup = threadFactory.createEventLoopGroup(
                 Runtime.getRuntime().availableProcessors() * 2
             )
-            val adapter = KoraHttpInboundHandlerAdapter(this.serverBuilder, launchConfig)
+            val adapter = KoraHttpInboundHandlerAdapter(this.serverBuilder, httpServerConfig)
             try {
                 val bootstrap = ServerBootstrap()
                     .group(
