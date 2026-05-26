@@ -1,11 +1,11 @@
 package com.github.cao.awa.kora.server.network.http
 
-import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
-import com.github.cao.awa.kora.launch.config.KoraLaunchDefaultConfig
 import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import com.github.cao.awa.kora.server.network.http.builder.KoraHttpServerBuilder
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
+import com.github.cao.awa.kora.server.network.http.config.KoraHttpDefaultServerConfig
+import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import com.github.cao.awa.kora.status.KoraStatus
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
@@ -42,7 +42,7 @@ class KoraHttpServer {
         port: Int,
         address: String = "localhost",
         io: KoraEventLoopGroupFactory = KoraEventLoopGroupFactory.remote(),
-        launchConfig: KoraLaunchConfig = KoraLaunchDefaultConfig
+        launchConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
     ) {
         KoraStatus.registerReloadable(this)
 

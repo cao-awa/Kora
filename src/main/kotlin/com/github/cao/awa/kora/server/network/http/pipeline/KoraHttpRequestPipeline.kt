@@ -2,13 +2,13 @@ package com.github.cao.awa.kora.server.network.http.pipeline
 
 import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
-import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.server.network.KoraNetworkConfig
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
 import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManagerConfig
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.asset.manager.KoraHttpAssetsManager
+import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
@@ -42,7 +42,7 @@ import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
 class
 KoraHttpRequestPipeline(
     private val serverAbortHandlers: KoraHttpRequestServerAbortHandler,
-    private val launchConfig: KoraLaunchConfig
+    private val config: KoraHttpServerConfig
 ) :
     KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
     companion object {
@@ -96,7 +96,7 @@ KoraHttpRequestPipeline(
         }
     }
 
-    private val assetManagerConfig: KoraAssetManagerConfig = this.launchConfig.assetManagerConfig()
+    private val assetManagerConfig: KoraAssetManagerConfig = this.config.assetManagerConfig()
     private val handlers: Map<HttpMethod, KoraHttpRequestHandler> =
         HashMap<HttpMethod, KoraHttpRequestHandler>().apply {
             put(HttpMethod.GET, KoraHttpGetHandler())

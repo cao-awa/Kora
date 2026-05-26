@@ -46,7 +46,9 @@ public class KoraEntrypoint {
                 switch (command) {
                     case "stop", "exit" -> KoraStatus.stop();
                     case "reload" -> KoraStatus.reload();
-                    default -> LOGGER.info("Unknown command: {}", command);
+                    default -> LOGGER.info("Unknown command: {}",
+                                           command
+                    );
                 }
             }
         }
@@ -64,19 +66,16 @@ public class KoraEntrypoint {
         try {
             KoraLaunchConfig config = KoraLaunchConfig.createConfig(new File("configs/launch.json"));
             KoraKotlinEntrypoint.printConfigs(config);
-            if (config.isDefaultEntrypoint()) {
-                KoraKotlinEntrypoint.entry(config);
-            } else {
-                if (KoraStatus.isReloading()) {
-                    KoraKotlinEntrypoint.unloadPlugins();
-                }
 
-                KoraLibraryLoader.loadJars();
-                KoraKotlinEntrypoint.entryToDeclared(
-                        config,
-                        args
-                );
+            if (KoraStatus.isReloading()) {
+                KoraKotlinEntrypoint.unloadPlugins();
             }
+
+            KoraLibraryLoader.loadJars();
+            KoraKotlinEntrypoint.entryToDeclared(
+                    config,
+                    args
+            );
 
             return true;
         } catch (KoraEntrypointStageFailedException ex) {

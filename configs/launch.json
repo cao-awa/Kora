@@ -1,25 +1,6 @@
 {
-    "server_host": "0.0.0.0",
     "print_config_details": true,
     "entrypoint": [
-        "kora-redis",
-        "kora-external",
-        "com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry"
-    ],
-    "server_port": 12345,
-    "asset_manager": {
-        "error_page": "error/404.html",
-        "enable": true,
-        "asset_path": "assets/"
-    },
-    "netty": {
-        "io": "nio",
-        "snd_buffer": 65536,
-        "reuse_address": true,
-        "backlog": 8192,
-        "allocator": "default",
-        "keep_alive": true,
-        "rcv_buffer": 65536,
-        "tcp_no_delay": true
-    }
+        "com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry"
+    ]
 }
