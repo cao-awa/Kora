@@ -9,12 +9,15 @@ object KoraStatus {
 
     @JvmStatic
     fun reload() {
-        this.reloading = true
-        for (listener in this.reloadListeners) {
-            listener()
+        synchronized(this) {
+            this.reloading = true
+            for (listener in this.reloadListeners) {
+                listener()
+            }
+            this.locker.await()
+            this.locker.clear()
+
         }
-        this.locker.await()
-        this.locker.clear()
     }
 
     @JvmStatic
@@ -22,7 +25,9 @@ object KoraStatus {
 
     @JvmStatic
     fun completeReload() {
-        this.reloading = false
+        synchronized(this) {
+            this.reloading = false
+        }
     }
 
     @JvmStatic
@@ -30,27 +35,39 @@ object KoraStatus {
 
     @JvmStatic
     fun stop() {
-        this.running = false
-        for (listener in this.stopListeners) {
-            listener()
+        synchronized(this) {
+            this.running = false
+            for (listener in this.stopListeners) {
+                listener()
+            }
+            this.locker.await()
+            this.locker.clear()
+
         }
-        this.locker.await()
-        this.locker.clear()
     }
 
     fun registerReloadable(reloadable: Any) {
-        this.locker.registerLifecycle(reloadable)
+        synchronized(this) {
+            this.locker.registerLifecycle(reloadable)
+        }
     }
 
     fun completedLifecycle(reloadable: Any) {
-        this.locker.completedLifecycle(reloadable)
+        synchronized(this) {
+            this.locker.completedLifecycle(reloadable)
+
+        }
     }
 
     fun registerReloadListener(listener: () -> Unit) {
-        this.reloadListeners.add(listener)
+        synchronized(this) {
+            this.reloadListeners.add(listener)
+        }
     }
 
     fun registerStopListener(listener: () -> Unit) {
-        this.stopListeners.add(listener)
+        synchronized(this) {
+            this.stopListeners.add(listener)
+        }
     }
 }
