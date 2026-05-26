@@ -4,44 +4,44 @@ import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
 import io.netty.buffer.ByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
 
-object KoraNettyServerDefaultConfig: KoraNettyServerConfig<KoraNettyServerDefaultConfig>() {
+object KoraNettyServerDefaultConfig: KoraNettyServerConfig() {
     private fun throwWhenSet(): Nothing {
         error("Cannot set config in default server config instance")
     }
 
-    override fun io(io: KoraEventLoopGroupFactory): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun io(io: KoraEventLoopGroupFactory): KoraNettyServerConfig {
         throwWhenSet()
     }
 
-    override fun backlog(backlog: Int): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun backlog(backlog: Int): KoraNettyServerConfig {
         throwWhenSet()
     }
 
-    override fun keepalive(keepalive: Boolean): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun keepalive(keepalive: Boolean): KoraNettyServerConfig {
         throwWhenSet()
     }
 
-    override fun rcvBuf(rcvBuf: Int): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun rcvBuf(rcvBuf: Int): KoraNettyServerConfig {
         throwWhenSet()
     }
 
-    override fun sndBuf(sndBuf: Int): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun sndBuf(sndBuf: Int): KoraNettyServerConfig {
         throwWhenSet()
     }
 
-    override fun reuseAddr(reuseAddr: Boolean): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun reuseAddr(reuseAddr: Boolean): KoraNettyServerConfig {
         throwWhenSet()
     }
 
-    override fun allocator(allocator: ByteBufAllocator): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun allocator(allocator: ByteBufAllocator): KoraNettyServerConfig {
         throwWhenSet()
     }
 
-    override fun writeBufferWaterMark(waterMark: WriteBufferWaterMark): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun writeBufferWaterMark(waterMark: WriteBufferWaterMark): KoraNettyServerConfig {
         throwWhenSet()
     }
 
-    override fun tcpNoDelay(noDelay: Boolean): KoraNettyServerConfig<KoraNettyServerDefaultConfig> {
+    override fun tcpNoDelay(noDelay: Boolean): KoraNettyServerConfig {
         throwWhenSet()
     }
 }

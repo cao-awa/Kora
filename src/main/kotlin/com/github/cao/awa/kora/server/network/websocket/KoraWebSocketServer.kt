@@ -35,6 +35,7 @@ class KoraWebSocketServer {
         val bossGroup: EventLoopGroup = threadFactory.createEventLoopGroup(1)
         val workerGroup: EventLoopGroup =
             threadFactory.createEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2)
+        val nettyConfig = config.nettyServerConfig()
         try {
             val bootstrap = ServerBootstrap()
                 .group(
@@ -43,19 +44,19 @@ class KoraWebSocketServer {
                 ).channel(
                     threadFactory.channel
                 ).option(
-                    ChannelOption.SO_BACKLOG, config.backlog()
+                    ChannelOption.SO_BACKLOG, nettyConfig.backlog()
                 ).childOption(
-                    ChannelOption.TCP_NODELAY, config.tcpNoDelay()
+                    ChannelOption.TCP_NODELAY, nettyConfig.tcpNoDelay()
                 ).childOption(
-                    ChannelOption.SO_KEEPALIVE, config.keepalive()
+                    ChannelOption.SO_KEEPALIVE, nettyConfig.keepalive()
                 ).childOption(
-                    ChannelOption.SO_RCVBUF, config.rcvBuf()
+                    ChannelOption.SO_RCVBUF, nettyConfig.rcvBuf()
                 ).childOption(
-                    ChannelOption.SO_REUSEADDR, config.reuseAddr()
+                    ChannelOption.SO_REUSEADDR, nettyConfig.reuseAddr()
                 ).childOption(
-                    ChannelOption.WRITE_BUFFER_WATER_MARK, config.writeBufferWaterMark()
+                    ChannelOption.WRITE_BUFFER_WATER_MARK, nettyConfig.writeBufferWaterMark()
                 ).childOption(
-                    ChannelOption.ALLOCATOR, config.allocator()
+                    ChannelOption.ALLOCATOR, nettyConfig.allocator()
                 ).childHandler(object : ChannelInitializer<SocketChannel>() {
                     @Override
                     override fun initChannel(channel: SocketChannel) {

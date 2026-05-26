@@ -3,18 +3,17 @@ package com.github.cao.awa.kora.server.network.config
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.config.KoraConfig
 import com.github.cao.awa.kora.server.network.group.KoraEventLoopGroupFactory
-import com.github.cao.awa.kora.server.network.http.config.KoraHttpServerConfig
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.buffer.UnpooledByteBufAllocator
 import io.netty.channel.WriteBufferWaterMark
 import io.netty.channel.unix.PreferredDirectByteBufAllocator
 
-abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig() {
+open class KoraNettyServerConfig : KoraConfig() {
     companion object {
-        fun createFromJSON(json: JSONObject): KoraHttpServerConfig {
+        fun createFromJSON(json: JSONObject): KoraNettyServerConfig {
             return createConfig(json) {
-                val config = KoraHttpServerConfig()
+                val config = KoraNettyServerConfig()
                 ifString("io") {
                     config.io(
                         when (this) {
@@ -87,21 +86,21 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
         }
     }
 
-    open fun io(io: KoraEventLoopGroupFactory): KoraNettyServerConfig<T> {
+    open fun io(io: KoraEventLoopGroupFactory): KoraNettyServerConfig {
         this.io = io
         return this
     }
 
     fun backlog(): Int = this.backlog
 
-    open fun backlog(backlog: Int): KoraNettyServerConfig<T> {
+    open fun backlog(backlog: Int): KoraNettyServerConfig {
         this.backlog = backlog
         return this
     }
 
     fun keepalive(): Boolean = this.keepalive
 
-    open fun keepalive(keepalive: Boolean): KoraNettyServerConfig<T> {
+    open fun keepalive(keepalive: Boolean): KoraNettyServerConfig {
         this.keepalive = keepalive
         return this
     }
@@ -109,28 +108,28 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
 
     fun rcvBuf(): Int = this.rcvBuf
 
-    open fun rcvBuf(rcvBuf: Int): KoraNettyServerConfig<T> {
+    open fun rcvBuf(rcvBuf: Int): KoraNettyServerConfig {
         this.rcvBuf = rcvBuf
         return this
     }
 
     fun sndBuf(): Int = this.sndBuf
 
-    open fun sndBuf(sndBuf: Int): KoraNettyServerConfig<T> {
+    open fun sndBuf(sndBuf: Int): KoraNettyServerConfig {
         this.sndBuf = sndBuf
         return this
     }
 
     fun reuseAddr(): Boolean = this.reuseAddr
 
-    open fun reuseAddr(reuseAddr: Boolean): KoraNettyServerConfig<T> {
+    open fun reuseAddr(reuseAddr: Boolean): KoraNettyServerConfig {
         this.reuseAddr = reuseAddr
         return this
     }
 
     fun allocator(): ByteBufAllocator = this.allocator
 
-    open fun allocator(allocator: ByteBufAllocator): KoraNettyServerConfig<T> {
+    open fun allocator(allocator: ByteBufAllocator): KoraNettyServerConfig {
         this.allocator = allocator
         return this
     }
@@ -146,30 +145,19 @@ abstract class KoraNettyServerConfig<T : KoraNettyServerConfig<T>> : KoraConfig(
 
     fun writeBufferWaterMark(): WriteBufferWaterMark = this.writeBufferWaterMark
 
-    open fun writeBufferWaterMark(waterMark: WriteBufferWaterMark): KoraNettyServerConfig<T> {
+    open fun writeBufferWaterMark(waterMark: WriteBufferWaterMark): KoraNettyServerConfig {
         this.writeBufferWaterMark = waterMark
         return this
     }
 
     fun tcpNoDelay(): Boolean = this.tcpNoDelay
 
-    open fun tcpNoDelay(noDelay: Boolean): KoraNettyServerConfig<T> {
+    open fun tcpNoDelay(noDelay: Boolean): KoraNettyServerConfig {
         this.tcpNoDelay = noDelay
         return this
     }
 
-    fun copy(instance: T): T {
-        instance.io(io())
-        instance.backlog(backlog())
-        instance.keepalive(keepalive())
-        instance.rcvBuf(rcvBuf())
-        instance.reuseAddr(reuseAddr())
-        instance.allocator(allocator())
-        instance.writeBufferWaterMark(writeBufferWaterMark())
-        return instance
-    }
-
-    fun copy(config: KoraNettyServerConfig<*>) {
+    fun copy(config: KoraNettyServerConfig) {
         config.io = this.io
         config.backlog = this.backlog
         config.keepalive = this.keepalive

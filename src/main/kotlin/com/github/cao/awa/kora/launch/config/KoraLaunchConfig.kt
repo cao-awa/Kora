@@ -26,14 +26,18 @@ open class KoraLaunchConfig: KoraConfig() {
                     }
                 }
                 ifArray("entrypoint") {
-                    config.entrypoint.clear()
-                    forEach { entrypoint ->
-                        if (!entrypoint.isString()) {
-                            throw IllegalArgumentException("Entrypoint definition must be string")
+                    if (!isEmpty()) {
+                        config.entrypoint.clear()
+                        forEach { entrypoint ->
+                            if (!entrypoint.isString()) {
+                                throw IllegalArgumentException("Entrypoint definition must be string")
+                            }
+                            if (entrypoint is JSONString) {
+                                config.entrypoint.add(entrypoint.asString())
+                            }
                         }
-                        if (entrypoint is JSONString) {
-                            config.entrypoint.add(entrypoint.asString())
-                        }
+                    } else{
+                        LOGGER.warn("Entrypoint definition is empty, will use default entrypoint 'com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry'")
                     }
                 }
 

@@ -1,13 +1,14 @@
 package com.github.cao.awa.kora.server.network.http.config
 
 import com.github.cao.awa.cason.obj.JSONObject
+import com.github.cao.awa.kora.config.KoraConfig
 import com.github.cao.awa.kora.server.network.config.KoraNettyServerConfig
 import com.github.cao.awa.kora.server.network.config.KoraNettyServerDefaultConfig
 import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManagerConfig
 import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManagerDefaultConfig
 import java.io.File
 
-open class KoraHttpServerConfig: KoraNettyServerConfig<KoraHttpServerConfig>() {
+open class KoraHttpServerConfig: KoraConfig() {
     companion object {
         @JvmStatic
         fun create(file: File): KoraHttpServerConfig {
@@ -23,7 +24,7 @@ open class KoraHttpServerConfig: KoraNettyServerConfig<KoraHttpServerConfig>() {
                     config.assetManagerConfig = KoraAssetManagerConfig.createFromJSON(this)
                 }
                 ifJSON("netty") {
-                    config.nettyServerConfig = createFromJSON(this)
+                    config.nettyServerConfig = KoraNettyServerConfig.createFromJSON(this)
                 }
                 config
             }
@@ -33,7 +34,7 @@ open class KoraHttpServerConfig: KoraNettyServerConfig<KoraHttpServerConfig>() {
     private var serverPort: Int = 12345
     private var serverHost: String = "0.0.0.0"
     private var assetManagerConfig: KoraAssetManagerConfig = KoraAssetManagerDefaultConfig
-    private var nettyServerConfig: KoraNettyServerConfig<*> = KoraNettyServerDefaultConfig
+    private var nettyServerConfig: KoraNettyServerConfig = KoraNettyServerDefaultConfig
 
     fun serverPort(): Int {
         return this.serverPort
@@ -62,11 +63,11 @@ open class KoraHttpServerConfig: KoraNettyServerConfig<KoraHttpServerConfig>() {
         return this
     }
 
-    fun nettyServerConfig(): KoraNettyServerConfig<*> {
+    fun nettyServerConfig(): KoraNettyServerConfig {
         return this.nettyServerConfig
     }
 
-    open fun nettyServerConfig(config: KoraNettyServerConfig<*>): KoraHttpServerConfig {
+    open fun nettyServerConfig(config: KoraNettyServerConfig): KoraHttpServerConfig {
         this.nettyServerConfig = config
         return this
     }
