@@ -1,29 +1,310 @@
 package com.github.cao.awa.kora.command
 
+import com.github.cao.awa.kora.KoraEntrypoint
+import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.status.KoraStatus.reload
 import com.github.cao.awa.kora.status.KoraStatus.stop
+import com.github.cao.awa.kora.time.KoraTime
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import oshi.SystemInfo
+import oshi.hardware.HardwareAbstractionLayer
+import oshi.software.os.OperatingSystem
+import java.lang.management.BufferPoolMXBean
+import java.lang.management.ManagementFactory
+import java.util.*
+import kotlin.math.min
+
 
 object KoraCommandExecutor {
     private val LOGGER: Logger = LogManager.getLogger("KoraCommandExecutor")
     private val RUNTIME: Runtime = Runtime.getRuntime()
+    private val SYSTEM_INFO: SystemInfo = SystemInfo()
+    private val OPERATING_SYSTEM: OperatingSystem = SYSTEM_INFO.operatingSystem
+    private val HELPERS: MutableMap<String, String> = mutableMapOf<String, String>().also {
+        it["help"] = "Show this command helper list"
+        it["?"] = it["help"]!!
+        it["stop"] = "Stop all running lifecycle and stop Kora"
+        it["exit"] = it["stop"]!!
+        it["reload"] = "Stop all running lifecycle and reload Kora"
+        it["memory"] = "Get JVM memory information"
+        it["mem"] = it["memory"]!!
+        it["threads"] = "Get all threads information"
+        it["deadlock"] = "Get all deadlock threads information"
+        it["uptime"] = "Get server running uptime"
+        it["pid"] = "Get server running pid"
+        it["jvmargs"] = "Get jvm launch arguments"
+        it["thread"] = "Get thread information of target thread id, need an integer input <thread_id>"
+        it["env"] = "Get all environment variables"
+        it["version"] = "Get versions information"
+        it["osinfo"] = "Get operating system information"
+    }
 
     @JvmStatic
-    fun executeCommand(command: String) {
-        when (command) {
-            "stop", "exit" -> stop()
-            "reload" -> reload()
-            "mem", "memory" -> {
-                LOGGER.info("-- Memory --")
-                LOGGER.info("Total memory: {}MB", RUNTIME.totalMemory() / 1024 / 1024)
-                LOGGER.info("Max memory: {}MB", RUNTIME.maxMemory() / 1024 / 1024)
-                LOGGER.info("Free memory: {}MB", RUNTIME.freeMemory() / 1024 / 1024)
-            }
-            else -> LOGGER.info(
-                "Unknown command: {}",
-                command
-            )
+    fun executeCommand(sourceCommand: String) {
+        val command = if (sourceCommand.contains(" ")) {
+            sourceCommand.substring(0, sourceCommand.indexOf(" "))
+        } else {
+            sourceCommand
         }
+        val params = if (sourceCommand.contains(" ")) {
+            val paramsCommand = sourceCommand.substring(sourceCommand.indexOf(" ") + 1)
+            paramsCommand.split(" ")
+        } else {
+            emptyList()
+        }
+        if (params.isEmpty()) {
+            when (command) {
+                "?", "help" -> handleHelpCommand()
+                "stop", "exit" -> stop()
+                "reload" -> reload()
+                "mem", "memory" -> handleMemoryCommand()
+                "threads" -> handleThreadsCommand()
+                "deadlock" -> handleDeadlockCommand()
+                "uptime" -> handleUptimeCommand()
+                "pid" -> handlePidCommand()
+                "jvmargs" -> handleJvmArgsCommand()
+                "env" -> handleEnvCommand()
+                "version" -> handleVersionCommand()
+                "osinfo" -> handleOsInfoCommand()
+                else -> unknownCommand(command)
+            }
+        } else {
+            when (command) {
+                "thread" -> handleThreadCommand(params)
+                "help" -> handleHelpCommand(params)
+                else -> commandCannotRunWithParams(command)
+            }
+        }
+    }
+
+    fun unknownCommand(command: String) {
+        LOGGER.info(
+            "Unknown command: {}",
+            command
+        )
+    }
+
+    fun commandCannotRunWithParams(command: String) {
+        LOGGER.info(
+            "Command '{}' cannot input parameters",
+            command
+        )
+    }
+
+    fun handleEnvCommand() {
+        LOGGER.info("-- Environment variables --")
+        for ((key, value) in System.getenv()) {
+            LOGGER.info("{}: {}", key, value)
+        }
+    }
+
+    fun handleOsInfoCommand(){
+        val hardware = SYSTEM_INFO.hardware
+        LOGGER.info("-- OS info --")
+        LOGGER.info("Total memory: {}GB",(hardware.memory.total / 1024F / 1024F / 1024F).toString().also {
+            it.substring(0, min(it.length, it.indexOf(".") + 2))
+        })
+        LOGGER.info("CPU Name: {}", hardware.processor.processorIdentifier.name)
+        LOGGER.info("Physical processors: {}", hardware.processor.physicalProcessorCount)
+        LOGGER.info("Logical processors: {}", hardware.processor.logicalProcessorCount)
+    }
+
+    fun handleVersionCommand() {
+        LOGGER.info("-- Versions --")
+        LOGGER.info("Kora: {}", KoraInformation.VERSION)
+        LOGGER.info("JVM: {} {}", System.getProperty("java.vm.name"), System.getProperty("java.vm.version"))
+        LOGGER.info(
+            "OS: {}({}), {}",
+            System.getProperty("os.name"),
+            System.getProperty("os.arch"),
+            System.getProperty("os.version")
+        )
+    }
+
+    fun handleHelpCommand(params: List<String>) {
+        val command = params[0]
+        val helper = HELPERS[command]
+
+        if (helper != null) {
+            LOGGER.info("-- Command: '{}' helper --", command)
+            LOGGER.info("{}: {}", command, helper)
+        } else {
+            LOGGER.info("No such command: '{}'", command)
+        }
+    }
+
+    fun handleHelpCommand() {
+        LOGGER.info("-- Command helper --")
+        LOGGER.info("help(or '?'): {}", HELPERS["help"])
+        LOGGER.info("stop, exit: {}", HELPERS["stop"])
+        LOGGER.info("reload: {}", HELPERS["reload"])
+        LOGGER.info("mem, memory: {}", HELPERS["memory"])
+        LOGGER.info("threads: {}", HELPERS["threads"])
+        LOGGER.info("deadlock: {}", HELPERS["deadlock"])
+        LOGGER.info("uptime: {}", HELPERS["uptime"])
+        LOGGER.info("pid: {}", HELPERS["pid"])
+        LOGGER.info("jvmargs: {}", HELPERS["jvmargs"])
+        LOGGER.info("env: {}", HELPERS["env"])
+        LOGGER.info("version: {}", HELPERS["version"])
+        LOGGER.info("osinfo: {}", HELPERS["osinfo"])
+        LOGGER.info("thread <thread_id>: {}", HELPERS["thread"])
+    }
+
+    fun handleJvmArgsCommand() {
+        val bean = ManagementFactory.getRuntimeMXBean()
+        val jvmArgs = bean.inputArguments
+        LOGGER.info("-- JVM arguments --")
+        for (arg in jvmArgs) {
+            LOGGER.info(arg)
+        }
+    }
+
+    fun handleUptimeCommand() {
+        val uptime = System.currentTimeMillis() - KoraEntrypoint.START_TIME
+        LOGGER.info("-- Uptime --")
+
+        LOGGER.info("Kora server has been running {}", KoraTime.formatTime(uptime))
+    }
+
+    fun handleMemoryCommand() {
+        val memoryMXBean = ManagementFactory.getMemoryMXBean()
+        LOGGER.info("-- Memory --")
+        LOGGER.info("Total memory: {}MB", RUNTIME.totalMemory() / 1024 / 1024)
+        LOGGER.info("Max memory: {}MB", RUNTIME.maxMemory() / 1024 / 1024)
+        LOGGER.info("Free memory: {}MB", RUNTIME.freeMemory() / 1024 / 1024)
+        val nonHeapMemoryUsage = memoryMXBean.nonHeapMemoryUsage
+        if (nonHeapMemoryUsage.max == -1L) {
+            LOGGER.info("Non-heap memory max: unlimited")
+        } else {
+            LOGGER.info("Non-heap memory max: {}MB", nonHeapMemoryUsage.max / 1024 / 1024)
+        }
+        LOGGER.info("Non-heap memory committed: {}MB", nonHeapMemoryUsage.committed / 1024 / 1024)
+        LOGGER.info("Non-heap memory used: {}MB", nonHeapMemoryUsage.used / 1024 / 1024)
+        val pools = ManagementFactory.getMemoryPoolMXBeans()
+        for (pool in pools) {
+            if (pool.name.lowercase(Locale.getDefault()).contains("metaspace")) {
+                val usage = pool.getUsage()
+                if (usage.max == -1L) {
+                    LOGGER.info("Metaspace max: unlimited")
+                } else {
+                    LOGGER.info("Metaspace max: {}MB", usage.max / 1024 / 1024)
+                }
+                LOGGER.info("Metaspace committed: {}MB", usage.committed / 1024 / 1024)
+                LOGGER.info("Metaspace used: {}MB", usage.used / 1024 / 1024)
+                break
+            }
+        }
+        val bufferPools = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean::class.java)
+        for (bufferPool in bufferPools) {
+            if (bufferPool.name == "direct") {
+                LOGGER.info("Direct memory total capacity: {}MB", bufferPool.totalCapacity / 1024 / 1024)
+                LOGGER.info("Direct memory used: {}MB", bufferPool.memoryUsed  / 1024 / 1024)
+                LOGGER.info("Direct memory count: {}", bufferPool.count)
+                break
+            }
+        }
+    }
+
+    fun handlePidCommand() {
+        val pid = ProcessHandle.current().pid()
+        LOGGER.info("-- PID --")
+        LOGGER.info("Current PID: {}", pid)
+    }
+
+    fun handleThreadsCommand() {
+        LOGGER.info("-- Threads --")
+        val allStackTraces = Thread.getAllStackTraces()
+        val deadlockThreads = mutableListOf<Thread>()
+        LOGGER.info("# All threads")
+        for (thread in allStackTraces.keys) {
+            if (isDeadlockThread(thread)) {
+                deadlockThreads.add(thread)
+            }
+            LOGGER.info("Thread '{}'(id: {}):  {}", thread.name, thread.threadId(), thread.state)
+        }
+        if (deadlockThreads.isNotEmpty()) {
+            LOGGER.warn("# Deadlock threads")
+            for (thread in deadlockThreads) {
+                LOGGER.warn("Thread '{}'(id: {}):  {}, DEADLOCK", thread.name, thread.threadId(), thread.state)
+            }
+        }
+    }
+
+    fun handleDeadlockCommand() {
+        val bean = ManagementFactory.getThreadMXBean()
+        val deadlockThreads = bean.findDeadlockedThreads()
+        LOGGER.info("-- Deadlock threads --")
+        if (deadlockThreads != null && deadlockThreads.isNotEmpty()) {
+            for (threadId in deadlockThreads) {
+                val thread = getThread(threadId)!!
+                LOGGER.info("Deadlock thread '{}'(id: {}): {}", thread.name, thread.threadId(), thread.state)
+                printThreadDetails(thread)
+                LOGGER.info("Thread stacktrace: ")
+                printThreadStacktrace(thread)
+            }
+        } else {
+            LOGGER.info("No deadlock threads found")
+        }
+    }
+
+    fun handleThreadCommand(params: List<String>) {
+        if (params.isNotEmpty()) {
+            try {
+                val id = params[0].toLong()
+                val targetThread: Thread? = getThread(id)
+                if (targetThread == null) {
+                    LOGGER.info("Thread with id '{}' not found", id)
+                } else {
+                    LOGGER.info("-- Thread '{}'(id: {}) --", targetThread.name, targetThread.threadId())
+                    printThreadDetails(targetThread)
+                    LOGGER.info("Thread stacktrace:")
+                    printThreadStacktrace(targetThread)
+                }
+                return
+            } catch (_: Exception) {
+
+            }
+        }
+        LOGGER.warn("Command 'thread' usage: thread [id]")
+        return
+    }
+
+    fun printThreadDetails(thread: Thread) {
+        LOGGER.info("Thread is alive: {}", thread.isAlive)
+        LOGGER.info("Thread is virtual: {}", thread.isVirtual())
+        LOGGER.info("Thread is daemon: {}", thread.isDaemon)
+        LOGGER.info("Thread is interrupted: {}", thread.isInterrupted)
+        LOGGER.info("Thread priority: {}", thread.priority)
+        var deadlock = isDeadlockThread(thread)
+        LOGGER.info("Thread deadlock: {}", deadlock)
+    }
+
+    fun isDeadlockThread(thread: Thread): Boolean {
+        val bean = ManagementFactory.getThreadMXBean()
+        val deadlockThreads = bean.findDeadlockedThreads()
+        var deadlock = false
+        if (deadlockThreads != null && deadlockThreads.isNotEmpty()) {
+            if (deadlockThreads.contains(thread.threadId())) {
+                deadlock = true
+            }
+        }
+        return deadlock
+    }
+
+    fun printThreadStacktrace(thread: Thread) {
+        for (stacktrace in thread.stackTrace) {
+            LOGGER.info(" - {}", stacktrace.toString())
+        }
+    }
+
+    fun getThread(id: Long): Thread? {
+        val allStackTraces = Thread.getAllStackTraces()
+        for (thread in allStackTraces.keys) {
+            if (thread.threadId() == id) {
+                return thread
+            }
+        }
+        return null
     }
 }

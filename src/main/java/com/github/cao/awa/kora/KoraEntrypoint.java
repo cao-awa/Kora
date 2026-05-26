@@ -18,6 +18,7 @@ public class KoraEntrypoint {
     private static final Logger LOGGER = LogManager.getLogger("KoraEntryPoint");
     public static final KoraPluginDependenciesManager DEPENDENCIES_MANAGER = new KoraPluginDependenciesManager();
     private static String[] launchArgs = new String[0];
+    public static final long START_TIME = System.currentTimeMillis();
 
     public static void main(String... args) {
         launchArgs = args;
