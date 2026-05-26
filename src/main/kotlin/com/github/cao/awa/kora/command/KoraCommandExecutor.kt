@@ -7,14 +7,17 @@ import com.github.cao.awa.kora.status.KoraStatus.reload
 import com.github.cao.awa.kora.status.KoraStatus.stop
 import com.github.cao.awa.kora.time.KoraTime
 import com.sun.management.HotSpotDiagnosticMXBean
+import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.apache.logging.log4j.core.config.Configurator
 import oshi.SystemInfo
 import oshi.software.os.OperatingSystem
 import java.io.File
 import java.lang.management.BufferPoolMXBean
 import java.lang.management.ManagementFactory
-import java.util.*
+import java.util.Locale
+import java.util.Locale.getDefault
 import javax.management.ObjectName
 import kotlin.math.min
 
@@ -48,6 +51,7 @@ object KoraCommandExecutor {
         it["threaddump"] = it["thread_dump"]!!
         it["heap_dump"] = "Dump all heap memory data to file"
         it["heapdump"] = it["heap_dump"]!!
+        it["loglevel"] = "Get or change loglevel, change loglevel need a string input <loglevel>"
     }
 
     @JvmStatic
@@ -82,6 +86,7 @@ object KoraCommandExecutor {
                     "status" -> handleStatusCommand()
                     "services" -> handleServicesCommand()
                     "thread_dump", "threaddump" -> handleThreadDumpCommand(params)
+                    "loglevel" -> handleLogLevelCommand()
                     else -> unknownCommand(command)
                 }
             } else {
@@ -90,6 +95,7 @@ object KoraCommandExecutor {
                     "help" -> handleHelpCommand(params)
                     "threaddump", "thread_dump" -> handleThreadDumpCommand(params)
                     "heapdump", "heap_dump" -> handleHeapDumpCommand(params)
+                    "loglevel" -> handleLogLevelCommand(params)
                     else -> commandCannotRunWithParams(command)
                 }
             }
@@ -110,6 +116,39 @@ object KoraCommandExecutor {
             "Command '{}' cannot input parameters",
             command
         )
+    }
+
+    fun handleLogLevelCommand(params: List<String>) {
+        LOGGER.info("-- Log level --")
+        LOGGER.info("Current logger level: {}", LOGGER.level.name())
+        val level = when (params[0].uppercase(getDefault())) {
+            "OFF" -> Level.OFF
+            "FATAL" -> Level.FATAL
+            "ERROR" -> Level.ERROR
+            "WARN" -> Level.WARN
+            "INFO" -> Level.INFO
+            "DEBUG" -> Level.DEBUG
+            "TRACE" -> Level.TRACE
+            "ALL" -> Level.ALL
+            else -> {
+                LOGGER.warn("Cannot set loglevel, because no such level: '{}'", params[0].uppercase(getDefault()))
+                null
+            }
+        }
+        if (level != null) {
+            LOGGER.info("Setting loglevel to '{}'", level.name())
+            val context = LogManager.getContext(false)
+            for (logger in context.loggerRegistry.loggers) {
+                Configurator.setLevel(logger, level)
+            }
+            Configurator.setRootLevel(level)
+            LOGGER.info("Loglevel set to '{}' now", level.name())
+        }
+    }
+
+    fun handleLogLevelCommand() {
+        LOGGER.info("-- Log level --")
+        LOGGER.info("Current logger level: {}", LOGGER.level.name())
     }
 
     fun handleHeapDumpCommand(params: List<String>) {
@@ -173,7 +212,7 @@ object KoraCommandExecutor {
         }
     }
 
-    fun handleServicesCommand(){
+    fun handleServicesCommand() {
         LOGGER.info("-- Registered services --")
         for ((name, service) in KoraStatus.registeredLifecycle()) {
             LOGGER.info("Service '{}': {}", name, service::class.simpleName)
@@ -216,7 +255,7 @@ object KoraCommandExecutor {
     fun handleGcCommand() {
         val bean = ManagementFactory.getRuntimeMXBean()
         val jvmArgs = bean.inputArguments
-        if (jvmArgs.contains("-XX:+DisableExplicitGC")){
+        if (jvmArgs.contains("-XX:+DisableExplicitGC")) {
             LOGGER.warn("JVM already disabled explicit GC, cannot run 'gc' command")
         } else {
             LOGGER.info("Starting garbage collect")
@@ -231,10 +270,10 @@ object KoraCommandExecutor {
         }
     }
 
-    fun handleOsInfoCommand(){
+    fun handleOsInfoCommand() {
         val hardware = SYSTEM_INFO.hardware
         LOGGER.info("-- OS info --")
-        LOGGER.info("Total memory: {}GB",(hardware.memory.total / 1024F / 1024F / 1024F).toString().let {
+        LOGGER.info("Total memory: {}GB", (hardware.memory.total / 1024F / 1024F / 1024F).toString().let {
             it.substring(0, min(it.length, it.indexOf(".") + 2))
         })
         LOGGER.info("CPU Name: {}", hardware.processor.processorIdentifier.name)
@@ -285,6 +324,8 @@ object KoraCommandExecutor {
         LOGGER.info("services: {}", HELPERS["services"])
         LOGGER.info("threaddump(or 'thread_dump': {}", HELPERS["threaddump"])
         LOGGER.info("heapdump(or 'heap_dump'): {}", HELPERS["heapdump"])
+        LOGGER.info("loglevel: {}", HELPERS["loglevel"])
+        LOGGER.info("loglevel <loglevel>: {}", HELPERS["loglevel"])
         LOGGER.info("thread <thread_id>: {}", HELPERS["thread"])
     }
 
@@ -336,7 +377,7 @@ object KoraCommandExecutor {
         for (bufferPool in bufferPools) {
             if (bufferPool.name == "direct") {
                 LOGGER.info("Direct memory total capacity: {}MB", bufferPool.totalCapacity / 1024 / 1024)
-                LOGGER.info("Direct memory used: {}MB", bufferPool.memoryUsed  / 1024 / 1024)
+                LOGGER.info("Direct memory used: {}MB", bufferPool.memoryUsed / 1024 / 1024)
                 LOGGER.info("Direct memory count: {}", bufferPool.count)
                 break
             }

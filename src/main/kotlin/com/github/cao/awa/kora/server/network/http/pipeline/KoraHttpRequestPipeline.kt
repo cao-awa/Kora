@@ -37,15 +37,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.github.cao.awa.com.github.cao.awa.capertml.html.HTMLElement
 
-class
-KoraHttpRequestPipeline(
+class KoraHttpRequestPipeline(
     private val serverAbortHandlers: KoraHttpRequestServerAbortHandler,
     private val config: KoraHttpServerConfig
 ) :
     KoraRequestPipeline<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext, KoraHttpRequestHandler>() {
     companion object {
+        private val LOGGER: Logger = LogManager.getLogger("KoraHttpRequestPipeline")
+
         fun instructHttpMetadata(json: JSONObject, context: KoraHttpContext): JSONObject {
             json.instruct {
                 if (KoraHttpServer.instructRequestType) {
