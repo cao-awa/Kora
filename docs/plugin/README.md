@@ -175,7 +175,7 @@ object TestPlugin {
 ```
 
 ## Resource cleans
-If your plugin has created some static data, please use ``registerCleaner`` to clear the data when Kora reloading:
+If your plugin has created some static data, your must use ``registerCleaner`` to clear the data when Kora reloading:
 ```kotlin
 class Other {
     // Something code here.
@@ -221,6 +221,8 @@ In metadata:
     "unload": "com.xxx.plugin.entry.TestPlugin#unload"
 }
 ``` 
+
+And, ``Don't use the 'val' to define an constant that refernce to your custom class``!
 
 ## Shared context
 You can put and get data from ``KoraLaunchConfig``, use ``config[key] = data`` to set data, use ``config[key]`` to get data, data key and value can only is `` String``.
