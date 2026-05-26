@@ -1,77 +1,104 @@
 package com.github.cao.awa.kora.server.network.http.argument.type
 
 import com.github.cao.awa.kora.server.network.http.argument.exception.TypedHttpArgumentMissingException
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentBooleanValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentByteValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentCharValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentDataValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentDoubleValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentFloatValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentIntValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentJSONArrayValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentLongValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentShortValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentStringValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentBooleanInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentByteInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentCharInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.data.TypedHttpArgumentDataInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentDoubleInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentFloatInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentIntInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentLongInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.TypedHttpArgumentShortInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic.string.TypedHttpArgumentStringInitializeValidator
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentInitializeValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentValidator
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.error
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
 import com.github.cao.awa.kora.server.network.http.argument.type.value.TypedHttpArgumentDefaultValues
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import kotlin.reflect.KClass
 
-class TypedHttpArgument<T : Any>(val name: String, private val type: KClass<T>, val missable: Boolean) {
+class TypedHttpArgument<T : Any> {
     companion object {
-        private val validators: MutableMap<KClass<*>, TypedHttpArgumentValidator<*>> = mutableMapOf()
+        private val validators: MutableMap<KClass<*>, TypedHttpArgumentInitializeValidator<*>> = mutableMapOf()
 
-        fun <T: Any> addValidator(type: KClass<T>, validator: TypedHttpArgumentValidator<T>) {
+        init {
+            addValidator(Short::class, TypedHttpArgumentShortInitializeValidator())
+            addValidator(Int::class, TypedHttpArgumentIntInitializeValidator())
+            addValidator(Long::class, TypedHttpArgumentLongInitializeValidator())
+            addValidator(Float::class, TypedHttpArgumentFloatInitializeValidator())
+            addValidator(Double::class, TypedHttpArgumentDoubleInitializeValidator())
+
+            addValidator(Boolean::class, TypedHttpArgumentBooleanInitializeValidator())
+
+            addValidator(Byte::class, TypedHttpArgumentByteInitializeValidator())
+            addValidator(Char::class, TypedHttpArgumentCharInitializeValidator())
+
+            addValidator(String::class, TypedHttpArgumentStringInitializeValidator())
+        }
+
+        fun <T : Any> addValidator(type: KClass<T>, validator: TypedHttpArgumentInitializeValidator<T>) {
             this.validators[type] = validator
         }
 
-        fun <T: Any> addValidator(type: KClass<T>, validator: (String, String) -> T) {
-            this.validators[type] = TypedHttpArgumentDataValidator(validator)
+        fun <T : Any> addValidator(type: KClass<T>, validator: (String, String) -> T) {
+            this.validators[type] = TypedHttpArgumentDataInitializeValidator(validator)
         }
 
         @Suppress("unchecked_cast")
-        fun<T:Any> getValidator(type: KClass<T>): TypedHttpArgumentValidator<T>? {
-            return this.validators[type] as TypedHttpArgumentValidator<T>?
+        fun <T : Any> getValidator(type: KClass<T>): TypedHttpArgumentInitializeValidator<T>? {
+            return this.validators[type] as TypedHttpArgumentInitializeValidator<T>?
         }
 
-        init {
-            addValidator(Short::class, TypedHttpArgumentShortValidator())
-            addValidator(Int::class, TypedHttpArgumentIntValidator())
-            addValidator(Long::class, TypedHttpArgumentLongValidator())
-            addValidator(Float::class, TypedHttpArgumentFloatValidator())
-            addValidator(Double::class, TypedHttpArgumentDoubleValidator())
+        inline fun <reified T : Any> getActualValidator(type: KClass<T>): TypedHttpArgumentInitializeValidator<T> {
+            return getValidator(type)
+                ?: TypedHttpArgumentValidateException.failed("Unregistered argument validator of type '${type}'")
+        }
 
-            addValidator(Boolean::class, TypedHttpArgumentBooleanValidator())
-
-            addValidator(Byte::class, TypedHttpArgumentByteValidator())
-            addValidator(Char::class, TypedHttpArgumentCharValidator())
-
-            addValidator(String::class, TypedHttpArgumentStringValidator())
+        inline fun <reified T : Any> create(name: String, type: KClass<T>, missable: Boolean): TypedHttpArgument<T> {
+            return TypedHttpArgument(name, type, missable, getActualValidator(T::class))
         }
     }
 
+    val name: String
+    val missable: Boolean
+    private val type: KClass<T>
     private var defaultValue: T? = null
+    private val initializeValidator: TypedHttpArgumentInitializeValidator<T>
+    private var customValidator: MutableList<TypedHttpArgumentValidator<T>> = mutableListOf()
+
+    constructor(
+        name: String,
+        type: KClass<T>,
+        missable: Boolean,
+        initializeValidator: TypedHttpArgumentInitializeValidator<T>
+    ) {
+        this.name = name
+        this.type = type
+        this.missable = missable
+        this.initializeValidator = initializeValidator
+    }
 
     @Suppress("unchecked_cast")
-    fun get(context: KoraHttpContext): T {
+    operator fun get(context: KoraHttpContext): T {
         val content: String = context.arguments()[this.name]
             ?: TypedHttpArgumentMissingException.missing("Required argument '${this.name}' is missing, type is ${this.type.simpleName}")
-        val validator: TypedHttpArgumentValidator<*> = getValidator(this.type)
-            ?: TypedHttpArgumentValidateException.failed("Unregistered argument validator of type '${this.type}'")
-        return validator[this.name, content] as T
+        var value: T = this.initializeValidator[this.name, content]
+        for (validator in customValidator) {
+            value = validator.validate(value)
+        }
+        return value
     }
 
     operator fun invoke(context: KoraHttpContext): T {
-        try {
-            return get(context)
+        return try {
+            get(context)
         } catch (e: Exception) {
             if (this.missable) {
                 if (this.defaultValue == null) {
-                    return TypedHttpArgumentDefaultValues.getDefault(this.type)
+                    TypedHttpArgumentDefaultValues.getDefault(this.type)
                 } else {
-                    return this.defaultValue!!
+                    this.defaultValue!!
                 }
             } else {
                 throw e
@@ -79,11 +106,28 @@ class TypedHttpArgument<T : Any>(val name: String, private val type: KClass<T>, 
         }
     }
 
-    fun defaultValue(value: T) {
+    fun defaultValue(value: T): TypedHttpArgument<T> {
         this.defaultValue = value
+        return this
+    }
+
+    fun validator(validator: TypedHttpArgumentValidator<T>): TypedHttpArgument<T> {
+        this.customValidator.add(validator)
+        return this
+    }
+
+    fun validator(validator: (T) -> T): TypedHttpArgument<T> {
+        validator(
+            object : TypedHttpArgumentValidator<T> {
+                override fun validate(value: T): T {
+                    return validator(value)
+                }
+            }
+        )
+        return this
     }
 }
 
 inline fun <reified T : Any> arg(name: String, missable: Boolean = false): TypedHttpArgument<T> {
-    return TypedHttpArgument(name, T::class, missable)
+    return TypedHttpArgument.create(name, T::class, missable)
 }

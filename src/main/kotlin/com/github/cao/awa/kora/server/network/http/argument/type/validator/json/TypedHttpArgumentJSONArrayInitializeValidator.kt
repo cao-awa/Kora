@@ -1,9 +1,10 @@
-package com.github.cao.awa.kora.server.network.http.argument.type.validator
+package com.github.cao.awa.kora.server.network.http.argument.type.validator.json
 
 import com.github.cao.awa.cason.array.JSONArray
 import com.github.cao.awa.cason.serialize.parser.JSONParser
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentInitializeValidator
 
-interface TypedHttpArgumentJSONArrayValidator<T : Any> : TypedHttpArgumentValidator<T> {
+interface TypedHttpArgumentJSONArrayInitializeValidator<T : Any> : TypedHttpArgumentInitializeValidator<T> {
     override operator fun get(argumentName: String, content: String): T {
         return get(argumentName, JSONParser.parseArray(content))
     }

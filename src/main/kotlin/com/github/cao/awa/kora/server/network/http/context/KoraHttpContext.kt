@@ -7,10 +7,12 @@ import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
+import com.github.cao.awa.kora.server.network.http.argument.type.TypedHttpArgument
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.TypedHttpUrlPlaceholder
 import com.github.cao.awa.kora.server.network.http.url.KoraPlaceholderURL
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
@@ -249,5 +251,113 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     override fun createAbort(): KoraAbortHttpContext {
         return KoraAbortHttpContext(this)
+    }
+
+    // Helper methods.
+
+    // Typed arg.
+    inline fun <reified R : Any, reified T1 : Any> build(
+        arg1: TypedHttpArgument<T1>,
+        builder: (T1) -> R
+    ): R {
+        return builder(arg1[this])
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any> build(
+        arg1: TypedHttpArgument<T1>,
+        arg2: TypedHttpArgument<T2>,
+        builder: (T1, T2) -> R
+    ): R {
+        return builder(arg1[this], arg2[this])
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any> build(
+        arg1: TypedHttpArgument<T1>,
+        arg2: TypedHttpArgument<T2>,
+        arg3: TypedHttpArgument<T3>,
+        builder: (T1, T2, T3) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this])
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any, reified T4: Any> build(
+        arg1: TypedHttpArgument<T1>,
+        arg2: TypedHttpArgument<T2>,
+        arg3: TypedHttpArgument<T3>,
+        arg4: TypedHttpArgument<T4>,
+        builder: (T1, T2, T3, T4) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this], arg4[this])
+    }
+
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4: Any,
+            reified T5: Any
+            > build(
+        arg1: TypedHttpArgument<T1>,
+        arg2: TypedHttpArgument<T2>,
+        arg3: TypedHttpArgument<T3>,
+        arg4: TypedHttpArgument<T4>,
+        arg5: TypedHttpArgument<T5>,
+        builder: (T1, T2, T3, T4, T5) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this])
+    }
+
+    // Typed placeholder.
+    inline fun <reified R : Any, reified T1 : Any> build(
+        arg1: TypedHttpUrlPlaceholder<T1>,
+        builder: (T1) -> R
+    ): R {
+        return builder(arg1[this])
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any> build(
+        arg1: TypedHttpUrlPlaceholder<T1>,
+        arg2: TypedHttpUrlPlaceholder<T2>,
+        builder: (T1, T2) -> R
+    ): R {
+        return builder(arg1[this], arg2[this])
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any> build(
+        arg1: TypedHttpUrlPlaceholder<T1>,
+        arg2: TypedHttpUrlPlaceholder<T2>,
+        arg3: TypedHttpUrlPlaceholder<T3>,
+        builder: (T1, T2, T3) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this])
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any, reified T4: Any> build(
+        arg1: TypedHttpUrlPlaceholder<T1>,
+        arg2: TypedHttpUrlPlaceholder<T2>,
+        arg3: TypedHttpUrlPlaceholder<T3>,
+        arg4: TypedHttpUrlPlaceholder<T4>,
+        builder: (T1, T2, T3, T4) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this], arg4[this])
+    }
+
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4: Any,
+            reified T5: Any
+            > build(
+        arg1: TypedHttpUrlPlaceholder<T1>,
+        arg2: TypedHttpUrlPlaceholder<T2>,
+        arg3: TypedHttpUrlPlaceholder<T3>,
+        arg4: TypedHttpUrlPlaceholder<T4>,
+        arg5: TypedHttpUrlPlaceholder<T5>,
+        builder: (T1, T2, T3, T4, T5) -> R
+    ): R {
+        return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this])
     }
 }

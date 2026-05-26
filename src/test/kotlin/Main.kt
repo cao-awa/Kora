@@ -16,7 +16,71 @@ private val LOGGER: Logger = LogManager.getLogger("Test")
 
 // oha -n 10000 -c 128 --latency-correction http://127.0.0.1:12345/test
 fun main() {
-    KoraEntrypoint.main()
+//    KoraEntrypoint.main()
+    testValidator()
+}
+
+fun testValidator() {
+    val username = arg<String>("username").validator { content ->
+        if (content.length < 5) {
+            throw IllegalArgumentException("Username length must more than 5 characters")
+        }
+        content
+    }
+
+    val api = http {
+        route("/register") {
+            get {
+                val name = username(this)
+                println("User $name registered")
+                html {
+                    body {
+                        p {
+                            +"User $name registered now!"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    KoraHttpServer(api).start(
+        port = 12345
+    )
+}
+
+fun testBuild() {
+    val username = arg<String>("username", false)
+    val password = arg<String>("password", false)
+
+    data class LoginRequest(val username: String, val password: String)
+
+    val api = http {
+        route("test") {
+            get {
+                val loginRequest = build(
+                    username,
+                    password,
+                    // Use lambda constructor.
+                    ::LoginRequest
+                )
+                // Call auth plugin codes here...
+
+                // Or:
+                // val loginRequest2 = build(
+                //    username,
+                //    password
+                // ) { name, pwd ->
+                //   // Construct manually.
+                //    LoginRequest(name, pwd)
+                // }
+            }
+        }
+    }
+
+    KoraHttpServer(api).start(
+        port = 12345
+    )
 }
 
 fun testSimple() {

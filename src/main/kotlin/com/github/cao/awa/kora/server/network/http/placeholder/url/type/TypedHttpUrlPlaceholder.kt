@@ -1,51 +1,73 @@
 package com.github.cao.awa.kora.server.network.http.placeholder.url.type
 
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderBooleanValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderByteValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderCharValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderDoubleValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderFloatValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderIntValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderLongValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderShortValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderStringValidator
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderBooleanInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderByteInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderCharInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderDoubleInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderFloatInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderIntInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderLongInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.TypedHttpUrlPlaceholderShortInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.basic.string.TypedHttpUrlPlaceholderStringInitializeValidator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderInitializeValidator
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.placeholder.url.exception.TypedHttpUrlMissingException
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.TypedHttpUrlPlaceholderValidator
 import kotlin.reflect.KClass
 
-class TypedHttpUrlPlaceholder<T : Any>(val name: String, private val type: KClass<T>) {
+class TypedHttpUrlPlaceholder<T : Any> {
     companion object {
-        private val validators: MutableMap<KClass<*>, TypedHttpUrlPlaceholderValidator<*>> = mutableMapOf()
+        private val validators: MutableMap<KClass<*>, TypedHttpUrlPlaceholderInitializeValidator<*>> = mutableMapOf()
 
-        private fun <T : Any> addValidator(type: KClass<T>, validator: TypedHttpUrlPlaceholderValidator<T>) {
+        init {
+            addValidator(Short::class, TypedHttpUrlPlaceholderShortInitializeValidator())
+            addValidator(Int::class, TypedHttpUrlPlaceholderIntInitializeValidator())
+            addValidator(Long::class, TypedHttpUrlPlaceholderLongInitializeValidator())
+            addValidator(Float::class, TypedHttpUrlPlaceholderFloatInitializeValidator())
+            addValidator(Double::class, TypedHttpUrlPlaceholderDoubleInitializeValidator())
+
+            addValidator(Boolean::class, TypedHttpUrlPlaceholderBooleanInitializeValidator())
+
+            addValidator(Byte::class, TypedHttpUrlPlaceholderByteInitializeValidator())
+            addValidator(Char::class, TypedHttpUrlPlaceholderCharInitializeValidator())
+
+            addValidator(String::class, TypedHttpUrlPlaceholderStringInitializeValidator())
+        }
+
+        private fun <T : Any> addValidator(type: KClass<T>, validator: TypedHttpUrlPlaceholderInitializeValidator<T>) {
             this.validators[type] = validator
         }
 
         @Suppress("unchecked_cast")
-        fun <T : Any> getValidator(type: KClass<T>): TypedHttpUrlPlaceholderValidator<T>? {
-            return this.validators[type] as TypedHttpUrlPlaceholderValidator<T>?
+        fun <T : Any> getValidator(type: KClass<T>): TypedHttpUrlPlaceholderInitializeValidator<T>? {
+            return this.validators[type] as TypedHttpUrlPlaceholderInitializeValidator<T>?
         }
 
-        init {
-            addValidator(Short::class, TypedHttpUrlPlaceholderShortValidator())
-            addValidator(Int::class, TypedHttpUrlPlaceholderIntValidator())
-            addValidator(Long::class, TypedHttpUrlPlaceholderLongValidator())
-            addValidator(Float::class, TypedHttpUrlPlaceholderFloatValidator())
-            addValidator(Double::class, TypedHttpUrlPlaceholderDoubleValidator())
+        fun <T: Any> getActualValidator(type: KClass<T>): TypedHttpUrlPlaceholderInitializeValidator<T> {
+            return getValidator(type)
+                ?: TypedHttpArgumentValidateException.failed("Unregistered placeholder validator of type '${type}'")
+        }
 
-            addValidator(Boolean::class, TypedHttpUrlPlaceholderBooleanValidator())
-
-            addValidator(Byte::class, TypedHttpUrlPlaceholderByteValidator())
-            addValidator(Char::class, TypedHttpUrlPlaceholderCharValidator())
-
-            addValidator(String::class, TypedHttpUrlPlaceholderStringValidator())
+        inline fun <reified T: Any> create(name: String, type: KClass<T>): TypedHttpUrlPlaceholder<T> {
+            return TypedHttpUrlPlaceholder(name, type, getActualValidator(type))
         }
     }
 
+    val name: String
+    private val type: KClass<T>
+    private val initializeValidator: TypedHttpUrlPlaceholderInitializeValidator<T>
+    private var customValidator: MutableList<TypedHttpUrlPlaceholderValidator<T>> = mutableListOf()
+
+    constructor(name: String, type: KClass<T>, initializeValidator: TypedHttpUrlPlaceholderInitializeValidator<T>) {
+        this.name = name
+        this.type = type
+        this.initializeValidator = initializeValidator
+    }
+
     @Suppress("unchecked_cast")
-    fun get(context: KoraHttpContext): T {
+    operator fun get(context: KoraHttpContext): T {
         val contentList = context.path().split("/")
         val seq: Int = context.placeholders()[this.name] ?: missing(context)
 
@@ -53,10 +75,12 @@ class TypedHttpUrlPlaceholder<T : Any>(val name: String, private val type: KClas
             missing(context)
         }
 
-        val validator: TypedHttpUrlPlaceholderValidator<*> = getValidator(this.type)
-            ?: TypedHttpArgumentValidateException.failed("Unregistered placeholder validator of type '${this.type}'")
         val content = contentList[seq]
-        return validator[this.name, content, context.path()] as T
+        var value: T =  this.initializeValidator[this.name, content, context.path()]
+        for (validator in customValidator) {
+            value = validator.validate(value)
+        }
+        return value
     }
 
     private fun missing(context: KoraHttpContext): Nothing = TypedHttpUrlMissingException.missing(
@@ -66,8 +90,24 @@ class TypedHttpUrlPlaceholder<T : Any>(val name: String, private val type: KClas
     operator fun invoke(context: KoraHttpContext): T {
         return get(context)
     }
+
+    fun validator(validator: TypedHttpUrlPlaceholderValidator<T>): TypedHttpUrlPlaceholder<T> {
+        this.customValidator.add(validator)
+        return this
+    }
+
+    fun validator(validator: (T) -> T): TypedHttpUrlPlaceholder<T> {
+        validator(
+            object : TypedHttpUrlPlaceholderValidator<T> {
+                override fun validate(value: T): T {
+                    return validator(value)
+                }
+            }
+        )
+        return this
+    }
 }
 
 inline fun <reified T : Any> placeholder(name: String): TypedHttpUrlPlaceholder<T> {
-    return TypedHttpUrlPlaceholder(name, T::class)
+    return TypedHttpUrlPlaceholder.create(name, T::class)
 }

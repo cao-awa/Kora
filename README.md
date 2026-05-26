@@ -356,6 +356,106 @@ fun main() {
 }
 ```
 
+## Typed arg and typed placeholder builder
+Usually custom data class building ways:
+```kotlin
+fun testBuild() {
+    val username = arg<String>("username", false)
+    val password = arg<String>("password", false)
+
+    data class LoginRequest(val username: String, val password: String)
+
+    val api = http {
+        route("test") {
+            get {
+                val name = username(this)
+                val pws = password(this)
+                val loginRequest = LoginRequest(name, pws)
+                // Call auth plugin codes here...
+            }
+        }
+    }
+
+    KoraHttpServer(api).start(
+        port = 12345
+    )
+}
+```
+
+In Kora you can use ``build`` method to build your custom class in request scope, just input the args and constructor.
+
+```kotlin
+fun testBuild() {
+    val username = arg<String>("username", false)
+    val password = arg<String>("password", false)
+
+    data class LoginRequest(val username: String, val password: String)
+
+    val api = http {
+        route("test") {
+            get {
+                val loginRequest = build(
+                    username,
+                    password,
+                    // Use lambda constructor.
+                    ::LoginRequest
+                )
+                // Call auth plugin codes here...
+                
+                // Or:
+                // val loginRequest2 = build(
+                //    username,
+                //    password
+                // ) { name, pwd ->
+                //   // Construct manually.
+                //    LoginRequest(name, pwd)
+                // }
+            }
+        }
+    }
+
+    KoraHttpServer(api).start(
+        port = 12345
+    )
+}
+```
+
+it can also use in ``placeholder``, but cannot mix uses.
+
+## Custom validator
+You can use ``validator`` in ``arg`` or ``placeholder`` creating to define some custom validate logics, you can have multiple validators instead of single validator, just repeat call ``validator`` method again.
+
+```kotlin
+fun testValidator() {
+    val username = arg<String>("username").validator { content ->
+        if (content.length < 5) {
+            throw IllegalArgumentException("Username length must more than 5 characters")
+        }
+        content
+    }
+
+    val api = http {
+        route("/register") {
+            get {
+                val name = username(this)
+                println("User $name registered")
+                html {
+                    body {
+                        p {
+                            +"User $name registered now!"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    KoraHttpServer(api).start(
+        port = 12345
+    )
+}
+```
+
 ## PHP
 
 Currently, Kora can execute PHP scripts through PHP-CGI, but support is incomplete and can currently only be used for single-file PHP scripts.

@@ -1,15 +1,6 @@
 package com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator
 
-import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
-
+@FunctionalInterface
 interface TypedHttpUrlPlaceholderValidator<T : Any> {
-    operator fun get(argumentName: String, content: String, url: String): T
-}
-
-@Throws(TypedHttpArgumentValidateException::class)
-fun error(argumentName: String, content: String, type: String, url: String): Nothing =
-    throw TypedHttpArgumentValidateException("The value '$content' for the $type placeholder  '$argumentName'  is not valid in URL '${handleUrlArg(argumentName, content, url)}'")
-
-fun handleUrlArg(argumentName: String, content: String, url: String): String {
-    return url.replace(content, "{${argumentName}}")
+    fun validate(value: T): T
 }
