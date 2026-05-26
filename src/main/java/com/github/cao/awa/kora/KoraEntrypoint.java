@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora;
 
+import com.github.cao.awa.kora.command.KoraCommandExecutor;
 import com.github.cao.awa.kora.entrypoint.exception.KoraEntrypointStageFailedException;
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig;
 import com.github.cao.awa.kora.constant.KoraInformation;
@@ -43,13 +44,7 @@ public class KoraEntrypoint {
                 }
 
                 String command = scanner.nextLine();
-                switch (command) {
-                    case "stop", "exit" -> KoraStatus.stop();
-                    case "reload" -> KoraStatus.reload();
-                    default -> LOGGER.info("Unknown command: {}",
-                                           command
-                    );
-                }
+                KoraCommandExecutor.executeCommand(command);
             }
         }
 
