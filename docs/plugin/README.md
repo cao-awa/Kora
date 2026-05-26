@@ -174,6 +174,54 @@ object TestPlugin {
 }
 ```
 
+## Resource cleans
+If your plugin has created some static data, please use ``registerCleaner`` to clear the data when Kora reloading:
+```kotlin
+class Other {
+    // Something code here.
+    fun close() {
+        // Close resources.
+    }
+}
+
+class TestDataClass {
+    companion object {
+        private var INSTANCE: Other? = null
+        
+        fun init() {
+            INSTANCE = Other()
+            
+            registerCleaner("your_cleaner_name") {
+                INSTANCE.close()
+                // Key point, clear the references.
+                INSTANCE = null
+            }
+        }
+    }
+}
+```
+When Kora reloading, ``unload`` hook will be trigger, you can write your unload method in plugin metadata: 
+```kotlin
+package com.xxx.plugin.entry
+
+object TestPlugin {
+
+    // NOTICE:
+    // Unload method doesn't present any input args, can only be empty.
+    @JvmStatic
+    fun unload() {
+        // Your codes here.
+    }
+}
+```
+
+In metadata:
+```json
+{
+    "unload": "com.xxx.plugin.entry.TestPlugin#unload"
+}
+``` 
+
 ## Shared context
 You can put and get data from ``KoraLaunchConfig``, use ``config[key] = data`` to set data, use ``config[key]`` to get data, data key and value can only is `` String``.
 

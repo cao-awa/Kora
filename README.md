@@ -161,11 +161,13 @@ fun main() {
 ## Case 3
 Use Kora's libraries loader features, change the ``entrypoint`` key in your config to:
 ```json
-"entrypoint": [
-    "com.github.cao.awa.com.github.cao.awa.kora.redis.entrypoint.RedisPluginBootstrap#init",
-    "com.github.cao.awa.kora.external.SampleEntrypoint#entry",
-    "com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry"
-]
+{
+    "entrypoint": [
+        "com.github.cao.awa.com.github.cao.awa.kora.redis.entrypoint.RedisPluginBootstrap#init",
+        "com.github.cao.awa.kora.external.SampleEntrypoint#entry",
+        "com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry"
+    ]
+}
 ```
 
 Put ``libs/``(in this repo) to your jar location and use ``java -jar Kora-1.0.5.jar -server`` to launch Kora, you will see a  log ``External test success!``, if you deleted the libraries jar in ``{working_dir}/libs/``, this test wil got an error.
@@ -409,7 +411,7 @@ Kora can launch an HTTP server within 200~500ms, even when creating a large rout
 
 ## Benchmark Test
 
-Tested by [OHA](https://crates.io/crates/oha) on an `AMD Ryzen 7 8845HS`, Windows 10, with default settings: `100000`~`120000` HTTP requests per second. (min 109170, max 128003)
+Tested by [OHA](https://crates.io/crates/oha) on an `AMD Ryzen 7 8845HS`, Windows 10, with default settings
 
 With JVM options (`-server -XX:+UseZGC -Xmx1G -Xms1G`)
 
@@ -443,13 +445,23 @@ fun main() {
 }
 ```
 
-Kora is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although performance will be reduced to 50000~60000 HTTP requests per second. (min 57159, max 63148)
+Kora is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although performance will be reduced.
+
+|          | 1G               | 128M             |
+|----------|------------------|------------------|
+| NIO      | 100000~120000    | 50000~60000      |
+| EPOLL    | waiting for test | waiting for test |
+| IO_URING | waiting for test | waiting for test |
 
 ## Error benchmark
 
-In the 1G memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduced to 70000~80000 HTTP requests per second. (min 70545, max 80148)
+In the 1G memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduce.
 
-In the 128M memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduced to 20000~30000 HTTP requests per second. (min 21238, max 37494)
+|          | 1G               | 128M             |
+|----------|------------------|------------------|
+| NIO      | 70000~80000      | 2000~30000       |
+| EPOLL    | waiting for test | waiting for test |
+| IO_URING | waiting for test | waiting for test |
 
 # Design Philosophy
 
