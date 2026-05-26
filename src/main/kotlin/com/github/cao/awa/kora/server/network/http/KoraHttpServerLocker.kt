@@ -6,7 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue
 class KoraHttpServerLocker {
     private val queue: BlockingQueue<Boolean> = LinkedBlockingQueue()
 
-    fun onReloading() {
+    fun onStop() {
         this.queue.offer(true)
     }
 

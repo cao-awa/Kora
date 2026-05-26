@@ -2,7 +2,8 @@ package com.github.cao.awa.kora.status
 
 object KoraStatus {
     private val reloadListeners: MutableList<() -> Unit> = mutableListOf()
-    private val reloadLocker: KoraStatusLocker = KoraStatusLocker()
+    private val stopListeners: MutableList<() -> Unit> = mutableListOf()
+    private val locker: KoraStatusLocker = KoraStatusLocker()
     var running = true
     var reloading = false
 
@@ -12,8 +13,8 @@ object KoraStatus {
         for (listener in this.reloadListeners) {
             listener()
         }
-        this.reloadLocker.await()
-        this.reloadLocker.clear()
+        this.locker.await()
+        this.locker.clear()
     }
 
     @JvmStatic
@@ -30,17 +31,26 @@ object KoraStatus {
     @JvmStatic
     fun stop() {
         this.running = false
+        for (listener in this.stopListeners) {
+            listener()
+        }
+        this.locker.await()
+        this.locker.clear()
     }
 
     fun registerReloadable(reloadable: Any) {
-        this.reloadLocker.registerReloadable(reloadable)
+        this.locker.registerLifecycle(reloadable)
     }
 
     fun completedLifecycle(reloadable: Any) {
-        this.reloadLocker.completedLifecycle(reloadable)
+        this.locker.completedLifecycle(reloadable)
     }
 
     fun registerReloadListener(listener: () -> Unit) {
         this.reloadListeners.add(listener)
+    }
+
+    fun registerStopListener(listener: () -> Unit) {
+        this.stopListeners.add(listener)
     }
 }

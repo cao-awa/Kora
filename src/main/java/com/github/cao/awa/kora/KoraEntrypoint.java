@@ -50,6 +50,10 @@ public class KoraEntrypoint {
                 }
             }
         }
+
+        LOGGER.info("Stopping Kora");
+        LOGGER.info("Kora stopped");
+        System.exit(0);
     }
 
     private static boolean launch(String[] args) {

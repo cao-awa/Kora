@@ -102,7 +102,12 @@ class KoraHttpServer {
 
                 KoraStatus.registerReloadListener {
                     this.running = false
-                    this.locker.onReloading()
+                    this.locker.onStop()
+                }
+
+                KoraStatus.registerStopListener {
+                    this.running = false
+                    this.locker.onStop()
                 }
 
                 this.locker.await()

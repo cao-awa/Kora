@@ -4,23 +4,16 @@ import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
 class KoraStatusLocker {
-    private val reloadingStatus: MutableMap<Any, Boolean> = mutableMapOf()
+    private val lifecycleStatus: MutableList<Any> = mutableListOf()
     private val queue: BlockingQueue<Boolean> = LinkedBlockingQueue()
 
-    fun registerReloadable(reloadable: Any) {
-        this.reloadingStatus[reloadable] = false
+    fun registerLifecycle(lifecycleHolder: Any) {
+        this.lifecycleStatus.add(lifecycleHolder)
     }
 
-    fun completedLifecycle(reloadable: Any) {
-        this.reloadingStatus[reloadable] = true
-        var done = false
-        for ((_, status) in this.reloadingStatus) {
-            if (!status) {
-                break
-            }
-            done = true
-        }
-        if (done){
+    fun completedLifecycle(lifecycleHolder: Any) {
+        this.lifecycleStatus.remove(lifecycleHolder)
+        if (this.lifecycleStatus.isEmpty()){
             this.queue.offer(true)
         }
     }
@@ -31,6 +24,6 @@ class KoraStatusLocker {
     }
 
     fun clear() {
-        this.reloadingStatus.clear()
+        this.lifecycleStatus.clear()
     }
 }
