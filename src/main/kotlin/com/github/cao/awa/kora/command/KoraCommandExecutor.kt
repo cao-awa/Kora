@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.command
 
+import com.github.cao.awa.cason.serialize.parser.JSONParser
 import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.status.KoraStatus
@@ -16,6 +17,7 @@ import oshi.software.os.OperatingSystem
 import java.io.File
 import java.lang.management.BufferPoolMXBean
 import java.lang.management.ManagementFactory
+import java.nio.charset.StandardCharsets
 import java.util.Locale
 import java.util.Locale.getDefault
 import javax.management.ObjectName
@@ -52,6 +54,9 @@ object KoraCommandExecutor {
         it["heap_dump"] = "Dump all heap memory data to file"
         it["heapdump"] = it["heap_dump"]!!
         it["loglevel"] = "Get or change loglevel, change loglevel need a string input <loglevel>"
+        it["plugins"] = "Get all plugins load status"
+        it["plugin"] = "Get a plugin details information, need an input <plugin_name>"
+        it["config"] = "Get a config content, need an input <config_name>"
     }
 
     @JvmStatic
@@ -98,6 +103,7 @@ object KoraCommandExecutor {
                     "heapdump", "heap_dump" -> handleHeapDumpCommand(params)
                     "loglevel" -> handleLogLevelCommand(params)
                     "plugin" -> handlePluginCommand(params)
+                    "config" -> handleConfigCommand(params)
                     else -> commandCannotRunWithParams(command)
                 }
             }
@@ -118,6 +124,17 @@ object KoraCommandExecutor {
             "Command '{}' cannot input parameters",
             command
         )
+    }
+
+    fun handleConfigCommand(params: List<String>) {
+        LOGGER.info("-- Config --")
+        val configFile = if (params[0].endsWith(".json")) {
+            File("configs/${params[0]}")
+        } else {
+            File("configs/${params[0]}.json")
+        }
+        val json = JSONParser.parseObject(configFile.readText(StandardCharsets.UTF_8))
+        LOGGER.info(json.toString(true, "    "))
     }
 
     fun handlePluginCommand(params: List<String>) {
@@ -375,6 +392,9 @@ object KoraCommandExecutor {
         LOGGER.info("heapdump(or 'heap_dump'): {}", HELPERS["heapdump"])
         LOGGER.info("loglevel: {}", HELPERS["loglevel"])
         LOGGER.info("loglevel <loglevel>: {}", HELPERS["loglevel"])
+        LOGGER.info("plugins: {}", HELPERS["plugins"])
+        LOGGER.info("plugin <plugin_name>: {}", HELPERS["plugin"])
+        LOGGER.info("config <config_name>: {}", HELPERS["config"])
         LOGGER.info("thread <thread_id>: {}", HELPERS["thread"])
     }
 
