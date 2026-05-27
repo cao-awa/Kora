@@ -87,6 +87,7 @@ object KoraCommandExecutor {
                     "services" -> handleServicesCommand()
                     "thread_dump", "threaddump" -> handleThreadDumpCommand(params)
                     "loglevel" -> handleLogLevelCommand()
+                    "plugins" -> handlePluginsCommand()
                     else -> unknownCommand(command)
                 }
             } else {
@@ -96,6 +97,7 @@ object KoraCommandExecutor {
                     "threaddump", "thread_dump" -> handleThreadDumpCommand(params)
                     "heapdump", "heap_dump" -> handleHeapDumpCommand(params)
                     "loglevel" -> handleLogLevelCommand(params)
+                    "plugin" -> handlePluginCommand(params)
                     else -> commandCannotRunWithParams(command)
                 }
             }
@@ -116,6 +118,53 @@ object KoraCommandExecutor {
             "Command '{}' cannot input parameters",
             command
         )
+    }
+
+    fun handlePluginCommand(params: List<String>) {
+        LOGGER.info("-- Plugin --")
+        val dependenciesManager = KoraEntrypoint.DEPENDENCIES_MANAGER
+        val plugin = dependenciesManager.getPlugin(params[0])
+        if (plugin != null) {
+            val isLoaded = if (dependenciesManager.isPluginLoaded(plugin.name)){
+                "loaded"
+            } else {
+                "not loaded"
+            }
+            LOGGER.info("Status: {}", isLoaded)
+            LOGGER.info("Name: {}", plugin.name)
+            LOGGER.info("Entrypoint: {}", plugin.entrypoint)
+            if (plugin.fallback != "") {
+                LOGGER.info("Fallback: {}", plugin.fallback)
+            } else {
+                LOGGER.info("No fallback path")
+            }
+            if (plugin.unload != "") {
+                LOGGER.info("Unload: {}", plugin.unload)
+            } else {
+                LOGGER.info("No unload path")
+            }
+            if (plugin.dependsOn.isNotEmpty()) {
+                LOGGER.info("Depends on: ")
+                for (depends in plugin.dependsOn) {
+                    LOGGER.info("    + {}", depends)
+                }
+            }
+        } else {
+            LOGGER.error("Plugin '{}' not found", params[0])
+        }
+    }
+
+    fun handlePluginsCommand() {
+        LOGGER.info("-- Plugins --")
+        val dependenciesManager = KoraEntrypoint.DEPENDENCIES_MANAGER
+        for ((_, plugin) in dependenciesManager.getPlugins()) {
+            val isLoaded = if (dependenciesManager.isPluginLoaded(plugin.name)){
+                "loaded"
+            } else {
+                "not loaded"
+            }
+            LOGGER.info("Plugin '{}' {}", plugin.name, isLoaded)
+        }
     }
 
     fun handleLogLevelCommand(params: List<String>) {

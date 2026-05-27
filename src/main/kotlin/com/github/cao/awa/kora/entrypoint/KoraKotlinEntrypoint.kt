@@ -5,6 +5,7 @@ import com.github.cao.awa.kora.entrypoint.exception.KoraEntrypointStageFailedExc
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.entrypoint.lib.KoraLibraryLoader
 import com.github.cao.awa.kora.plugin.KoraPlugin
+import com.github.cao.awa.kora.plugin.markEntrypointLoaded
 import com.github.cao.awa.kora.plugin.markPluginLoaded
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -167,9 +168,9 @@ object KoraKotlinEntrypoint {
             }
 
             if (plugin != null) {
-                markPluginLoaded(plugin.name)
+                markPluginLoaded(plugin)
             }
-            markPluginLoaded(entrypoint)
+            markEntrypointLoaded(entrypoint, plugin)
         } catch (_: ClassNotFoundException) {
             entryPointNotFount(entrypoint)
         } catch (invocationException: InvocationTargetException) {

@@ -11,15 +11,24 @@ class KoraPluginDependenciesManager {
     }
 
     private val plugins: MutableMap<String, KoraPlugin> = HashMap()
-    private val loadedPlugin: MutableList<String> = ArrayList()
+    private val loadedPlugin: MutableMap<String, KoraPlugin> = HashMap()
+    private val loadedEntrypoint: MutableMap<String, KoraPlugin?> = HashMap()
     private val cleaners: MutableMap<String, () -> Unit> = HashMap()
 
-    fun onPluginLoad(name: String) {
-        this.loadedPlugin.add(name)
+    fun onPluginLoad(plugin: KoraPlugin) {
+        this.loadedPlugin[plugin.name] = plugin
+    }
+
+    fun onEntrypointLoad(name: String, plugin: KoraPlugin?) {
+        this.loadedEntrypoint[name] = plugin
     }
 
     fun isPluginLoaded(name: String): Boolean {
-        return loadedPlugin.contains(name)
+        return loadedPlugin[name] != null
+    }
+
+    fun isPluginLoaded(plugin: KoraPlugin): Boolean {
+        return isPluginLoaded(plugin.name)
     }
 
     fun addPlugin(name: String, entrypoint: String, dependency: Array<String>, fallback: String, reload: String) {
@@ -28,6 +37,14 @@ class KoraPluginDependenciesManager {
 
     fun getPlugins(): Map<String, KoraPlugin> {
         return this.plugins
+    }
+
+    fun getLoadedPlugins(): Map<String, KoraPlugin> {
+        return this.loadedPlugin
+    }
+
+    fun getLoadedEntrypoint(): Map<String, KoraPlugin?> {
+        return this.loadedEntrypoint
     }
 
     fun isDependsOn(plugin: String, dependency: String): Boolean {
@@ -61,7 +78,21 @@ class KoraPluginDependenciesManager {
 }
 
 fun markPluginLoaded(name: String) {
-    KoraEntrypoint.DEPENDENCIES_MANAGER.onPluginLoad(name)
+    val dependenciesManager = KoraEntrypoint.DEPENDENCIES_MANAGER
+    val plugin = dependenciesManager.getPlugin(name)
+    if (plugin != null) {
+        markPluginLoaded(plugin)
+    } else {
+        throw IllegalStateException("Plugin '$name' doesn't be loaded with completed plugin, it's unnamed plugin?")
+    }
+}
+
+fun markPluginLoaded(plugin: KoraPlugin) {
+    KoraEntrypoint.DEPENDENCIES_MANAGER.onPluginLoad(plugin)
+}
+
+fun markEntrypointLoaded(name: String, plugin: KoraPlugin?) {
+    KoraEntrypoint.DEPENDENCIES_MANAGER.onEntrypointLoad(name, plugin)
 }
 
 fun isPluginLoaded(name: String): Boolean {
