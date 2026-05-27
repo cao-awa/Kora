@@ -11,7 +11,11 @@ object KoraStatus {
     fun reload() {
         this.reloading = true
         for (listener in this.reloadListeners) {
-            listener()
+            try {
+                listener()
+            } catch (_: Exception) {
+
+            }
         }
         this.locker.await()
         this.locker.clear()
@@ -34,7 +38,11 @@ object KoraStatus {
     fun stop() {
         this.running = false
         for (listener in this.stopListeners) {
-            listener()
+            try {
+                listener()
+            } catch (_: Exception) {
+
+            }
         }
         this.locker.await()
         this.locker.clear()
