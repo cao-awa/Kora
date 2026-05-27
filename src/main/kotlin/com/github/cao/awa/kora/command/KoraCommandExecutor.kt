@@ -133,8 +133,12 @@ object KoraCommandExecutor {
         } else {
             File("configs/${params[0]}.json")
         }
-        val json = JSONParser.parseObject(configFile.readText(StandardCharsets.UTF_8))
-        LOGGER.info(json.toString(true, "    "))
+        if (configFile.exists() && configFile.isFile) {
+            val json = JSONParser.parseObject(configFile.readText(StandardCharsets.UTF_8))
+            LOGGER.info(json.toString(true, "    "))
+        } else {
+            LOGGER.error("Config '{}' not found", params[0])
+        }
     }
 
     fun handlePluginCommand(params: List<String>) {
@@ -142,7 +146,7 @@ object KoraCommandExecutor {
         val dependenciesManager = KoraEntrypoint.DEPENDENCIES_MANAGER
         val plugin = dependenciesManager.getPlugin(params[0])
         if (plugin != null) {
-            val isLoaded = if (dependenciesManager.isPluginLoaded(plugin.name)){
+            val isLoaded = if (dependenciesManager.isPluginLoaded(plugin.name)) {
                 "loaded"
             } else {
                 "not loaded"
@@ -175,7 +179,7 @@ object KoraCommandExecutor {
         LOGGER.info("-- Plugins --")
         val dependenciesManager = KoraEntrypoint.DEPENDENCIES_MANAGER
         for ((_, plugin) in dependenciesManager.getPlugins()) {
-            val isLoaded = if (dependenciesManager.isPluginLoaded(plugin.name)){
+            val isLoaded = if (dependenciesManager.isPluginLoaded(plugin.name)) {
                 "loaded"
             } else {
                 "not loaded"

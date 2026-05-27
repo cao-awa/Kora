@@ -1,4 +1,14 @@
 # Custom entrypoint
+Kora will generate a config file when it first startup, it seems like:
+```json
+{
+    "print_config_details": true,
+    "entrypoint": [
+        "com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry"
+    ]
+}
+```
+
 You can declare an entrypoint in config with ``entrypoint`` key:
 ```json
 {
@@ -26,16 +36,11 @@ object SampleEntrypoint {
     }
 }
 ```
+And build a  jar, and put it into ``{working_path}/libs/ `` path, and start Kora runtime, Kora will autoload your jars, don't use ``shadowJar``, shadowJar will pack useless classes that already provided by Kora jar.
 
-> NOTICE:\
-> If you are using the libraries that aren't Kora integrated,\
-> Then you must put the library build jar into the '{working_path}/libs/' path.
+The ``entrypoint`` config must declare full package name and class name or plugin name (See [plugin document](https://github.com/cao-awa/Kora/tree/main/docs/plugin/README.md)), use symbol '#' to split entrypoint method.
 
-And build a  jar, and put it into ``{working_path}/libs/ `` path, don't use shadow jar, shadow jar will pack useless classes that already provided by Kora jar.
-
-The ``entrypoint`` config must declare full package name and class name, use symbol '#' to split entrypoint method.
-
-Kora bootstrap must receive a  ``KoraLaunchConfig`` instance or ``Array<String>`` argument or empty parameter, and must annotated by ``@JvmStatic``, it also must is an kotlin object instead of kotlin class.
+The entrypoint must receive a  ``KoraLaunchConfig`` instance or ``Array<String>`` argument or empty parameter, and must annotated by ``@JvmStatic``, it also must is an kotlin object instead of kotlin class.
 
 The ``entry`` name can be other anything, just modify the name declare before '#' symbol.
 
@@ -49,20 +54,5 @@ If ``entrypoint`` config are missing or defined to empty:
 }
 `````
 
-Kora will automatically start an asset manager web server, you may need to configure the ``asset_path``, ``error_page`` and other configs.
+Kora will automatically reset it to ``com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry``, an asset manager web server, you may need to configure the ``asset_path``, ``error_page`` and other configs in ``configs/kora_http.json``.
 
-## Multi entrypoint
-> NOTICE:\
-> This test case need user launch Redis to initialize first plugin 'RedisPluginBootstrap'
-
-Clone Kora's repo in your IDE, and run the ``src/test/kotlin/Main.kt`` file, Kora's repo contains these plugins in path ``libs/``, you will got multiple plugins test output and finally run the Kora default asset manager web server:
-
-```json
-{
-    "entrypoint": [
-        "com.github.cao.awa.com.github.cao.awa.kora.redis.entrypoint.RedisPluginBootstrap#init",
-        "com.github.cao.awa.kora.external.SampleEntrypoint#entry",
-        "com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint#entry"
-    ]
-}
-```
