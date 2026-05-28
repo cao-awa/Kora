@@ -1,3 +1,34 @@
+## Basic usage
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val api = http {
+            route("test") {
+                get {
+                    // Handle request here...
+                    println("Something processed here")
+
+                    // Return a result to response the request.
+                    html {
+                        head {
+                            charset(StandardCharsets.UTF_8)
+                        }
+                        body {
+                            p {
+                                +"Hello world!"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        KoraHttpServer(api).start()
+    }
+}
+```
+
 ## Structured Responses and HTTP Metadata
 
 By default, Kora treats HTTP responses as **structured data**.
@@ -58,16 +89,12 @@ object TestEntry {
         val api = http {
             route("/test") {
                 get {
-                    status = HttpResponseStatus.NO_CONTENT
                     NoContentResponse
                 }
             }
         }
 
-        KoraHttpServer(api).start(
-            port = 12345,
-            useEpoll = true
-        )
+        KoraHttpServer(api).start()
     }
 }
 ```
@@ -107,10 +134,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(http).start(
-            port = 12345,
-            useEpoll = true
-        )
+        KoraHttpServer(http).start()
     }
 }
 ```
@@ -150,26 +174,27 @@ You can modify the scope data in the abort context.
 ## Typed arg and typed placeholder builder
 Usually custom data class building ways:
 ```kotlin
-fun testBuild() {
-    val username = arg<String>("username", false)
-    val password = arg<String>("password", false)
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val username = arg<String>("username", false)
+        val password = arg<String>("password", false)
 
-    data class LoginRequest(val username: String, val password: String)
+        data class LoginRequest(val username: String, val password: String)
 
-    val api = http {
-        route("test") {
-            get {
-                val name = username(this)
-                val pws = password(this)
-                val loginRequest = LoginRequest(name, pws)
-                // Call auth plugin codes here...
+        val api = http {
+            route("test") {
+                get {
+                    val name = username(this)
+                    val pws = password(this)
+                    val loginRequest = LoginRequest(name, pws)
+                    // Call auth plugin codes here...
+                }
             }
         }
-    }
 
-    KoraHttpServer(api).start(
-        port = 12345
-    )
+        KoraHttpServer(api).start()
+    }
 }
 ```
 
@@ -209,9 +234,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start(
-            port = 12345
-        )
+        KoraHttpServer(api).start()
     }
 }
 ```
@@ -252,9 +275,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start(
-            port = 12345
-        )
+        KoraHttpServer(api).start()
     }
 }
 ```
@@ -343,10 +364,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(http).start(
-            port = 45678,
-            useEpoll = true
-        )
+        KoraHttpServer(http).start()
     }
 }
 ```
