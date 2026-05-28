@@ -137,7 +137,8 @@ same.
 
 ## Delegate way
 
-> Default your server launch on 12345 port here
+Use kotlin keyword ``by`` to delegate ``arg`` or ``placeholder``, and use it in your codes, instead of call
+``xxx(this)``:
 
 ```kotlin
 object TestEntry {
@@ -167,6 +168,8 @@ object TestEntry {
     }
 }
 ```
+
+> Default your server launch on 12345 port here
 
 When you visit ``http://127.0.0.1:12345/test/awa?input=1234``, you will see a page shown
 ``Input arg 'input' is '1234', placeholder is 'awa'``
@@ -356,7 +359,9 @@ object TestEntry {
 ```
 
 ## Headers
-Use ``headers()`` to get request headers, every time call ``headers()`` will copy once, don't call repeatedly if it's not necessary:
+
+Use ``headers()`` to get request headers, every time call ``headers()`` will copy once, don't call repeatedly if it's
+not necessary:
 
 ```kotlin
 object TestEntry {
@@ -385,7 +390,9 @@ object TestEntry {
 ```
 
 ## Params
+
 Use ``params`` to get request params (after url '?'):
+
 ```kotlin
 object TestEntry {
     @JvmStatic
@@ -413,7 +420,9 @@ object TestEntry {
 ```
 
 ## Body
+
 Use ``body()`` to get request body data, may get one of many types:
+
 ```kotlin
 object TestEntry {
     @JvmStatic
@@ -426,12 +435,12 @@ object TestEntry {
                         body {
                             p {
                                 when (body) {
-                                    is KoraHttpEmptyBody -> { }
-                                    is KoraHttpTextBody -> { }
-                                    is KoraHttpJsonBody -> { }
-                                    is KoraHttpUrlencodedBody -> { }
+                                    is KoraHttpEmptyBody -> {}
+                                    is KoraHttpTextBody -> {}
+                                    is KoraHttpJsonBody -> {}
+                                    is KoraHttpUrlencodedBody -> {}
                                     // Or more.
-                                    else -> { }
+                                    else -> {}
                                 }
                             }
                         }
