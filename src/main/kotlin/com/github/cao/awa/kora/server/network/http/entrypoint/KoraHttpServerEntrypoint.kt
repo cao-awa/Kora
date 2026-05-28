@@ -47,11 +47,6 @@ object KoraHttpServerEntrypoint {
             }
         }
 
-        KoraHttpServer(http).start(
-            port = serverConfig.serverPort(),
-            address = serverConfig.serverHost(),
-            io = nettyConfig.io(),
-            httpServerConfig = serverConfig
-        )
+        KoraHttpServer(http).start(serverConfig)
     }
 }

@@ -48,9 +48,7 @@ fun testCombinator() {
         }
     }
 
-    KoraHttpServer(api).start(
-        port = 12345
-    )
+    KoraHttpServer(api).start()
 }
 
 fun testBuild() {
@@ -82,9 +80,7 @@ fun testBuild() {
         }
     }
 
-    KoraHttpServer(api).start(
-        port = 12345
-    )
+    KoraHttpServer(api).start( )
 }
 
 fun testSimple() {
@@ -107,9 +103,7 @@ fun testSimple() {
         }
     }
 
-    KoraHttpServer(http).start(
-        port = 12345
-    )
+    KoraHttpServer(http).start()
 }
 
 fun testAssets() {
@@ -123,9 +117,7 @@ fun testAssets() {
         }
     }
 
-    KoraHttpServer(http).start(
-        port = 12345
-    )
+    KoraHttpServer(http).start()
 }
 
 fun testDataClass() {
@@ -142,9 +134,7 @@ fun testDataClass() {
         }
     }
 
-    KoraHttpServer(http).start(
-        port = 12345
-    )
+    KoraHttpServer(http).start()
 }
 
 fun testPlaceholder() {
@@ -205,9 +195,7 @@ fun testPlaceholder() {
         }
     }
 
-    KoraHttpServer(http).start(
-        port = 12345
-    )
+    KoraHttpServer(http).start()
 }
 
 fun testNotFound() {
@@ -245,9 +233,7 @@ fun testNotFound() {
         }
     }
 
-    KoraHttpServer(http).start(
-        port = 12345
-    )
+    KoraHttpServer(http).start()
 }
 
 fun testError() {
@@ -266,9 +252,7 @@ fun testError() {
         }
     }
 
-    KoraHttpServer(http).start(
-        port = 12345
-    )
+    KoraHttpServer(http).start()
 }
 
 fun testRender() {
@@ -307,7 +291,5 @@ fun testRender() {
         }
     }
 
-    KoraHttpServer(http).start(
-        port = 12345
-    )
+    KoraHttpServer(http).start( )
 }

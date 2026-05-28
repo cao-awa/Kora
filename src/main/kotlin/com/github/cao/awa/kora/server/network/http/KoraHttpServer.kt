@@ -17,6 +17,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import java.io.File
 
 class KoraHttpServer {
     companion object {
@@ -38,17 +39,19 @@ class KoraHttpServer {
         this.serverBuilder = builder
     }
 
+    fun start() {
+        val serverConfig = KoraHttpServerConfig.create(File("configs/kora_http.json"))
+        start(serverConfig)
+    }
+
     fun start(
-        port: Int,
-        address: String = "localhost",
-        io: KoraEventLoopGroupFactory = KoraEventLoopGroupFactory.remote(),
         httpServerConfig: KoraHttpServerConfig = KoraHttpDefaultServerConfig
     ) {
-        KoraStatus.registerLifecycle("KoraHttpServer-" + httpServerConfig.serverPort(), this)
+        KoraStatus.registerLifecycle("kora-http-" + httpServerConfig.serverPort(), this)
 
         Thread.startVirtualThread {
             val nettyConfig = httpServerConfig.nettyServerConfig()
-            val threadFactory = KoraEventLoopGroupFactory.validate(io)
+            val threadFactory = KoraEventLoopGroupFactory.validate(nettyConfig.io())
             val bossGroup: EventLoopGroup = threadFactory.createEventLoopGroup(2)
             val workerGroup: EventLoopGroup = threadFactory.createEventLoopGroup(
                 Runtime.getRuntime().availableProcessors() * 2
@@ -91,11 +94,11 @@ class KoraHttpServer {
                     })
 
                 val future = bootstrap.bind(
-                    address,
-                    port
+                    httpServerConfig.serverHost(),
+                    httpServerConfig.serverPort()
                 ).sync()
                 this.running = true
-                LOGGER.info("Kora HTTP server started on port {} on {}", port, address)
+                LOGGER.info("Kora HTTP server started on port {} on {}", httpServerConfig.serverPort(), httpServerConfig.serverHost())
                 future.channel().closeFuture().addListener {
                     LOGGER.info("Stopping Kora HTTP server")
                 }
