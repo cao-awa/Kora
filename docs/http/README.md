@@ -211,11 +211,6 @@ In Kora you can use ``build`` method to build your custom class in request scope
 And build method can only input most 7 args or placeholders, if your code ned more input, maybe you need to think is
 there a problem with your design architecture?
 
-Even you are using delegate(``by``) arg or placeholder, build method is still usable, you can use build like extractor
-mode, because build not only ``build(TypedHttpArgument<T1>, TypedHttpArgument<T2> ... TypedHttpArgument<T7>, R)`` and
-``build(TypedHttpUrlPlaceholder<T1>, TypedHttpUrlPlaceholder<T2> ... TypedHttpUrlPlaceholder<T7>, R)`` , it also
-supports ``build(T1, T2 ... T7, R)``.
-
 ```kotlin
 object TestEntry {
     @JvmStatic
@@ -245,6 +240,11 @@ object TestEntry {
 ```
 
 This sample using ``arg``, it can also use in ``placeholder``, but cannot mix uses.
+
+Even you are using delegate(``by``) arg or placeholder, build method is still usable, you can use build like extractor
+mode, because build not only ``build(TypedHttpArgument<T1>, TypedHttpArgument<T2> ... TypedHttpArgument<T7>, R)`` and
+``build(TypedHttpUrlPlaceholder<T1>, TypedHttpUrlPlaceholder<T2> ... TypedHttpUrlPlaceholder<T7>, R)`` , it also
+supports ``build(T1, T2 ... T7, R)``.
 
 ## Abort
 
