@@ -1,5 +1,10 @@
 # Basic usage
 
+## Foreword
+
+Don't use coroutine in request handler scope, it already running on coroutine scope, do this instead of improving
+performance, it actually impacts the behaviors.
+
 ## Basic structure
 
 ```kotlin
@@ -169,7 +174,7 @@ When you visit ``http://127.0.0.1:12345/test/awa?input=1234``, you will see a pa
 The delegate ``arg`` or ``placeholder`` can only access in request scope, cannot access in other locations, otherwise
 Kora will throw a ``IllegalStateException`` to notice it.
 
-# Typed arg and typed placeholder builder
+## Typed arg and typed placeholder builder
 
 Usually custom data class building ways:
 
@@ -204,7 +209,9 @@ And build method can only input most 7 args or placeholders, if your code ned mo
 there a problem with your design architecture?
 
 Even you are using delegate(``by``) arg or placeholder, build method is still usable, you can use build like extractor
-mode.
+mode, because build not only ``build(TypedHttpArgument<T1>, TypedHttpArgument<T2> ... TypedHttpArgument<T7>, R)`` and
+``build(TypedHttpUrlPlaceholder<T1>, TypedHttpUrlPlaceholder<T2> ... TypedHttpUrlPlaceholder<T7>, R)`` , it also
+supports ``build(T1, T2 ... T7, R)``.
 
 ```kotlin
 object TestEntry {
@@ -307,7 +314,7 @@ The client will receive data similar to:
 All abort scopes are copied from the source context, which Kora automatically collects.\
 You can modify the scope data in the abort context.
 
-# Custom combinator
+## Custom combinator
 
 You can use ``combinator`` in ``arg`` or ``placeholder`` creating to define some custom combinate logics, you can have
 multiple combinators instead of single combinator, just repeat call ``combinator`` method again.
@@ -344,6 +351,27 @@ object TestEntry {
         }
 
         KoraHttpServer(api).start()
+    }
+}
+```
+
+# Assets manager mode
+
+Use ``-jar Kora-{kora_version}.jar`` to run a Kora HTTP server will automatically running on assets manager mode, if
+kora running on assets manager mode, when url not fetch (such as ``http://127.0.0.1/test``), then Kora will
+automatically redirect to ``http://127.0.0.1/test/index.html``, if still not found, finally, it will get an error
+response, you can modify ``error_page`` config in ``configs/kora_http.json`` config file to custom your 404 page,
+
+The API code equivalent to:
+
+```kotlin
+http {
+    // Setup static asset path.
+    assets(assetManagerConfig.assetPath())
+
+    // Redirect all no registered query to 404 page.
+    ifAbort(HttpPathNotRegisteredException::class) {
+        withAsset(redirectAsset = assetManagerConfig.errorPage())
     }
 }
 ```
@@ -395,13 +423,6 @@ echo '</pre>
 
 echo '</body></html>';
 ```
-
-## Assets manager mode
-
-Use ``-jar Kora-{kora_version}.jar`` to run a Kora HTTP server will automatically running on assets manager mode, if
-kora running on assets manager mode, when url not fetch (such as ``http://127.0.0.1/test``), then Kora will
-automatically redirect to ``http://127.0.0.1/test/index.html``, if still not found, finally, it will get an error
-response, you can modify ``error_page`` config in ``configs/kora_http.json`` config file to custom your 404 page,
 
 # Structured Responses and HTTP Metadata
 
