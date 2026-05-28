@@ -1,7 +1,6 @@
 package com.github.cao.awa.kora.server.network.http.context
 
 import com.github.cao.awa.cason.serialize.parser.JSONParser
-import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
 import com.github.cao.awa.kora.server.network.context.KoraContext
 import com.github.cao.awa.kora.server.network.http.argument.HttpRequestArguments
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
@@ -17,7 +16,6 @@ import com.github.cao.awa.kora.server.network.http.body.text.KoraHttpTextBody
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 import com.github.cao.awa.kora.server.network.http.header.value.KoraHttpHeaderValues
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
-import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.TypedHttpUrlPlaceholder
 import com.github.cao.awa.kora.server.network.http.url.KoraPlaceholderURL
 import io.netty.handler.codec.http.DefaultHttpHeaders
@@ -40,28 +38,6 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()
         private val RANDOM: Random = Random()
 
-        private fun produceParams(msg: KoraFullHttpRequestHolder): HttpRequestParams {
-            return when (msg.headers()[HttpHeaderNames.CONTENT_TYPE]) {
-                APPLICATION_JSON -> {
-                    HttpRequestParams.build(
-                        StrictJSONParser.parseObject(
-                            msg.content().toString(StandardCharsets.UTF_8)
-                        )
-                    )
-                }
-
-                APPLICATION_X_WWW_FORM_URLENCODED -> {
-                    HttpRequestParams.build(
-                        UrlEncodedForm.build(
-                            msg.path().substringAfter("?")
-                        )
-                    )
-                }
-
-                else -> HttpRequestParams.EMPTY
-            }
-        }
-
         private fun produceArguments(msg: KoraFullHttpRequestHolder): HttpRequestArguments {
             return if (msg.path().contains("?")) {
                 HttpRequestArguments.build(
@@ -77,7 +53,6 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     private var requestId: Long = RANDOM.nextLong()
     private var arguments: HttpRequestArguments = HttpRequestArguments.EMPTY
-    private var params: HttpRequestParams = HttpRequestParams.EMPTY
     private var headers: HttpHeaders = DefaultHttpHeaders()
     private var responseHeaders: HttpHeaders = DefaultHttpHeaders()
     private lateinit var body: KoraHttpBody
@@ -95,7 +70,6 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     constructor(msg: KoraFullHttpRequestHolder) : super(msg) {
         this.arguments = produceArguments(msg)
-        this.params = produceParams(msg)
         this.headers = msg.headers()
         this.path = super.path().let {
             var result = it
@@ -126,7 +100,6 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     constructor(context: KoraHttpContext) : super(context) {
         this.arguments = context.arguments
-        this.params = context.params
         this.headers = DefaultHttpHeaders()
         this.responseHeaders = DefaultHttpHeaders()
         this.body = KoraHttpEmptyBody
@@ -223,10 +196,6 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     fun placeholderURL(): String {
         return this.placeholderURL
-    }
-
-    fun params(): HttpRequestParams {
-        return this.params
     }
 
     fun arguments(): HttpRequestArguments {
