@@ -75,9 +75,12 @@ The ``arg`` method has two arguments, first is url argument name, is required, s
 missable is true, Kora will return the default value of the type.
 
 ### Default value
-When missable flag is true, Kora will get the usually default value, such as ``arg<Int>`` is 0, ``arg<String>`` is an empty string, or ETC.
+
+When missable flag is true, Kora will get the usually default value, such as ``arg<Int>`` is 0, ``arg<String>`` is an
+empty string, or ETC.
 
 You can also setting custom default value manually:
+
 ```kotlin
 object TestEntry {
     @JvmStatic
@@ -160,9 +163,11 @@ object TestEntry {
 }
 ```
 
-When you visit ``http://127.0.0.1:12345/test/awa?input=1234``, you will see a page shown ``Input arg 'input' is '1234', placeholder is 'awa'``
+When you visit ``http://127.0.0.1:12345/test/awa?input=1234``, you will see a page shown
+``Input arg 'input' is '1234', placeholder is 'awa'``
 
-The delegate ``arg`` or ``placeholder`` can only access in request scope, cannot access in other locations, otherwise Kora will throw a ``IllegalStateException`` to notice it.
+The delegate ``arg`` or ``placeholder`` can only access in request scope, cannot access in other locations, otherwise
+Kora will throw a ``IllegalStateException`` to notice it.
 
 # Typed arg and typed placeholder builder
 
@@ -198,7 +203,8 @@ In Kora you can use ``build`` method to build your custom class in request scope
 And build method can only input most 7 args or placeholders, if your code ned more input, maybe you need to think is
 there a problem with your design architecture?
 
-Even you are using delegate(``by``) arg or placeholder, build method is still usable, you can use build like extractor mode.
+Even you are using delegate(``by``) arg or placeholder, build method is still usable, you can use build like extractor
+mode.
 
 ```kotlin
 object TestEntry {
@@ -229,33 +235,6 @@ object TestEntry {
 ```
 
 This sample using ``arg``, it can also use in ``placeholder``, but cannot mix uses.
-
-# Total Handlers and 204 No Content
-
-A handler in Kora is a total function from request scope to a single response value.\
-There is no such thing as a “partially constructed response” in Kora.\
-It may describe response metadata, but it cannot partially construct a response.
-
-To return `204 No Content`, use `NoContentResponse` explicitly:
-
-```kotlin
-object TestEntry {
-    @JvmStatic
-    fun entry() {
-        val api = http {
-            route("/test") {
-                get {
-                    NoContentResponse
-                }
-            }
-        }
-
-        KoraHttpServer(api).start()
-    }
-}
-```
-
-Or if a return value is missing, Kora will automatically return a `204 NO CONTENT` response.
 
 ## Abort
 
@@ -417,6 +396,13 @@ echo '</pre>
 echo '</body></html>';
 ```
 
+## Assets manager mode
+
+Use ``-jar Kora-{kora_version}.jar`` to run a Kora HTTP server will automatically running on assets manager mode, if
+kora running on assets manager mode, when url not fetch (such as ``http://127.0.0.1/test``), then Kora will
+automatically redirect to ``http://127.0.0.1/test/index.html``, if still not found, finally, it will get an error
+response, you can modify ``error_page`` config in ``configs/kora_http.json`` config file to custom your 404 page,
+
 # Structured Responses and HTTP Metadata
 
 By default, Kora treats HTTP responses as **structured data**.
@@ -462,6 +448,33 @@ object TestEntry {
 
 Kora automatically serializes Kotlin data classes using [Cason](https://github.com/cao-awa/Cason), a lightweight,
 type-safe JSON/JSON5 library.
+
+# Total Handlers and 204 No Content
+
+A handler in Kora is a total function from request scope to a single response value.\
+There is no such thing as a “partially constructed response” in Kora.\
+It may describe response metadata, but it cannot partially construct a response.
+
+To return `204 No Content`, use `NoContentResponse` explicitly:
+
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val api = http {
+            route("/test") {
+                get {
+                    NoContentResponse
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
+Or if a return value is missing, Kora will automatically return a `204 NO CONTENT` response.
 
 # Performance
 

@@ -72,7 +72,7 @@ It is a **language-shaped web framework**.
 
 # Quick Start
 ## No coding start
-Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora server with [Assets manager mode](#assets-manager-mode).
+Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora server with [Assets manager mode](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md#assets-manager-mode).
 
 It can automatically response html or other files in assets path, or redirect path to "path/index.html" file.
 
@@ -93,9 +93,6 @@ It means Kora will call the entrypoint ``com.github.cao.awa.kora.server.network.
 You can also define your entrypoint, for details, see [entrypoint document](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
 
 Build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services!
-
-## Assets manager mode
-Use ``-jar Kora.jar`` to run a  Kora HTTP server will automatically running on assets manager mode, if kora running on assets manager mode, when url not fetch (such as ``http://127.0.0.1/test``), then Kora will automatically redirect to ``http://127.0.0.1/test/index.html``, if still not found, finally, it will get an error response, you can modify ``error_page`` config in ``configs/kora_http.json`` config file to custom your 404 page,
 
 ## HTTP server
 See [HTTP document](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md).
