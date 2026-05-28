@@ -69,6 +69,7 @@ class TypedHttpArgument<T : Any> {
     private val initializeValidator: TypedHttpArgumentInitializeValidator<T>
     private var combinators: MutableList<TypedHttpArgumentCombinator<T>> = mutableListOf()
     private lateinit var context: KoraHttpContext
+    private var cachedValue: T? = null
 
     constructor(
         name: String,
@@ -85,6 +86,9 @@ class TypedHttpArgument<T : Any> {
     @Suppress("unchecked_cast")
     operator fun get(context: KoraHttpContext): T {
         return try {
+            if (this.cachedValue != null) {
+                return this.cachedValue!!
+            }
             val content: String = context.arguments()[this.name]
                 ?: TypedHttpArgumentMissingException.missing("Required argument '${this.name}' is missing, type is ${this.type.simpleName}")
             var value: T = this.initializeValidator[this.name, content]
@@ -92,6 +96,7 @@ class TypedHttpArgument<T : Any> {
             for (validator in combinators) {
                 value = validator.combinate(value)
             }
+            this.cachedValue = value
             return value
         } catch (e: Exception) {
             if (this.missable) {
