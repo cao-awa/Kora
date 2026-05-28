@@ -11,6 +11,7 @@ import com.github.cao.awa.kora.server.network.http.argument.type.TypedHttpArgume
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.body.KoraHttpBody
 import com.github.cao.awa.kora.server.network.http.body.empty.KoraHttpEmptyBody
+import com.github.cao.awa.kora.server.network.http.body.form.urlencoded.KoraHttpUrlencodedBody
 import com.github.cao.awa.kora.server.network.http.body.json.KoraHttpJsonBody
 import com.github.cao.awa.kora.server.network.http.body.text.KoraHttpTextBody
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
@@ -92,6 +93,12 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
                 KoraHttpHeaderValues.TEXT_PLAIN -> {
                     this.body = KoraHttpTextBody(msg.content().toString(StandardCharsets.UTF_8))
+                }
+
+                KoraHttpHeaderValues.X_WWW_FORM_URLENCODED -> {
+                    this.body = KoraHttpUrlencodedBody.build(
+                        UrlEncodedForm.build(msg.content().toString(StandardCharsets.UTF_8))
+                    )
                 }
             }
         }
