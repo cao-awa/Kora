@@ -217,6 +217,10 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         return this.headers[name]
     }
 
+    fun headers(): HttpHeaders {
+        return this.headers.copy()
+    }
+
     open fun promiseClose() {
         this.promiseClose = true
     }

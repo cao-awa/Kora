@@ -355,6 +355,96 @@ object TestEntry {
 }
 ```
 
+## Headers
+Use ``headers()`` to get request headers, every time call ``headers()`` will copy once, don't call repeatedly if it's not necessary:
+
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val api = http {
+            route("/test") {
+                get {
+                    val headers = headers()
+                    html {
+                        body {
+                            p {
+                                for ((name, value) in headers) {
+                                    +"Header '$name': $value'"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
+## Params
+Use ``params`` to get request params (after url '?'):
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val api = http {
+            route("/test") {
+                get {
+                    val arguments = arguments()
+                    html {
+                        body {
+                            p {
+                                for ((name, value) in arguments) {
+                                    +"Argument '$name': $value'"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
+## Body
+Use ``body()`` to get request body data, may get one of many types:
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val api = http {
+            route("/test") {
+                get {
+                    val body = body()
+                    html {
+                        body {
+                            p {
+                                when (body) {
+                                    is KoraHttpEmptyBody -> { }
+                                    is KoraHttpTextBody -> { }
+                                    is KoraHttpJsonBody -> { }
+                                    is KoraHttpUrlencodedBody -> { }
+                                    // Or more.
+                                    else -> { }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
 # Assets manager mode
 
 Use ``-jar Kora-{kora_version}.jar`` to run a Kora HTTP server will automatically running on assets manager mode, if

@@ -2,7 +2,7 @@ package com.github.cao.awa.kora.server.network.http.argument
 
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
 
-class HttpRequestArguments {
+class HttpRequestArguments: Iterable<Map.Entry<String, String>> {
     companion object {
         val EMPTY: HttpRequestArguments = HttpRequestArguments()
 
@@ -47,5 +47,9 @@ class HttpRequestArguments {
             }
             it.toString()
         }
+    }
+
+    override fun iterator(): Iterator<Map.Entry<String, String>> {
+        return this.data.iterator()
     }
 }

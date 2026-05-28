@@ -8,4 +8,4 @@ Add response headers.
 Add 'movedPermanently', 'permanentlyRedirect', 'temporaryRedirect' method to redirect.
 
 ## Request body
-Add request body supports for JSON, text, empty.
+Add request body supports for JSON, text, empty, urlencoded form.

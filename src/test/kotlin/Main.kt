@@ -1,6 +1,10 @@
 import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
+import com.github.cao.awa.kora.server.network.http.body.empty.KoraHttpEmptyBody
+import com.github.cao.awa.kora.server.network.http.body.form.urlencoded.KoraHttpUrlencodedBody
+import com.github.cao.awa.kora.server.network.http.body.json.KoraHttpJsonBody
+import com.github.cao.awa.kora.server.network.http.body.text.KoraHttpTextBody
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder
 import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
@@ -18,6 +22,35 @@ private val LOGGER: Logger = LogManager.getLogger("Test")
 fun main() {
     KoraEntrypoint.main()
 //    testCombinator()
+}
+
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val api = http {
+            route("/test") {
+                get {
+                    val body = body()
+                    html {
+                        body {
+                            p {
+                                when (body) {
+                                    is KoraHttpEmptyBody -> { }
+                                    is KoraHttpTextBody -> { }
+                                    is KoraHttpJsonBody -> { }
+                                    is KoraHttpUrlencodedBody -> { }
+                                    // Or more.
+                                    else -> { }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
 }
 
 fun testCombinator() {
