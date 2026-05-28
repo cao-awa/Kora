@@ -389,9 +389,9 @@ object TestEntry {
 }
 ```
 
-## Params
+## Arguments
 
-Use ``params`` to get request params (after url '?'):
+Use ``arguments`` to get request arguments (after url '?'):
 
 ```kotlin
 object TestEntry {
