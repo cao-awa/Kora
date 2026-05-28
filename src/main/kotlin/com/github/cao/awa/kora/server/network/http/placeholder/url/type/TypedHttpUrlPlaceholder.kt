@@ -60,7 +60,6 @@ class TypedHttpUrlPlaceholder<T : Any> {
     private val type: KClass<T>
     private val initializeValidator: TypedHttpUrlPlaceholderInitializeValidator<T>
     private var combinators: MutableList<TypedHttpUrlPlaceholderCombinator<T>> = mutableListOf()
-    private var cachedValue: T? = null
 
     constructor(name: String, type: KClass<T>, initializeValidator: TypedHttpUrlPlaceholderInitializeValidator<T>) {
         this.name = name
@@ -70,8 +69,9 @@ class TypedHttpUrlPlaceholder<T : Any> {
 
     @Suppress("unchecked_cast")
     operator fun get(context: KoraHttpContext): T {
-        if (this.cachedValue != null) {
-            return this.cachedValue!!
+        val cachedValue = context.fetchCache(this.name)
+        if (cachedValue != null) {
+            return cachedValue as T
         }
         val contentList = context.path().split("/")
         val seq: Int = context.placeholders()[this.name] ?: missing(context)
@@ -85,15 +85,17 @@ class TypedHttpUrlPlaceholder<T : Any> {
         for (validator in combinators) {
             value = validator.combinate(value)
         }
-        this.cachedValue = value
+        context.cache("{${this.name}}", value)
         return value
     }
 
+    @Suppress("unchecked_cast")
     operator fun getValue(nothing: Nothing?, property: KProperty<*>): T {
-        if (this.cachedValue != null) {
-            return this.cachedValue!!
-        }
         val context = THREAD_LOCAL.get()
+        val cachedValue = context.fetchCache(this.name)
+        if (cachedValue != null) {
+            return cachedValue as T
+        }
         if (context != null) {
             return get(context).also {
                 THREAD_LOCAL.remove()

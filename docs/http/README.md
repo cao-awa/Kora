@@ -74,6 +74,20 @@ object TestEntry {
 The ``arg`` method has two arguments, first is url argument name, is required, second is missable flag, is optional, if
 missable is true, Kora will return the default value of the type.
 
+### Default value
+When missable flag is true, Kora will get the usually default value, such as ``arg<Int>`` is 0, ``arg<String>`` is an empty string, or ETC.
+
+You can also setting custom default value manually:
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val input = arg<String>("input", true).defaultValue("The input")
+        // There same to above-mentioned.
+    }
+}
+```
+
 ## Placeholders
 
 The 'placeholder' just like its name, is a part in the url.
@@ -183,6 +197,8 @@ In Kora you can use ``build`` method to build your custom class in request scope
 
 And build method can only input most 7 args or placeholders, if your code ned more input, maybe you need to think is
 there a problem with your design architecture?
+
+Even you are using delegate(``by``) arg or placeholder, build method is still usable, you can use build like extractor mode.
 
 ```kotlin
 object TestEntry {

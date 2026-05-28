@@ -69,7 +69,6 @@ class TypedHttpArgument<T : Any> {
     private val initializeValidator: TypedHttpArgumentInitializeValidator<T>
     private var combinators: MutableList<TypedHttpArgumentCombinator<T>> = mutableListOf()
     private lateinit var context: KoraHttpContext
-    private var cachedValue: T? = null
 
     constructor(
         name: String,
@@ -86,8 +85,9 @@ class TypedHttpArgument<T : Any> {
     @Suppress("unchecked_cast")
     operator fun get(context: KoraHttpContext): T {
         return try {
-            if (this.cachedValue != null) {
-                return this.cachedValue!!
+            val cachedValue = context.fetchCache(this.name)
+            if (cachedValue != null) {
+                return cachedValue as T
             }
             val content: String = context.arguments()[this.name]
                 ?: TypedHttpArgumentMissingException.missing("Required argument '${this.name}' is missing, type is ${this.type.simpleName}")
@@ -96,7 +96,7 @@ class TypedHttpArgument<T : Any> {
             for (validator in combinators) {
                 value = validator.combinate(value)
             }
-            this.cachedValue = value
+            context.cache(this.name, value)
             return value
         } catch (e: Exception) {
             if (this.missable) {
@@ -115,11 +115,13 @@ class TypedHttpArgument<T : Any> {
         return get(context)
     }
 
+    @Suppress("unchecked_cast")
     operator fun getValue(nothing: Nothing?, property: KProperty<*>): T {
-        if (this.cachedValue != null) {
-            return this.cachedValue!!
-        }
         val context = THREAD_LOCAL.get()
+        val cachedValue = context.fetchCache(this.name)
+        if (cachedValue != null) {
+            return cachedValue as T
+        }
         if (context != null) {
             return get(context).also {
                 THREAD_LOCAL.remove()

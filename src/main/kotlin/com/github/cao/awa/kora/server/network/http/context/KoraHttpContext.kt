@@ -19,9 +19,9 @@ import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
-import kotlinx.coroutines.CoroutineName
 import org.jetbrains.annotations.Contract
 import java.nio.charset.StandardCharsets
+import java.util.Random
 
 @Suppress("unused")
 open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext> {
@@ -30,6 +30,7 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             HttpHeaderValues.APPLICATION_JSON.toString()
         private val APPLICATION_X_WWW_FORM_URLENCODED: String =
             HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()
+        private val RANDOM: Random = Random()
 
         private fun produceParams(msg: KoraFullHttpRequestHolder): HttpRequestParams {
             return when (msg.headers()[HttpHeaderNames.CONTENT_TYPE]) {
@@ -66,6 +67,7 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         }
     }
 
+    private var requestId: Long = RANDOM.nextLong()
     private var arguments: HttpRequestArguments = HttpRequestArguments.EMPTY
     private var params: HttpRequestParams = HttpRequestParams.EMPTY
     private var promiseClose: Boolean = false
@@ -77,6 +79,7 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
     private var placeholders: MutableMap<String, Int> = mutableMapOf()
     private var placeholderURL: String = ""
     private var redirectAsset: String = ""
+    private var dataCache: MutableMap<String, Any> = mutableMapOf()
 
     constructor(msg: KoraFullHttpRequestHolder) : super(msg) {
         this.arguments = produceArguments(msg)
@@ -107,6 +110,15 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         this.placeholders = context.placeholders
         this.placeholderURL = context.placeholderURL
         this.redirectAsset = context.redirectAsset
+    }
+
+    fun cache(key: String, data: Any): KoraHttpContext {
+        this.dataCache[key] = data
+        return this
+    }
+
+    fun fetchCache(key: String): Any? {
+        return this.dataCache[key]
     }
 
     fun withAsset(redirectAsset: String): KoraAssetProducer {
