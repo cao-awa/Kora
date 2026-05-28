@@ -116,6 +116,9 @@ class TypedHttpArgument<T : Any> {
     }
 
     operator fun getValue(nothing: Nothing?, property: KProperty<*>): T {
+        if (this.cachedValue != null) {
+            return this.cachedValue!!
+        }
         val context = THREAD_LOCAL.get()
         if (context != null) {
             return get(context).also {
