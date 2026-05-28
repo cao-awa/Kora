@@ -148,6 +148,8 @@ object TestEntry {
 
 When you visit ``http://127.0.0.1:12345/test/awa?input=1234``, you will see a page shown ``Input arg 'input' is '1234', placeholder is 'awa'``
 
+The delegate ``arg`` or ``placeholder`` can only access in request scope, cannot access in other locations, otherwise Kora will throw a ``IllegalStateException`` to notice it.
+
 # Typed arg and typed placeholder builder
 
 Usually custom data class building ways:
