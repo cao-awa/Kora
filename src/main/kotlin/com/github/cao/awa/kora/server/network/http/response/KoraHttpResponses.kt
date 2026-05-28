@@ -2,6 +2,7 @@ package com.github.cao.awa.kora.server.network.http.response
 
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentType
 import com.github.cao.awa.kora.server.network.http.content.type.HttpContentTypes
+import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import io.netty.buffer.Unpooled
 import io.netty.handler.codec.http.DefaultFullHttpResponse
 import io.netty.handler.codec.http.FullHttpResponse
@@ -55,6 +56,13 @@ object KoraHttpResponses {
 
     fun FullHttpResponse.setLength(): FullHttpResponse {
         headers().set(HttpHeaderNames.CONTENT_LENGTH, content().readableBytes())
+        return this
+    }
+
+    fun FullHttpResponse.headers(koraHttpContext: KoraHttpContext): FullHttpResponse {
+        for ((header, value) in koraHttpContext.responseHeaders()) {
+            headers().set(header, value)
+        }
         return this
     }
 }

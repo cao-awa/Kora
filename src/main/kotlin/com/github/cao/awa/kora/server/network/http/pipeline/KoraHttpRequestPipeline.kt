@@ -25,13 +25,19 @@ import com.github.cao.awa.kora.server.network.http.metadata.HttpResponseMetadata
 import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.TypedHttpUrlPlaceholder
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
+import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.headers
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setContentType
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
 import com.github.cao.awa.kora.server.network.http.response.content.NoContentResponse
+import com.github.cao.awa.kora.server.network.http.response.redirect.MovedPermanentlyResponse
+import com.github.cao.awa.kora.server.network.http.response.redirect.PermanentlyRedirectResponse
+import com.github.cao.awa.kora.server.network.http.response.redirect.TemporaryRedirectResponse
 import com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.FullHttpResponse
+import io.netty.handler.codec.http.HttpHeaderNames
+import io.netty.handler.codec.http.HttpHeaders
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
@@ -233,7 +239,7 @@ class KoraHttpRequestPipeline(
         handlerContext: ChannelHandlerContext,
         koraContext: KoraHttpContext
     ) {
-        // If not handleable, response an formatted error message by KoraHttpErrors.adapter formatter.
+        // If not handleable, response a formatted error message by KoraHttpErrors.adapter formatter.
         if (koraContext.status() == HttpResponseStatus.OK) {
             koraContext.withStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR)
         }
@@ -248,6 +254,13 @@ class KoraHttpRequestPipeline(
     }
 
     override fun response(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext, response: Any) {
+        val response = when (koraContext.status()) {
+            HttpResponseStatus.MOVED_PERMANENTLY -> MovedPermanentlyResponse
+            HttpResponseStatus.TEMPORARY_REDIRECT -> TemporaryRedirectResponse
+            HttpResponseStatus.PERMANENT_REDIRECT -> PermanentlyRedirectResponse
+            else -> response
+        }
+
         when (response) {
             is JSONObject -> {
                 responseJSON(handlerContext, koraContext) {
@@ -264,6 +277,14 @@ class KoraHttpRequestPipeline(
 
             is NoContentResponse -> {
                 responseNoContent(handlerContext, koraContext)
+            }
+
+            is MovedPermanentlyResponse -> {
+                responseMovedPermanently(handlerContext, koraContext)
+            }
+
+            is TemporaryRedirectResponse -> {
+                responseMovedPermanently(handlerContext, koraContext)
             }
 
             is HTMLElement -> {
@@ -326,6 +347,22 @@ class KoraHttpRequestPipeline(
         }
     }
 
+    fun responseMovedPermanently(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext) {
+        response(handlerContext, koraContext) {
+            // Force be no content status when response is no body response.
+            koraContext.withStatus(HttpResponseStatus.MOVED_PERMANENTLY)
+            ""
+        }
+    }
+
+    fun responseTemporaryRedirect(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext) {
+        response(handlerContext, koraContext) {
+            // Force be no content status when response is no body response.
+            koraContext.withStatus(HttpResponseStatus.TEMPORARY_REDIRECT)
+            ""
+        }
+    }
+
     fun responseNoContent(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext) {
         response(handlerContext, koraContext) {
             // Force be no content status when response is no body response.
@@ -344,7 +381,9 @@ class KoraHttpRequestPipeline(
         handlerContext.writeAndFlush(
             KoraHttpResponses.createDefaultResponse(
                 koraContext.protocolVersion(), koraContext.status(), msg
-            ).setContentType(koraContext.contentType()).setLength()
+            ).setContentType(koraContext.contentType())
+                .setLength()
+                .headers(koraContext)
         ).also {
             if (koraContext.isPromiseClose()) {
                 it.addListener(ChannelFutureListener.CLOSE)
@@ -362,7 +401,9 @@ class KoraHttpRequestPipeline(
         handlerContext.writeAndFlush(
             KoraHttpResponses.createDefaultResponse(
                 koraContext.protocolVersion(), koraContext.status(), msg
-            ).setContentType(koraContext.contentType()).setLength()
+            ).setContentType(koraContext.contentType())
+                .setLength()
+                .headers(koraContext)
         ).also {
             if (koraContext.isPromiseClose()) {
                 it.addListener(ChannelFutureListener.CLOSE)
@@ -378,7 +419,9 @@ class KoraHttpRequestPipeline(
         val msg: FullHttpResponse = response(koraContext)
 
         handlerContext.writeAndFlush(
-            msg.setContentType(koraContext.contentType()).setLength()
+            msg.setContentType(koraContext.contentType())
+                .setLength()
+                .headers(koraContext)
         ).also {
             if (koraContext.isPromiseClose()) {
                 it.addListener(ChannelFutureListener.CLOSE)

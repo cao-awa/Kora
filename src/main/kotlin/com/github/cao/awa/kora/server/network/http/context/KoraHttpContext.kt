@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.server.network.http.context
 
+import com.github.cao.awa.cason.serialize.parser.JSONParser
 import com.github.cao.awa.cason.serialize.parser.StrictJSONParser
 import com.github.cao.awa.kora.server.network.context.KoraContext
 import com.github.cao.awa.kora.server.network.http.argument.HttpRequestArguments
@@ -9,13 +10,20 @@ import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpCo
 import com.github.cao.awa.kora.server.network.exception.abort.UnexpectedBehaviorException
 import com.github.cao.awa.kora.server.network.http.argument.type.TypedHttpArgument
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
+import com.github.cao.awa.kora.server.network.http.body.KoraHttpBody
+import com.github.cao.awa.kora.server.network.http.body.empty.KoraHttpEmptyBody
+import com.github.cao.awa.kora.server.network.http.body.json.KoraHttpJsonBody
+import com.github.cao.awa.kora.server.network.http.body.text.KoraHttpTextBody
 import com.github.cao.awa.kora.server.network.http.form.encoded.UrlEncodedForm
+import com.github.cao.awa.kora.server.network.http.header.value.KoraHttpHeaderValues
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.param.HttpRequestParams
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.TypedHttpUrlPlaceholder
 import com.github.cao.awa.kora.server.network.http.url.KoraPlaceholderURL
+import io.netty.handler.codec.http.DefaultHttpHeaders
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpHeaderValues
+import io.netty.handler.codec.http.HttpHeaders
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
@@ -70,6 +78,9 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
     private var requestId: Long = RANDOM.nextLong()
     private var arguments: HttpRequestArguments = HttpRequestArguments.EMPTY
     private var params: HttpRequestParams = HttpRequestParams.EMPTY
+    private var headers: HttpHeaders = DefaultHttpHeaders()
+    private var responseHeaders: HttpHeaders = DefaultHttpHeaders()
+    private lateinit var body: KoraHttpBody
     private var promiseClose: Boolean = false
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
@@ -79,11 +90,13 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
     private var placeholders: MutableMap<String, Int> = mutableMapOf()
     private var placeholderURL: String = ""
     private var redirectAsset: String = ""
+    private var redirectUrl: String = ""
     private var dataCache: MutableMap<String, Any> = mutableMapOf()
 
     constructor(msg: KoraFullHttpRequestHolder) : super(msg) {
         this.arguments = produceArguments(msg)
         this.params = produceParams(msg)
+        this.headers = msg.headers()
         this.path = super.path().let {
             var result = it
             if (result.contains("?")) {
@@ -95,12 +108,28 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
                 result
             }
         }
+        if (msg.content().readableBytes() == 0) {
+            this.body = KoraHttpEmptyBody
+        } else {
+            when (this.headers[HttpHeaderNames.CONTENT_TYPE]) {
+                KoraHttpHeaderValues.APPLICATION_JSON -> {
+                    this.body = KoraHttpJsonBody(JSONParser.parseObject(msg.content().toString(StandardCharsets.UTF_8)))
+                }
+
+                KoraHttpHeaderValues.TEXT_PLAIN -> {
+                    this.body = KoraHttpTextBody(msg.content().toString(StandardCharsets.UTF_8))
+                }
+            }
+        }
         this.method = msg.method()
     }
 
     constructor(context: KoraHttpContext) : super(context) {
         this.arguments = context.arguments
         this.params = context.params
+        this.headers = DefaultHttpHeaders()
+        this.responseHeaders = DefaultHttpHeaders()
+        this.body = KoraHttpEmptyBody
         this.promiseClose = context.promiseClose
         this.status = context.status
         this.contentType = context.contentType
@@ -134,6 +163,13 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     open fun withStatus(status: HttpResponseStatus): KoraHttpContext {
         this.status = status
+        when (status) {
+            HttpResponseStatus.MOVED_PERMANENTLY,
+            HttpResponseStatus.PERMANENT_REDIRECT,
+            HttpResponseStatus.TEMPORARY_REDIRECT -> {
+                responseHeaders()[HttpHeaderNames.LOCATION] = this.redirectUrl
+            }
+        }
         return this
     }
 
@@ -147,8 +183,38 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         return this
     }
 
+    fun redirect(redirectUrl: String, permanently: Boolean = false): KoraHttpContext {
+        return if (permanently) {
+            permanentlyRedirect(redirectUrl)
+        } else {
+            temporaryRedirect(redirectUrl)
+        }
+    }
+
+    fun temporaryRedirect(redirectUrl: String): KoraHttpContext {
+        this.status = HttpResponseStatus.TEMPORARY_REDIRECT
+        this.redirectUrl = redirectUrl
+        return this
+    }
+
+    fun permanentlyRedirect(redirectUrl: String): KoraHttpContext {
+        this.status = HttpResponseStatus.PERMANENT_REDIRECT
+        this.redirectUrl = redirectUrl
+        return this
+    }
+
+    fun movedPermanently(redirectUrl: String): KoraHttpContext {
+        this.status = HttpResponseStatus.MOVED_PERMANENTLY
+        this.redirectUrl = redirectUrl
+        return this
+    }
+
     fun redirectAsset(): String {
         return this.redirectAsset
+    }
+
+    fun redirectUrl(): String {
+        return this.redirectUrl
     }
 
     fun placeholders(): Map<String, Int> {
@@ -165,6 +231,14 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     fun arguments(): HttpRequestArguments {
         return this.arguments
+    }
+
+    fun body(): KoraHttpBody {
+        return this.body
+    }
+
+    fun getHeader(name: String): String? {
+        return this.headers[name]
     }
 
     open fun promiseClose() {
@@ -256,6 +330,10 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     fun protocolVersion(): HttpVersion {
         return this.protocolVersion
+    }
+
+    fun responseHeaders(): HttpHeaders {
+        return this.responseHeaders
     }
 
     override fun createInherited(): KoraHttpContext {
@@ -468,8 +546,8 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
     }
 
     inline fun <reified R : Any, reified T1 : Any, reified T2 : Any> build(
-        arg1:  T1,
-        arg2:  T2,
+        arg1: T1,
+        arg2: T2,
         builder: (T1, T2) -> R
     ): R {
         return builder(arg1, arg2)
