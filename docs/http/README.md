@@ -41,7 +41,7 @@ object TestEntry {
 
 > Default your server launch on 12345 port here
 
-The 'request argument' is the url contents before '?' such as 'http://127.0.0.1:12345/test?arg=1', the 'arg=1' is a
+The 'request argument' is the url contents after '?' such as 'http://127.0.0.1:12345/test?arg=1', the 'arg=1' is a
 argument.
 
 Define arg extractor and call it in request scope to get the argument value:
