@@ -4,6 +4,7 @@ import com.github.cao.awa.cason.codec.encoder.JSONEncoder
 import com.github.cao.awa.cason.obj.JSONObject
 import com.github.cao.awa.kora.server.network.KoraNetworkConfig
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
+import com.github.cao.awa.kora.server.network.http.argument.type.TypedHttpArgument
 import com.github.cao.awa.kora.server.network.http.asset.KoraAsset
 import com.github.cao.awa.kora.server.network.http.asset.config.KoraAssetManagerConfig
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
@@ -22,6 +23,7 @@ import com.github.cao.awa.kora.server.network.http.handler.post.KoraHttpPostHand
 import com.github.cao.awa.kora.server.network.http.holder.KoraFullHttpRequestHolder
 import com.github.cao.awa.kora.server.network.http.metadata.HttpResponseMetadata
 import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.TypedHttpUrlPlaceholder
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setContentType
 import com.github.cao.awa.kora.server.network.http.response.KoraHttpResponses.setLength
@@ -36,6 +38,7 @@ import io.netty.handler.codec.http.HttpVersion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asContextElement
 import kotlinx.coroutines.launch
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -120,7 +123,9 @@ class KoraHttpRequestPipeline(
 
     fun handleFull(handlerContext: ChannelHandlerContext, koraContext: KoraHttpContext) {
         // Launch on coroutine scope.
-        this.executionScope.launch {
+        this.executionScope.launch(
+            TypedHttpArgument.THREAD_LOCAL.asContextElement(koraContext) + TypedHttpUrlPlaceholder.THREAD_LOCAL.asContextElement(koraContext)
+        ) {
             val handler: KoraHttpRequestHandler? = handlers[koraContext.method()]
             if (handler != null) {
                 // Handle program logics.

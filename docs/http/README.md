@@ -1,10 +1,13 @@
-## Basic usage
+# Basic usage
+
+## Basic structure
+
 ```kotlin
 object TestEntry {
     @JvmStatic
     fun entry() {
         val api = http {
-            route("test") {
+            route("/test") {
                 get {
                     // Handle request here...
                     println("Something processed here")
@@ -23,58 +26,193 @@ object TestEntry {
                 }
             }
         }
-        
+
         KoraHttpServer(api).start()
     }
 }
 ```
 
-## Structured Responses and HTTP Metadata
+## Request arguments
 
-By default, Kora treats HTTP responses as **structured data**.
+> Default your server launch on 12345 port here
 
-When a handler returns a Kotlin object, Kora serializes it and **injects HTTP metadata** into the response payload:
+The 'request argument' is the url contents before '?' such as 'http://127.0.0.1:12345/test?arg=1', the 'arg=1' is a
+argument.
 
-But Kora does not encourage embedding transport concerns into domain models.\
-HTTP metadata injection is a transport-level concern and is configurable.
-
-```json
-{
-  "type": "post",
-  "http_meta": {
-    "http_version": "HTTP/1.1",
-    "http_status": 200
-  }
-}
-```
-
-This unified response model allows:
-
-* Non-HTTP clients (CLI tools, MQ consumers, test harnesses) to consume responses directly
-* Easier debugging and inspection
-* Transport-agnostic result handling
-
-Transport metadata is always derived from the response description.\
-It never influences handler semantics.
-
-HTTP metadata injection is configurable and can be disabled for stricter HTTP/body separation:
+Define arg extractor and call it in request scope to get the argument value:
 
 ```kotlin
 object TestEntry {
     @JvmStatic
     fun entry() {
-        // NOTE: Disable HTTP metadata injection ('instructHttpMetadata')
-        // This will automatically disable status code and version injection.
-        KoraHttpServer.instructHttpMetadata = false
-        KoraHttpServer.instructHttpStatusCode = false
-        KoraHttpServer.instructHttpVersionCode = false
+        val input = arg<String>("input")
+        val api = http {
+            route("/test") {
+                get {
+                    val theInput = input(this)
+
+                    // Return a result to response the request.
+                    html {
+                        head {
+                            charset(StandardCharsets.UTF_8)
+                        }
+                        body {
+                            p {
+                                +"Input argument is $theInput"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
     }
 }
 ```
 
-Kora automatically serializes Kotlin data classes using [Cason](https://github.com/cao-awa/Cason), a lightweight, type-safe JSON/JSON5 library.
+The ``arg`` method has two arguments, first is url argument name, is required, second is missable flag, is optional, if
+missable is true, Kora will return the default value of the type.
 
-## Total Handlers and 204 No Content
+## Placeholders
+
+The 'placeholder' just like its name, is a part in the url.
+
+Define placeholder extractor and call it in request scope to get the placeholder value:
+
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val placeholder = placeholder<String>("username")
+        val api = http {
+            route("/getUser/{username}") {
+                get {
+                    val username = placeholder(this)
+
+                    // Return a result to response the request.
+                    html {
+                        head {
+                            charset(StandardCharsets.UTF_8)
+                        }
+                        body {
+                            p {
+                                +"The user  is $username"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
+Unlike ``arg``, it only one name argument, it match to route defined placeholder, therefore, their names must be the
+same.
+
+## Delegate way
+
+> Default your server launch on 12345 port here
+
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val input by arg<Int>("input")
+        val placeholder by placeholder<String>("test")
+
+        val api = http {
+            route("/test/{test}") {
+                get {
+                    html {
+                        head {
+                            charset(StandardCharsets.UTF_8)
+                        }
+                        body {
+                            p {
+                                +"Input arg 'input' is '$input', placeholder is '$placeholder'"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
+When you visit ``http://127.0.0.1:12345/test/awa?input=1234``, you will see a page shown ``Input arg 'input' is '1234', placeholder is 'awa'``
+
+# Typed arg and typed placeholder builder
+
+Usually custom data class building ways:
+
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val username = arg<String>("username", false)
+        val password = arg<String>("password", false)
+
+        data class LoginRequest(val username: String, val password: String)
+
+        val api = http {
+            route("test") {
+                get {
+                    val name = username(this)
+                    val pws = password(this)
+                    val loginRequest = LoginRequest(name, pws)
+                    // Call auth plugin codes here...
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
+In Kora you can use ``build`` method to build your custom class in request scope, just input the args and constructor.
+
+And build method can only input most 7 args or placeholders, if your code ned more input, maybe you need to think is
+there a problem with your design architecture?
+
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val username = arg<String>("username", false)
+        val password = arg<String>("password", false)
+
+        data class LoginRequest(val username: String, val password: String)
+
+        val api = http {
+            route("test") {
+                get {
+                    val loginRequest = build(
+                        username,
+                        password,
+                        // Use lambda constructor.
+                        ::LoginRequest
+                    )
+                    // Call auth plugin codes here...
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
+This sample using ``arg``, it can also use in ``placeholder``, but cannot mix uses.
+
+# Total Handlers and 204 No Content
 
 A handler in Kora is a total function from request scope to a single response value.\
 There is no such thing as a “partially constructed response” in Kora.\
@@ -108,7 +246,8 @@ Kora uses a scoped abort model where execution and error handling are strictly s
 In Kora, aborting execution is not an exceptional case.\
 It is a first-class, structured control flow with explicit scope boundaries.
 
-The `abortWith()` or `abortIf()` methods define when to abort, and `.ifAbort { }` defines how aborted execution is rendered into a
+The `abortWith()` or `abortIf()` methods define when to abort, and `.ifAbort { }` defines how aborted execution is
+rendered into a
 response:
 
 ```kotlin
@@ -171,78 +310,10 @@ The client will receive data similar to:
 All abort scopes are copied from the source context, which Kora automatically collects.\
 You can modify the scope data in the abort context.
 
-## Typed arg and typed placeholder builder
-Usually custom data class building ways:
-```kotlin
-object TestEntry {
-    @JvmStatic
-    fun entry() {
-        val username = arg<String>("username", false)
-        val password = arg<String>("password", false)
+# Custom combinator
 
-        data class LoginRequest(val username: String, val password: String)
-
-        val api = http {
-            route("test") {
-                get {
-                    val name = username(this)
-                    val pws = password(this)
-                    val loginRequest = LoginRequest(name, pws)
-                    // Call auth plugin codes here...
-                }
-            }
-        }
-
-        KoraHttpServer(api).start()
-    }
-}
-```
-
-In Kora you can use ``build`` method to build your custom class in request scope, just input the args and constructor.
-
-And build method can only input most 7 args or placeholders, if your code ned more input, maybe you need to think is there a problem with your design architecture?
-
-```kotlin
-object TestEntry {
-    @JvmStatic
-    fun entry() {
-        val username = arg<String>("username", false)
-        val password = arg<String>("password", false)
-
-        data class LoginRequest(val username: String, val password: String)
-
-        val api = http {
-            route("test") {
-                get {
-                    val loginRequest = build(
-                        username,
-                        password,
-                        // Use lambda constructor.
-                        ::LoginRequest
-                    )
-                    // Call auth plugin codes here...
-
-                    // Or:
-                    // val loginRequest2 = build(
-                    //    username,
-                    //    password
-                    // ) { name, pwd ->
-                    //   // Construct manually.
-                    //    LoginRequest(name, pwd)
-                    // }
-                }
-            }
-        }
-
-        KoraHttpServer(api).start()
-    }
-}
-```
-
-it can also use in ``placeholder``, but cannot mix uses.
-
-## Custom combinator
-You can use ``combinator`` in ``arg`` or ``placeholder`` creating to define some custom combinate logics, you can have multiple combinators instead of single combinator, just repeat call ``combinator`` method again.
+You can use ``combinator`` in ``arg`` or ``placeholder`` creating to define some custom combinate logics, you can have
+multiple combinators instead of single combinator, just repeat call ``combinator`` method again.
 
 ```kotlin
 object TestEntry {
@@ -280,9 +351,10 @@ object TestEntry {
 }
 ```
 
-## PHP
+# PHP
 
-Currently, Kora can execute PHP scripts through PHP-CGI, but support is incomplete and can currently only be used for single-file PHP scripts.
+Currently, Kora can execute PHP scripts through PHP-CGI, but support is incomplete and can currently only be used for
+single-file PHP scripts.
 
 Simple sample:
 
@@ -327,11 +399,53 @@ echo '</pre>
 echo '</body></html>';
 ```
 
+# Structured Responses and HTTP Metadata
+
+By default, Kora treats HTTP responses as **structured data**.
+
+When a handler returns a Kotlin object, Kora serializes it and **injects HTTP metadata** into the response payload:
+
+But Kora does not encourage embedding transport concerns into domain models.\
+HTTP metadata injection is a transport-level concern and is configurable.
+
+```json
+{
+    "type": "post",
+    "http_meta": {
+        "http_version": "HTTP/1.1",
+        "http_status": 200
+    }
+}
+```
+
+This unified response model allows:
+
+* Non-HTTP clients (CLI tools, MQ consumers, test harnesses) to consume responses directly
+* Easier debugging and inspection
+* Transport-agnostic result handling
+
+Transport metadata is always derived from the response description.\
+It never influences handler semantics.
+
+HTTP metadata injection is configurable and can be disabled for stricter HTTP/body separation:
+
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        // NOTE: Disable HTTP metadata injection ('instructHttpMetadata')
+        // This will automatically disable status code and version injection.
+        KoraHttpServer.instructHttpMetadata = false
+        KoraHttpServer.instructHttpStatusCode = false
+        KoraHttpServer.instructHttpVersionCode = false
+    }
+}
+```
+
+Kora automatically serializes Kotlin data classes using [Cason](https://github.com/cao-awa/Cason), a lightweight,
+type-safe JSON/JSON5 library.
+
 # Performance
-
-## Startup Time
-
-Kora can launch an HTTP server within 200~500ms, even when creating a large route graph, because it uses native code instead of reflection scanning.
 
 ## Benchmark Test
 
@@ -369,20 +483,22 @@ object TestEntry {
 }
 ```
 
-Kora is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although performance will be reduced.
+Kora is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although
+performance will be reduced.
 
-|          | 1G               | 128M             |
-|----------|------------------|------------------|
-| NIO      | 100000~120000    | 50000~60000      |
-| EPOLL    | waiting for test | waiting for test |
-| IO_URING | waiting for test | waiting for test |
+|          | 1G                | 128M             |
+|----------|-------------------|------------------|
+| NIO      | 100000~120000 RPS | 50000~60000 RPS  |
+| EPOLL    | waiting for test  | waiting for test |
+| IO_URING | waiting for test  | waiting for test |
 
 ## Error benchmark
 
-In the 1G memory case, if all requests result in errors (such as `404 Not Found`) instead of being correctly handled, performance will be reduce.
+If all requests is fetched into errors (such as `404 Not Found`) instead of being correctly handled, performance will be
+reduce.
 
 |          | 1G               | 128M             |
 |----------|------------------|------------------|
-| NIO      | 70000~80000      | 2000~30000       |
+| NIO      | 70000~80000 RPS  | 20000~30000 RPS  |
 | EPOLL    | waiting for test | waiting for test |
 | IO_URING | waiting for test | waiting for test |

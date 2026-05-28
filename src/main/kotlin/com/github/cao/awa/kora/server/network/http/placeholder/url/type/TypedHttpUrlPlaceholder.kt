@@ -15,9 +15,11 @@ import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.placeholder.url.exception.TypedHttpUrlMissingException
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.combinator.TypedHttpUrlPlaceholderCombinator
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
 class TypedHttpUrlPlaceholder<T : Any> {
     companion object {
+        val THREAD_LOCAL: ThreadLocal<KoraHttpContext> = ThreadLocal()
         private val validators: MutableMap<KClass<*>, TypedHttpUrlPlaceholderInitializeValidator<*>> = mutableMapOf()
 
         init {
@@ -80,6 +82,16 @@ class TypedHttpUrlPlaceholder<T : Any> {
             value = validator.combinate(value)
         }
         return value
+    }
+
+    operator fun getValue(nothing: Nothing?, property: KProperty<*>): T {
+        val context = THREAD_LOCAL.get()
+        if (context != null) {
+            return get(context).also {
+                THREAD_LOCAL.remove()
+            }
+        }
+        throw IllegalStateException("Typed placeholder delegate cannot used without request scope")
     }
 
     private fun missing(context: KoraHttpContext): Nothing = TypedHttpUrlMissingException.missing(

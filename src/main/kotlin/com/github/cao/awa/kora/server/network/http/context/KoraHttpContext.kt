@@ -19,6 +19,7 @@ import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
+import kotlinx.coroutines.CoroutineName
 import org.jetbrains.annotations.Contract
 import java.nio.charset.StandardCharsets
 
@@ -280,7 +281,7 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         return builder(arg1[this], arg2[this], arg3[this])
     }
 
-    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any, reified T4: Any> build(
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any, reified T4 : Any> build(
         arg1: TypedHttpArgument<T1>,
         arg2: TypedHttpArgument<T2>,
         arg3: TypedHttpArgument<T3>,
@@ -295,8 +296,8 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             reified T1 : Any,
             reified T2 : Any,
             reified T3 : Any,
-            reified T4: Any,
-            reified T5: Any
+            reified T4 : Any,
+            reified T5 : Any
             > build(
         arg1: TypedHttpArgument<T1>,
         arg2: TypedHttpArgument<T2>,
@@ -313,9 +314,9 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             reified T1 : Any,
             reified T2 : Any,
             reified T3 : Any,
-            reified T4: Any,
-            reified T5: Any,
-            reified T6: Any
+            reified T4 : Any,
+            reified T5 : Any,
+            reified T6 : Any
             > build(
         arg1: TypedHttpArgument<T1>,
         arg2: TypedHttpArgument<T2>,
@@ -333,10 +334,10 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             reified T1 : Any,
             reified T2 : Any,
             reified T3 : Any,
-            reified T4: Any,
-            reified T5: Any,
-            reified T6: Any,
-            reified T7: Any
+            reified T4 : Any,
+            reified T5 : Any,
+            reified T6 : Any,
+            reified T7 : Any
             > build(
         arg1: TypedHttpArgument<T1>,
         arg2: TypedHttpArgument<T2>,
@@ -375,7 +376,7 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         return builder(arg1[this], arg2[this], arg3[this])
     }
 
-    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any, reified T4: Any> build(
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any, reified T4 : Any> build(
         arg1: TypedHttpUrlPlaceholder<T1>,
         arg2: TypedHttpUrlPlaceholder<T2>,
         arg3: TypedHttpUrlPlaceholder<T3>,
@@ -390,8 +391,8 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             reified T1 : Any,
             reified T2 : Any,
             reified T3 : Any,
-            reified T4: Any,
-            reified T5: Any
+            reified T4 : Any,
+            reified T5 : Any
             > build(
         arg1: TypedHttpUrlPlaceholder<T1>,
         arg2: TypedHttpUrlPlaceholder<T2>,
@@ -408,9 +409,9 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             reified T1 : Any,
             reified T2 : Any,
             reified T3 : Any,
-            reified T4: Any,
-            reified T5: Any,
-            reified T6: Any
+            reified T4 : Any,
+            reified T5 : Any,
+            reified T6 : Any
             > build(
         arg1: TypedHttpUrlPlaceholder<T1>,
         arg2: TypedHttpUrlPlaceholder<T2>,
@@ -428,10 +429,10 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             reified T1 : Any,
             reified T2 : Any,
             reified T3 : Any,
-            reified T4: Any,
-            reified T5: Any,
-            reified T6: Any,
-            reified T7: Any
+            reified T4 : Any,
+            reified T5 : Any,
+            reified T6 : Any,
+            reified T7 : Any
             > build(
         arg1: TypedHttpUrlPlaceholder<T1>,
         arg2: TypedHttpUrlPlaceholder<T2>,
@@ -443,5 +444,101 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         builder: (T1, T2, T3, T4, T5, T6, T7) -> R
     ): R {
         return builder(arg1[this], arg2[this], arg3[this], arg4[this], arg5[this], arg6[this], arg7[this])
+    }
+
+    // Direct build.
+    // Typed arg.
+    inline fun <reified R : Any, reified T1 : Any> build(
+        arg1: T1,
+        builder: (T1) -> R
+    ): R {
+        return builder(arg1)
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any> build(
+        arg1:  T1,
+        arg2:  T2,
+        builder: (T1, T2) -> R
+    ): R {
+        return builder(arg1, arg2)
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any> build(
+        arg1: T1,
+        arg2: T2,
+        arg3: T3,
+        builder: (T1, T2, T3) -> R
+    ): R {
+        return builder(arg1, arg2, arg3)
+    }
+
+    inline fun <reified R : Any, reified T1 : Any, reified T2 : Any, reified T3 : Any, reified T4 : Any> build(
+        arg1: T1,
+        arg2: T2,
+        arg3: T3,
+        arg4: T4,
+        builder: (T1, T2, T3, T4) -> R
+    ): R {
+        return builder(arg1, arg2, arg3, arg4)
+    }
+
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4 : Any,
+            reified T5 : Any
+            > build(
+        arg1: T1,
+        arg2: T2,
+        arg3: T3,
+        arg4: T4,
+        arg5: T5,
+        builder: (T1, T2, T3, T4, T5) -> R
+    ): R {
+        return builder(arg1, arg2, arg3, arg4, arg5)
+    }
+
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4 : Any,
+            reified T5 : Any,
+            reified T6 : Any
+            > build(
+        arg1: T1,
+        arg2: T2,
+        arg3: T3,
+        arg4: T4,
+        arg5: T5,
+        arg6: T6,
+        builder: (T1, T2, T3, T4, T5, T6) -> R
+    ): R {
+        return builder(arg1, arg2, arg3, arg4, arg5, arg6)
+    }
+
+    inline fun <
+            reified R : Any,
+            reified T1 : Any,
+            reified T2 : Any,
+            reified T3 : Any,
+            reified T4 : Any,
+            reified T5 : Any,
+            reified T6 : Any,
+            reified T7 : Any
+            > build(
+        arg1: T1,
+        arg2: T2,
+        arg3: T3,
+        arg4: T4,
+        arg5: T5,
+        arg6: T6,
+        arg7: T7,
+        builder: (T1, T2, T3, T4, T5, T6, T7) -> R
+    ): R {
+        return builder(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
     }
 }

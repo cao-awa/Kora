@@ -17,9 +17,11 @@ import com.github.cao.awa.kora.server.network.http.argument.type.validator.excep
 import com.github.cao.awa.kora.server.network.http.argument.type.value.TypedHttpArgumentDefaultValues
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
 class TypedHttpArgument<T : Any> {
     companion object {
+        val THREAD_LOCAL: ThreadLocal<KoraHttpContext> = ThreadLocal()
         private val validators: MutableMap<KClass<*>, TypedHttpArgumentInitializeValidator<*>> = mutableMapOf()
 
         init {
@@ -82,19 +84,15 @@ class TypedHttpArgument<T : Any> {
 
     @Suppress("unchecked_cast")
     operator fun get(context: KoraHttpContext): T {
-        val content: String = context.arguments()[this.name]
-            ?: TypedHttpArgumentMissingException.missing("Required argument '${this.name}' is missing, type is ${this.type.simpleName}")
-        var value: T = this.initializeValidator[this.name, content]
-        this.context = context
-        for (validator in combinators) {
-            value = validator.combinate(value)
-        }
-        return value
-    }
-
-    operator fun invoke(context: KoraHttpContext): T {
         return try {
-            get(context)
+            val content: String = context.arguments()[this.name]
+                ?: TypedHttpArgumentMissingException.missing("Required argument '${this.name}' is missing, type is ${this.type.simpleName}")
+            var value: T = this.initializeValidator[this.name, content]
+            this.context = context
+            for (validator in combinators) {
+                value = validator.combinate(value)
+            }
+            return value
         } catch (e: Exception) {
             if (this.missable) {
                 if (this.defaultValue == null) {
@@ -106,6 +104,20 @@ class TypedHttpArgument<T : Any> {
                 throw e
             }
         }
+    }
+
+    operator fun invoke(context: KoraHttpContext): T {
+        return get(context)
+    }
+
+    operator fun getValue(nothing: Nothing?, property: KProperty<*>): T {
+        val context = THREAD_LOCAL.get()
+        if (context != null) {
+            return get(context).also {
+                THREAD_LOCAL.remove()
+            }
+        }
+        throw IllegalStateException("Typed argument delegate cannot used without request scope")
     }
 
     fun defaultValue(value: T): TypedHttpArgument<T> {

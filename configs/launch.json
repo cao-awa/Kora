@@ -1,8 +1,6 @@
 {
     "print_config_details": true,
     "entrypoint": [
-        "kora-redis-client",
-        "kora-mysql-client",
         "com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry"
     ]
 }
