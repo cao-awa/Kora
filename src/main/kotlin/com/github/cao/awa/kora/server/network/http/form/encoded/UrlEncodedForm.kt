@@ -1,10 +1,14 @@
 package com.github.cao.awa.kora.server.network.http.form.encoded
 
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+
 class UrlEncodedForm {
     companion object {
         val EMPTY = UrlEncodedForm()
 
         fun build(content: String): UrlEncodedForm {
+            val content = URLDecoder.decode(content, StandardCharsets.UTF_8)
             return UrlEncodedForm().apply {
                 if (content.isNotEmpty()) {
                     content.split("&").forEach {
@@ -14,6 +18,7 @@ class UrlEncodedForm {
             }
         }
     }
+
     private val form = HashMap<String, String>()
 
     fun get(key: String): String? {
