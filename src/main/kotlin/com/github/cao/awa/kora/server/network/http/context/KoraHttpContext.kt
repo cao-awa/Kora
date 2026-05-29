@@ -29,6 +29,7 @@ import io.netty.handler.codec.http.HttpVersion
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.jetbrains.annotations.Contract
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.Random
 
@@ -55,7 +56,8 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
     private var arguments: HttpRequestArguments = HttpRequestArguments.EMPTY
     private var headers: HttpHeaders = DefaultHttpHeaders()
     private var responseHeaders: HttpHeaders = DefaultHttpHeaders()
-    private lateinit var body: KoraHttpBody
+    private var body: KoraHttpBody? = null
+    private val bodyBuilder: () -> Unit
     private var promiseClose: Boolean = false
     private var status: HttpResponseStatus = HttpResponseStatus.OK
     private var contentType: HttpContentType = HttpContentTypes.PLAIN
@@ -82,41 +84,49 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
                 result
             }
         }
-        if (msg.content().readableBytes() == 0) {
-            this.body = KoraHttpEmptyBody
-        } else {
-            var contentType = this.headers[HttpHeaderNames.CONTENT_TYPE]
-            if (contentType.contains(";")) {
-                contentType = contentType.substringBefore(";")
-            }
-            try {
-                when (contentType) {
-                    KoraHttpHeaderValues.APPLICATION_JSON -> {
-                        this.body =
-                            KoraHttpJsonBody(JSONParser.parseObject(msg.content().toString(StandardCharsets.UTF_8)))
-                    }
-
-                    KoraHttpHeaderValues.TEXT_PLAIN -> {
-                        this.body = KoraHttpTextBody(msg.content().toString(StandardCharsets.UTF_8))
-                    }
-
-                    KoraHttpHeaderValues.X_WWW_FORM_URLENCODED -> {
-                        this.body = KoraHttpUrlencodedBody.build(
-                            UrlEncodedForm.build(msg.content().toString(StandardCharsets.UTF_8))
-                        )
-                    }
-
-                    else -> {
-                        throw UnhandleableRequestBodyException("Unsupported content type: $contentType")
+        this.bodyBuilder = {
+            if (msg.content().readableBytes() == 0) {
+                this.body = KoraHttpEmptyBody
+            } else {
+                var contentType = this.headers[HttpHeaderNames.CONTENT_TYPE]
+                println(contentType)
+                var charset = StandardCharsets.UTF_8
+                if (contentType.contains(";")) {
+                    contentType = contentType.substringBefore(";")
+                    if (contentType.contains("charset=")) {
+                        charset = Charset.forName(contentType.substringAfter("charset="))
+                        println(contentType.substringAfter("charset="))
                     }
                 }
-            } catch (e: Exception) {
-                LOGGER.warn(
-                    "Unable to handle request body '{}', data: {}",
-                    contentType,
-                    msg.content().toString(StandardCharsets.UTF_8)
-                )
-                LOGGER.warn("Please check the body data is correct format or report this content type to issue")
+                try {
+                    when (contentType) {
+                        KoraHttpHeaderValues.APPLICATION_JSON -> {
+                            this.body = KoraHttpJsonBody(JSONParser.parseObject(msg.content().toString(charset)))
+                        }
+
+                        KoraHttpHeaderValues.TEXT_PLAIN -> {
+                            this.body = KoraHttpTextBody(msg.content().toString(charset))
+                        }
+
+                        KoraHttpHeaderValues.X_WWW_FORM_URLENCODED -> {
+                            this.body = KoraHttpUrlencodedBody.build(
+                                UrlEncodedForm.build(msg.content().toString(charset))
+                            )
+                        }
+
+                        else -> {
+                            throw UnhandleableRequestBodyException("Unsupported content type: $contentType")
+                        }
+                    }
+                } catch (e: Exception) {
+                    LOGGER.warn(
+                        "Unable to handle request body '{}', data: {}",
+                        contentType,
+                        msg.content().toString(charset),
+                        e
+                    )
+                    LOGGER.warn("Please check the body data is correct format or report this content type to issue")
+                }
             }
         }
         this.method = msg.method()
@@ -126,7 +136,9 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         this.arguments = context.arguments
         this.headers = DefaultHttpHeaders()
         this.responseHeaders = DefaultHttpHeaders()
-        this.body = KoraHttpEmptyBody
+        this.bodyBuilder = {
+            this.body = KoraHttpEmptyBody
+        }
         this.promiseClose = context.promiseClose
         this.status = context.status
         this.contentType = context.contentType
@@ -227,7 +239,10 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
     }
 
     fun body(): KoraHttpBody {
-        return this.body
+        if (this.body == null) {
+            this.bodyBuilder()
+        }
+        return this.body!!
     }
 
     fun getHeader(name: String): String? {
