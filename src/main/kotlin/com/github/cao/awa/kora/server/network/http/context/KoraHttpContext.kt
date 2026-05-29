@@ -93,11 +93,13 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
                     println(contentType)
                     var charset = StandardCharsets.UTF_8
                     if (contentType.contains(";")) {
-                        contentType = contentType.substringBefore(";")
-                        if (contentType.contains("charset=")) {
-                            charset = Charset.forName(contentType.substringAfter("charset="))
-                            println(contentType.substringAfter("charset="))
+                        for (data in contentType.split(";")) {
+                            if (data.contains("charset=")) {
+                                charset = Charset.forName(data.substringAfter("charset=").trim())
+                                break
+                            }
                         }
+                        contentType = contentType.substringBefore(";")
                     }
                     try {
                         when (contentType) {
