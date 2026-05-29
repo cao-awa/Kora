@@ -29,6 +29,16 @@ class KoraHttpUrlencodedBody: KoraHttpBody() {
     }
 
     override fun stringData(): String {
-
+        return StringBuilder().let {
+            val size = this.data.size - 1
+            var count = 0
+            for ((key, value) in this.data) {
+                it.append(key).append("=").append(value)
+                if (count++ != size) {
+                    it.append("&")
+                }
+            }
+            it.toString()
+        }
     }
 }

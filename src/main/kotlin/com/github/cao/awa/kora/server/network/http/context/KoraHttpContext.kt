@@ -11,6 +11,7 @@ import com.github.cao.awa.kora.server.network.http.argument.type.TypedHttpArgume
 import com.github.cao.awa.kora.server.network.http.asset.producer.KoraAssetProducer
 import com.github.cao.awa.kora.server.network.http.body.KoraHttpBody
 import com.github.cao.awa.kora.server.network.http.body.empty.KoraHttpEmptyBody
+import com.github.cao.awa.kora.server.network.http.body.exception.UnhandleableRequestBodyException
 import com.github.cao.awa.kora.server.network.http.body.form.urlencoded.KoraHttpUrlencodedBody
 import com.github.cao.awa.kora.server.network.http.body.json.KoraHttpJsonBody
 import com.github.cao.awa.kora.server.network.http.body.text.KoraHttpTextBody
@@ -21,11 +22,12 @@ import com.github.cao.awa.kora.server.network.http.placeholder.url.type.TypedHtt
 import com.github.cao.awa.kora.server.network.http.url.KoraPlaceholderURL
 import io.netty.handler.codec.http.DefaultHttpHeaders
 import io.netty.handler.codec.http.HttpHeaderNames
-import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.HttpHeaders
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.jetbrains.annotations.Contract
 import java.nio.charset.StandardCharsets
 import java.util.Random
@@ -33,10 +35,7 @@ import java.util.Random
 @Suppress("unused")
 open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpContext, KoraAbortHttpContext> {
     companion object {
-        private val APPLICATION_JSON: String =
-            HttpHeaderValues.APPLICATION_JSON.toString()
-        private val APPLICATION_X_WWW_FORM_URLENCODED: String =
-            HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString()
+        private val LOGGER: Logger = LogManager.getLogger("KoraHttpContext")
         private val RANDOM: Random = Random()
 
         private fun produceArguments(msg: KoraFullHttpRequestHolder): HttpRequestArguments {
@@ -86,20 +85,38 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         if (msg.content().readableBytes() == 0) {
             this.body = KoraHttpEmptyBody
         } else {
-            when (this.headers[HttpHeaderNames.CONTENT_TYPE]) {
-                KoraHttpHeaderValues.APPLICATION_JSON -> {
-                    this.body = KoraHttpJsonBody(JSONParser.parseObject(msg.content().toString(StandardCharsets.UTF_8)))
-                }
+            var contentType = this.headers[HttpHeaderNames.CONTENT_TYPE]
+            if (contentType.contains(";")) {
+                contentType = contentType.substringBefore(";")
+            }
+            try {
+                when (contentType) {
+                    KoraHttpHeaderValues.APPLICATION_JSON -> {
+                        this.body =
+                            KoraHttpJsonBody(JSONParser.parseObject(msg.content().toString(StandardCharsets.UTF_8)))
+                    }
 
-                KoraHttpHeaderValues.TEXT_PLAIN -> {
-                    this.body = KoraHttpTextBody(msg.content().toString(StandardCharsets.UTF_8))
-                }
+                    KoraHttpHeaderValues.TEXT_PLAIN -> {
+                        this.body = KoraHttpTextBody(msg.content().toString(StandardCharsets.UTF_8))
+                    }
 
-                KoraHttpHeaderValues.X_WWW_FORM_URLENCODED -> {
-                    this.body = KoraHttpUrlencodedBody.build(
-                        UrlEncodedForm.build(msg.content().toString(StandardCharsets.UTF_8))
-                    )
+                    KoraHttpHeaderValues.X_WWW_FORM_URLENCODED -> {
+                        this.body = KoraHttpUrlencodedBody.build(
+                            UrlEncodedForm.build(msg.content().toString(StandardCharsets.UTF_8))
+                        )
+                    }
+
+                    else -> {
+                        throw UnhandleableRequestBodyException("Unsupported content type: $contentType")
+                    }
                 }
+            } catch (e: Exception) {
+                LOGGER.warn(
+                    "Unable to handle request body '{}', data: {}",
+                    contentType,
+                    msg.content().toString(StandardCharsets.UTF_8)
+                )
+                LOGGER.warn("Please check the body data is correct format or report this content type to issue")
             }
         }
         this.method = msg.method()
