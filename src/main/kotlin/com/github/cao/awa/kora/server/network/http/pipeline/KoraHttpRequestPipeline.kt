@@ -153,7 +153,11 @@ class KoraHttpRequestPipeline(
                                 val asset: KoraAsset<*>? = if (assetsManager.hasAsset(koraContext)) {
                                     assetsManager.getAsset(koraContext)
                                 } else {
-                                    assetsManager.getAsset(koraContext.path() + "/index.html")
+                                    if (assetsManager.createFileHolder(koraContext.path()).isDirectory) {
+                                        assetsManager.getAsset(koraContext.path() + "/index.html")
+                                    } else {
+                                        null
+                                    }
                                 }
 
                                 // If asset not null. response the asset.

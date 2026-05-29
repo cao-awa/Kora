@@ -69,6 +69,7 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
     private var redirectAsset: String = ""
     private var redirectUrl: String = ""
     private var dataCache: MutableMap<String, Any> = mutableMapOf()
+    private var host: String = "127.0.0.1"
 
     constructor(msg: KoraFullHttpRequestHolder) : super(msg) {
         this.arguments = produceArguments(msg)
@@ -196,6 +197,11 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         return this
     }
 
+    open fun withHost(host: String): KoraHttpContext {
+        this.host = host
+        return this
+    }
+
     fun redirect(redirectUrl: String, permanently: Boolean = false): KoraHttpContext {
         return if (permanently) {
             permanentlyRedirect(redirectUrl)
@@ -247,6 +253,10 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             this.bodyBuilder()
         }
         return this.body!!
+    }
+
+    fun host(): String {
+        return this.host
     }
 
     fun getHeader(name: String): String? {

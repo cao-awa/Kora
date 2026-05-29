@@ -12,13 +12,16 @@ import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.handler.codec.http.FullHttpRequest
 
 @ChannelHandler.Sharable
-class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : ChannelInboundHandlerAdapter() {
-    constructor(builder: KoraHttpServerBuilder, config: KoraHttpServerConfig) : this(
-        KoraHttpRequestPipeline(
+class KoraHttpInboundHandlerAdapter: ChannelInboundHandlerAdapter {
+    val pipeline: KoraHttpRequestPipeline
+    private val config: KoraHttpServerConfig
+
+    constructor(builder: KoraHttpServerBuilder, config: KoraHttpServerConfig) {
+        this.pipeline = KoraHttpRequestPipeline(
             KoraHttpRequestServerAbortHandler(builder.abortHandlers),
             config
         )
-    ) {
+        this.config = config
         builder.applyRoute(this)
     }
 
@@ -26,7 +29,9 @@ class KoraHttpInboundHandlerAdapter(val pipeline: KoraHttpRequestPipeline) : Cha
         when (msg) {
             is FullHttpRequest -> {
                 // Handle full http request,
-                this.pipeline.handleFull(ctx, KoraHttpContext(KoraFullHttpRequestHolder(msg)))
+                this.pipeline.handleFull(ctx, KoraHttpContext(KoraFullHttpRequestHolder(msg)).also { context ->
+                    context.withHost(this.config.serverHost())
+                })
             }
 
             else -> {

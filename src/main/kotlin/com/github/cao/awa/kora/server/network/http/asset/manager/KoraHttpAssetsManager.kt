@@ -67,15 +67,22 @@ class KoraHttpAssetsManager {
                 "-d", "mbstring.http_output=\"UTF-8\"",
                 rootFile.absolutePath
             ).also { builder ->
-                builder.environment()["REQUEST_METHOD"] = context.method().name()
-                builder.environment()["SCRIPT_FILENAME"] = asset.file.absolutePath
-                builder.environment()["CONTENT_LENGTH"] = context.contentLength().toString()
-                builder.environment()["SERVER_PROTOCOL"] = context.protocolVersion().toString()
-                builder.environment()["CONTENT_TYPE"] = context.contentType().toString()
-                builder.environment()["SERVER_SOFTWARE"] = KoraInformation.SOFTWARE_NAME
-                builder.environment()["REQUEST_URI"] = context.path()
-                builder.environment()["REDIRECT_STATUS"] = "200"
-                builder.environment()["DOCUMENT_ROOT"] = rootFile.absolutePath
+                builder.environment().also { env ->
+                    env["SCRIPT_FILENAME"] = asset.file.absolutePath
+                    env["SCRIPT_NAME"] = context.path()
+                    env["REQUEST_METHOD"] = context.method().name()
+                    env["QUERY_STRING"] = context.arguments().toString()
+                    env["REQUEST_URI"] = context.fullPath()
+                    env["DOCUMENT_ROOT"] = rootFile.absolutePath
+                    env["HTTP_HOST"] = context.host()
+                    env["REMOTE_ADDR"] = context.host()
+                    env["SERVER_SOFTWARE"] = KoraInformation.SOFTWARE_NAME
+
+                    env["CONTENT_LENGTH"] = context.contentLength().toString()
+                    env["SERVER_PROTOCOL"] = context.protocolVersion().toString()
+                    env["CONTENT_TYPE"] = context.contentType().toString()
+                    env["REDIRECT_STATUS"] = "200"
+                }
             }.start()
 
             process.outputStream.use {
