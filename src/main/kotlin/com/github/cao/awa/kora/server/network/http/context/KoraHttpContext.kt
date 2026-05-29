@@ -85,47 +85,49 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             }
         }
         this.bodyBuilder = {
-            if (msg.content().readableBytes() == 0) {
-                this.body = KoraHttpEmptyBody
-            } else {
-                var contentType = this.headers[HttpHeaderNames.CONTENT_TYPE]
-                println(contentType)
-                var charset = StandardCharsets.UTF_8
-                if (contentType.contains(";")) {
-                    contentType = contentType.substringBefore(";")
-                    if (contentType.contains("charset=")) {
-                        charset = Charset.forName(contentType.substringAfter("charset="))
-                        println(contentType.substringAfter("charset="))
-                    }
-                }
-                try {
-                    when (contentType) {
-                        KoraHttpHeaderValues.APPLICATION_JSON -> {
-                            this.body = KoraHttpJsonBody(JSONParser.parseObject(msg.content().toString(charset)))
-                        }
-
-                        KoraHttpHeaderValues.TEXT_PLAIN -> {
-                            this.body = KoraHttpTextBody(msg.content().toString(charset))
-                        }
-
-                        KoraHttpHeaderValues.X_WWW_FORM_URLENCODED -> {
-                            this.body = KoraHttpUrlencodedBody.build(
-                                UrlEncodedForm.build(msg.content().toString(charset))
-                            )
-                        }
-
-                        else -> {
-                            throw UnhandleableRequestBodyException("Unsupported content type: $contentType")
+            if (this.body == null) {
+                if (msg.content().readableBytes() == 0) {
+                    this.body = KoraHttpEmptyBody
+                } else {
+                    var contentType = this.headers[HttpHeaderNames.CONTENT_TYPE]
+                    println(contentType)
+                    var charset = StandardCharsets.UTF_8
+                    if (contentType.contains(";")) {
+                        contentType = contentType.substringBefore(";")
+                        if (contentType.contains("charset=")) {
+                            charset = Charset.forName(contentType.substringAfter("charset="))
+                            println(contentType.substringAfter("charset="))
                         }
                     }
-                } catch (e: Exception) {
-                    LOGGER.warn(
-                        "Unable to handle request body '{}', data: {}",
-                        contentType,
-                        msg.content().toString(charset),
-                        e
-                    )
-                    LOGGER.warn("Please check the body data is correct format or report this content type to issue")
+                    try {
+                        when (contentType) {
+                            KoraHttpHeaderValues.APPLICATION_JSON -> {
+                                this.body = KoraHttpJsonBody(JSONParser.parseObject(msg.content().toString(charset)))
+                            }
+
+                            KoraHttpHeaderValues.TEXT_PLAIN -> {
+                                this.body = KoraHttpTextBody(msg.content().toString(charset))
+                            }
+
+                            KoraHttpHeaderValues.X_WWW_FORM_URLENCODED -> {
+                                this.body = KoraHttpUrlencodedBody.build(
+                                    UrlEncodedForm.build(msg.content().toString(charset))
+                                )
+                            }
+
+                            else -> {
+                                throw UnhandleableRequestBodyException("Unsupported content type: $contentType")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        LOGGER.warn(
+                            "Unable to handle request body '{}', data: {}",
+                            contentType,
+                            msg.content().toString(charset),
+                            e
+                        )
+                        LOGGER.warn("Please check the body data is correct format or report this content type to issue")
+                    }
                 }
             }
         }
