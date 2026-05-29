@@ -1,10 +1,6 @@
 import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
-import com.github.cao.awa.kora.server.network.http.body.empty.KoraHttpEmptyBody
-import com.github.cao.awa.kora.server.network.http.body.form.urlencoded.KoraHttpUrlencodedBody
-import com.github.cao.awa.kora.server.network.http.body.json.KoraHttpJsonBody
-import com.github.cao.awa.kora.server.network.http.body.text.KoraHttpTextBody
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder
 import com.github.cao.awa.kora.server.network.http.builder.http
 import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
@@ -20,28 +16,26 @@ private val LOGGER: Logger = LogManager.getLogger("Test")
 
 // oha -n 10000 -c 128 --latency-correction http://127.0.0.1:12345/test
 fun main() {
-    KoraEntrypoint.main()
+//    KoraEntrypoint.main()
 //    testCombinator()
+    TestEntry.entry()
 }
 
 object TestEntry {
     @JvmStatic
     fun entry() {
+        val wikiPageHolder = placeholder<String>("wiki_page")
+        val revisionHolder = placeholder<Int>("revision")
+        val wikiPage by wikiPageHolder
+        val revision by revisionHolder
+
         val api = http {
-            route("/test") {
+            route("/wiki", wikiPageHolder, revisionHolder) {
                 get {
-                    val body = body()
                     html {
                         body {
                             p {
-                                when (body) {
-                                    is KoraHttpEmptyBody -> { }
-                                    is KoraHttpTextBody -> { }
-                                    is KoraHttpJsonBody -> { }
-                                    is KoraHttpUrlencodedBody -> { }
-                                    // Or more.
-                                    else -> { }
-                                }
+                                +"Test page: {$wikiPage}, revision: $revision"
                             }
                         }
                     }
@@ -50,6 +44,8 @@ object TestEntry {
         }
 
         KoraHttpServer(api).start()
+
+        Thread.sleep(2000000)
     }
 }
 
@@ -113,7 +109,7 @@ fun testBuild() {
         }
     }
 
-    KoraHttpServer(api).start( )
+    KoraHttpServer(api).start()
 }
 
 fun testSimple() {
@@ -324,5 +320,5 @@ fun testRender() {
         }
     }
 
-    KoraHttpServer(http).start( )
+    KoraHttpServer(http).start()
 }

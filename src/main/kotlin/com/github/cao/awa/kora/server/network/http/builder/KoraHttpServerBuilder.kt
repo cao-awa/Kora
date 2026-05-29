@@ -4,6 +4,7 @@ import com.github.cao.awa.kora.server.network.http.builder.route.KoraHttpServerR
 import com.github.cao.awa.kora.server.network.http.adapter.KoraHttpInboundHandlerAdapter
 import com.github.cao.awa.kora.server.network.http.context.abort.KoraAbortHttpContext
 import com.github.cao.awa.kora.server.network.http.exception.KoraServerException
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.TypedHttpUrlPlaceholder
 import java.net.URLEncoder
 import kotlin.reflect.KClass
 
@@ -14,6 +15,21 @@ class KoraHttpServerBuilder {
 
     constructor(builder: KoraHttpServerBuilder.() -> Unit) {
         builder(this)
+    }
+
+    fun route(vararg inputs: Any, handler: KoraHttpServerRouteBuilder.() -> Unit) {
+        val builder = StringBuilder()
+        for (input in inputs) {
+            if (input is String) {
+                builder.append(input)
+            } else if (input is TypedHttpUrlPlaceholder<*>) {
+                builder.append("{${input.name}}")
+            } else {
+                throw IllegalArgumentException("Unsupported input type: ${input::class}, can only input String or TypedHttpUrlPlaceholder")
+            }
+            builder.append("/")
+        }
+        route(builder.toString(), handler)
     }
 
     fun route(targetPath: String, handler: KoraHttpServerRouteBuilder.() -> Unit) {
@@ -29,6 +45,10 @@ class KoraHttpServerBuilder {
             path.substring(1, path.length)
         } else {
             path
+        }
+
+        while (path.contains("//")) {
+            path = path.replace("//", "/")
         }
 
         // Encode the path and replace connecting symbol to '%20' .

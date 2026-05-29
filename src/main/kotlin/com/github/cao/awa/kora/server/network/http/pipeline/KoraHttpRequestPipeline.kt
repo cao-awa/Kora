@@ -167,8 +167,8 @@ class KoraHttpRequestPipeline(
                                         koraContext,
                                         asset
                                     )
+                                    return@abortable
                                 }
-                                return@abortable
                             } else {
                                 // When error is page path not registered and asset manager are not available, it should be 404 NOT_FOUND.
                                 httpStatus = HttpResponseStatus.NOT_FOUND
@@ -205,6 +205,8 @@ class KoraHttpRequestPipeline(
                 throw NotSupportedHttpMethodException("${koraContext.method().name()} handler not registered")
             }
 
+            TypedHttpArgument.THREAD_LOCAL.set(null)
+            TypedHttpUrlPlaceholder.THREAD_LOCAL.set(null)
             // Release the msg let GC could be clears,
             koraContext.release()
         }

@@ -123,9 +123,7 @@ class TypedHttpArgument<T : Any> {
             return cachedValue as T
         }
         if (context != null) {
-            return get(context).also {
-                THREAD_LOCAL.remove()
-            }
+            return get(context)
         }
         throw IllegalStateException("Typed argument delegate cannot used without request scope")
     }
