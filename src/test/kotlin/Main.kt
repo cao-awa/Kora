@@ -24,18 +24,18 @@ fun main() {
 object TestEntry {
     @JvmStatic
     fun entry() {
-        val wikiPageHolder = placeholder<String>("wiki_page")
-        val revisionHolder = placeholder<Int>("revision")
-        val wikiPage by wikiPageHolder
-        val revision by revisionHolder
+        val usernameHolder = placeholder<String>("username")
+        val functionHolder = placeholder<Int>("function")
+        val username by usernameHolder
+        val function by functionHolder
 
         val api = http {
-            route("/wiki", wikiPageHolder, revisionHolder) {
+            route("/wiki", usernameHolder, functionHolder) {
                 get {
                     html {
                         body {
                             p {
-                                +"Test page: {$wikiPage}, revision: $revision"
+                                +"User'{$username}' currently accessing server function '$function'"
                             }
                         }
                     }

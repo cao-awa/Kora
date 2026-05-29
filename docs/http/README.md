@@ -177,6 +177,41 @@ When you visit ``http://127.0.0.1:12345/test/awa?input=1234``, you will see a pa
 The delegate ``arg`` or ``placeholder`` can only access in request scope, cannot access in other locations, otherwise
 Kora will throw a ``IllegalStateException`` to notice it.
 
+## Placeholder route
+You can use placeholder to create routes, this will save you time from writing ``{xxx}`` several times:
+
+```kotlin
+object TestEntry {
+    @JvmStatic
+    fun entry() {
+        val usernameHolder = placeholder<String>("username")
+        val functionHolder = placeholder<Int>("function")
+        val username by usernameHolder
+        val function by functionHolder
+
+        val api = http {
+            route("/wiki", usernameHolder, functionHolder) {
+                get {
+                    html {
+                        body {
+                            p {
+                                +"User'{$username}' currently accessing server function '$function'"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        KoraHttpServer(api).start()
+    }
+}
+```
+
+Unfortunately, you can't use delegate way to build routes, only raw placeholder can do this, so for future conveniences, you maybe need define a ``val xxx by xxxHolder``, and use ``xxx`` in the next stages, abandon the ``xxxHolder``.
+
+Or maybe you want to use ``xxx(this)`` to get the value, it also ok, the choice is yours.
+
 ## Typed arg and typed placeholder builder
 
 Usually custom data class building ways:
