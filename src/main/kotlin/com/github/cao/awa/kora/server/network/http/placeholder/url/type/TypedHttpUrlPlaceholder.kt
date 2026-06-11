@@ -69,7 +69,7 @@ class TypedHttpUrlPlaceholder<T : Any> {
 
     @Suppress("unchecked_cast")
     operator fun get(context: KoraHttpContext): T {
-        val cachedValue = context.fetchCache(this.name)
+        val cachedValue = context.fetchCache(toString())
         if (cachedValue != null) {
             return cachedValue as T
         }
@@ -92,7 +92,7 @@ class TypedHttpUrlPlaceholder<T : Any> {
     @Suppress("unchecked_cast")
     operator fun getValue(nothing: Nothing?, property: KProperty<*>): T {
         val context = THREAD_LOCAL.get()
-        val cachedValue = context.fetchCache(this.name)
+        val cachedValue = context.fetchCache(toString())
         if (cachedValue != null) {
             return cachedValue as T
         }

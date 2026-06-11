@@ -67,7 +67,7 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
     private var placeholders: MutableMap<String, Int> = mutableMapOf()
     private var placeholderURL: String = ""
     private var redirectAsset: String = ""
-    private var redirectUrl: String = ""
+    private var redirectURL: String = ""
     private var dataCache: MutableMap<String, Any> = mutableMapOf()
     private var host: String = "127.0.0.1"
 
@@ -181,7 +181,7 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
             HttpResponseStatus.MOVED_PERMANENTLY,
             HttpResponseStatus.PERMANENT_REDIRECT,
             HttpResponseStatus.TEMPORARY_REDIRECT -> {
-                responseHeaders()[HttpHeaderNames.LOCATION] = this.redirectUrl
+                responseHeaders()[HttpHeaderNames.LOCATION] = this.redirectURL
             }
         }
         return this
@@ -212,19 +212,19 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
 
     fun temporaryRedirect(redirectUrl: String): KoraHttpContext {
         this.status = HttpResponseStatus.TEMPORARY_REDIRECT
-        this.redirectUrl = redirectUrl
+        this.redirectURL = redirectUrl
         return this
     }
 
     fun permanentlyRedirect(redirectUrl: String): KoraHttpContext {
         this.status = HttpResponseStatus.PERMANENT_REDIRECT
-        this.redirectUrl = redirectUrl
+        this.redirectURL = redirectUrl
         return this
     }
 
     fun movedPermanently(redirectUrl: String): KoraHttpContext {
         this.status = HttpResponseStatus.MOVED_PERMANENTLY
-        this.redirectUrl = redirectUrl
+        this.redirectURL = redirectUrl
         return this
     }
 
@@ -232,8 +232,8 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
         return this.redirectAsset
     }
 
-    fun redirectUrl(): String {
-        return this.redirectUrl
+    fun redirectURL(): String {
+        return this.redirectURL
     }
 
     fun placeholders(): Map<String, Int> {

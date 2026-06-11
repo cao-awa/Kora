@@ -85,7 +85,7 @@ class TypedHttpArgument<T : Any> {
     @Suppress("unchecked_cast")
     operator fun get(context: KoraHttpContext): T {
         return try {
-            val cachedValue = context.fetchCache(this.name)
+            val cachedValue = context.fetchCache(toString())
             if (cachedValue != null) {
                 return cachedValue as T
             }
@@ -96,7 +96,7 @@ class TypedHttpArgument<T : Any> {
             for (validator in combinators) {
                 value = validator.combinate(value)
             }
-            context.cache(this.name, value)
+            context.cache(toString(), value)
             return value
         } catch (e: Exception) {
             if (this.missable) {
