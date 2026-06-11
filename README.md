@@ -165,8 +165,6 @@ This makes behavior:
 
 ## 5. Hot Reload
 
-> *Planned*
-
 Kora does not reload by restarting the JVM.
 
 Instead:
