@@ -32,8 +32,6 @@ class KoraHttpServer {
     private val locker: KoraHttpServerLocker = KoraHttpServerLocker()
     private val serverBuilder: KoraHttpServerBuilder
     private var running = false
-    val isRunning: Boolean
-        get() = this.running
 
     constructor(builder: KoraHttpServerBuilder) {
         this.serverBuilder = builder
@@ -104,12 +102,10 @@ class KoraHttpServer {
                 }
 
                 KoraStatus.registerReloadListener {
-                    this.running = false
                     this.locker.onStop()
                 }
 
                 KoraStatus.registerStopListener {
-                    this.running = false
                     this.locker.onStop()
                 }
 

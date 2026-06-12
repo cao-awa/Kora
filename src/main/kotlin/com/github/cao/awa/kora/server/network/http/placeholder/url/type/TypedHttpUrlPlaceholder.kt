@@ -14,6 +14,8 @@ import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validato
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
 import com.github.cao.awa.kora.server.network.http.placeholder.url.exception.TypedHttpUrlMissingException
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.combinator.TypedHttpUrlPlaceholderCombinator
+import com.github.cao.awa.kora.server.network.http.placeholder.url.type.validator.uuid.TypedHttpUrlPlaceholderUuidInitializeValidator
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
@@ -35,6 +37,8 @@ class TypedHttpUrlPlaceholder<T : Any> {
             addValidator(Char::class, TypedHttpUrlPlaceholderCharInitializeValidator())
 
             addValidator(String::class, TypedHttpUrlPlaceholderStringInitializeValidator())
+
+            addValidator(UUID::class, TypedHttpUrlPlaceholderUuidInitializeValidator())
         }
 
         private fun <T : Any> addValidator(type: KClass<T>, validator: TypedHttpUrlPlaceholderInitializeValidator<T>) {

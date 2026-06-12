@@ -14,8 +14,10 @@ import com.github.cao.awa.kora.server.network.http.argument.type.validator.basic
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.TypedHttpArgumentInitializeValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.combinator.TypedHttpArgumentCombinator
 import com.github.cao.awa.kora.server.network.http.argument.type.validator.exception.TypedHttpArgumentValidateException
+import com.github.cao.awa.kora.server.network.http.argument.type.validator.uuid.TypedHttpArgumentUuidInitializeValidator
 import com.github.cao.awa.kora.server.network.http.argument.type.value.TypedHttpArgumentDefaultValues
 import com.github.cao.awa.kora.server.network.http.context.KoraHttpContext
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
@@ -37,6 +39,8 @@ class TypedHttpArgument<T : Any> {
             addValidator(Char::class, TypedHttpArgumentCharInitializeValidator())
 
             addValidator(String::class, TypedHttpArgumentStringInitializeValidator())
+
+            addValidator(UUID::class, TypedHttpArgumentUuidInitializeValidator())
         }
 
         fun <T : Any> addValidator(type: KClass<T>, validator: TypedHttpArgumentInitializeValidator<T>) {

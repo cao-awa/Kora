@@ -5,7 +5,7 @@ Add ``noContent`` method to return NoContentResponse instance.
 Add response headers.
 
 ## Redirect
-Add 'movedPermanently', 'permanentlyRedirect', 'temporaryRedirect' method to redirect.
+Add 'movedPermanently', 'permanentlyRedirect', 'temporaryRedirect' methods to redirect in the response.
 
 ## Request body
 Add request body supports for JSON, text, empty, urlencoded form.
@@ -48,3 +48,6 @@ The order of the string and placeholder is arbitrary, you can swap orders it as 
 Unfortunately, you can't use delegate way to build routes, only raw placeholder can do this, so for future conveniences, you maybe need define a ``val xxx by xxxHolder``, and use ``xxx`` in the next stages, abandon the ``xxxHolder``.
 
 Or maybe you want to use ``xxx(this)`` to get the value, it also ok, the choice is yours.
+
+# UUID supports
+Add supports for UUID in arg and placeholder.

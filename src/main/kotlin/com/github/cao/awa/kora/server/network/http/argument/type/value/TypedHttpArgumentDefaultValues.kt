@@ -1,5 +1,6 @@
 package com.github.cao.awa.kora.server.network.http.argument.type.value
 
+import java.util.UUID
 import kotlin.reflect.KClass
 
 object TypedHttpArgumentDefaultValues {
@@ -13,6 +14,7 @@ object TypedHttpArgumentDefaultValues {
         it[Float::class] = 0F
         it[Double::class] = 0.0
         it[String::class] = ""
+        it[UUID::class] = UUID(0L, 0L)
     }
 
     @Suppress("unchecked_cast")
