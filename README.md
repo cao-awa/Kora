@@ -33,6 +33,33 @@ For the versions, see [JitPack](https://jitpack.io/#cao-awa/Kora).
 
 And creating your Kora programs!
 
+# Quick Start
+## No coding start
+Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora server with [Assets manager mode](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md#assets-manager-mode).
+
+It can automatically response html or other files in assets path, or redirect path to "path/index.html" file.
+
+Kora will generate a config file when it first startup, it seems like:
+```json
+{
+    "print_config_details": true,
+    "entrypoint": [
+        "com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry"
+    ]
+}
+```
+
+It means Kora will call the entrypoint ``com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry``, this entrypoint method starts a asset manager http server (as mentioned above).
+
+
+## With coding
+You can also define your entrypoint, for details, see [entrypoint document](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
+
+Build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services!
+
+## HTTP server
+See [HTTP document](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md).
+
 # What Kora Is
 
 Kora is a **Kotlin-first**, expression-based JVM runtime that emphasizes:
@@ -69,33 +96,6 @@ It is a **language-shaped web framework**.
 > In Ktor, routing mutates a global pipeline.\
 > In Spring, routing is discovered via annotations.\
 > In Kora, routing is an expression that produces a value.
-
-# Quick Start
-## No coding start
-Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora server with [Assets manager mode](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md#assets-manager-mode).
-
-It can automatically response html or other files in assets path, or redirect path to "path/index.html" file.
-
-Kora will generate a config file when it first startup, it seems like:
-```json
-{
-    "print_config_details": true,
-    "entrypoint": [
-        "com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry"
-    ]
-}
-```
-
-It means Kora will call the entrypoint ``com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry``, this entrypoint method starts a asset manager http server (as mentioned above).
-
-
-## With coding
-You can also define your entrypoint, for details, see [entrypoint document](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
-
-Build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services!
-
-## HTTP server
-See [HTTP document](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md).
 
 # Design Philosophy
 
