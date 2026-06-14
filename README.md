@@ -56,8 +56,11 @@ You can also define your entrypoint, for details, see [entrypoint document](http
 
 Build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services!
 
-## HTTP server
+### HTTP server
 See [HTTP document](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md).
+
+# CLI command
+See [command document](https://github.com/cao-awa/Kora/tree/main/docs/command/README.md).
 
 # What Kora Is
 
