@@ -15,7 +15,7 @@ object TestEntry {
             route("/test") {
                 get {
                     // Handle request here...
-                    println("Something processed here")
+                    println("Something here...")
 
                     // Return a result to response the request.
                     html {

@@ -34,9 +34,6 @@ For the versions, see [JitPack](https://jitpack.io/#cao-awa/Kora).
 And creating your Kora programs!
 
 # Quick Start
-## No coding start
-Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora server with [Assets manager mode](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md#assets-manager-mode).
-
 It can automatically response html or other files in assets path, or redirect path to "path/index.html" file.
 
 Kora will generate a config file when it first startup, it seems like:
@@ -51,6 +48,8 @@ Kora will generate a config file when it first startup, it seems like:
 
 It means Kora will call the entrypoint ``com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry``, this entrypoint method starts a asset manager http server (as mentioned above).
 
+## No coding start
+Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora server with [Assets manager mode](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md#assets-manager-mode).
 
 ## With coding
 You can also define your entrypoint, for details, see [entrypoint document](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
