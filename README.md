@@ -88,12 +88,8 @@ Kora can also be flexible, but it primarily optimizes for **compile-time correct
 * Parameters are **typed**, not string-based
 * Handlers are **functions**, not magic containers
 * **Reloading** in Kora is **graph replacement**, not class redefinition. Code is recompiled. The JVM is not mutated.
-
-Kora is not a general-purpose application container.\
-It does not manage object lifecycles or dependency graphs.\
-Application structure is defined by Kotlin code, not framework containers.
-
-It is a **language-shaped web framework**.
+* 
+Kora is a **language-shaped runtime framework**.
 
 > In Ktor, routing mutates a global pipeline.\
 > In Spring, routing is discovered via annotations.\
@@ -219,4 +215,4 @@ Kora intentionally does **not** aim to be:
 
 Kora focuses on doing **one thing extremely well**:
 
-> **Building safe, expressive, reloadable web servers in Kotlin.**
+> **Building safe, expressive, reloadable runtimes in Kotlin.**
