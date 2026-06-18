@@ -91,7 +91,6 @@ open class KoraHttpContext : KoraContext<KoraFullHttpRequestHolder, KoraHttpCont
                     this.body = KoraHttpEmptyBody
                 } else {
                     var contentType = this.headers[HttpHeaderNames.CONTENT_TYPE]
-                    println(contentType)
                     var charset = StandardCharsets.UTF_8
                     if (contentType.contains(";")) {
                         for (data in contentType.split(";")) {
