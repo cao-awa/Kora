@@ -1,6 +1,6 @@
 package com.github.cao.awa.kora.plugin
 
-import com.github.cao.awa.kora.KoraEntrypoint
+import com.github.cao.awa.kora.entrypoint.KoraEntrypoint
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 

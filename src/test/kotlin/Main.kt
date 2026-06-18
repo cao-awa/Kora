@@ -1,4 +1,4 @@
-import com.github.cao.awa.kora.KoraEntrypoint
+import com.github.cao.awa.kora.entrypoint.KoraEntrypoint
 import com.github.cao.awa.kora.server.network.http.KoraHttpServer
 import com.github.cao.awa.kora.server.network.http.argument.type.arg
 import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder

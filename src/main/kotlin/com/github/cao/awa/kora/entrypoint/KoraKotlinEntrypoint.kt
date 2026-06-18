@@ -1,6 +1,5 @@
 package com.github.cao.awa.kora.entrypoint
 
-import com.github.cao.awa.kora.KoraEntrypoint
 import com.github.cao.awa.kora.entrypoint.exception.KoraEntrypointStageFailedException
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
 import com.github.cao.awa.kora.entrypoint.lib.KoraLibraryLoader

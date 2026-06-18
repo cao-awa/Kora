@@ -2,7 +2,7 @@ package com.github.cao.awa.kora.entrypoint.lib
 
 import com.github.cao.awa.cason.primary.JSONString
 import com.github.cao.awa.cason.serialize.parser.JSONParser
-import com.github.cao.awa.kora.KoraEntrypoint
+import com.github.cao.awa.kora.entrypoint.KoraEntrypoint
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.io.File

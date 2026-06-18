@@ -1,7 +1,7 @@
 package com.github.cao.awa.kora.command
 
 import com.github.cao.awa.cason.serialize.parser.JSONParser
-import com.github.cao.awa.kora.KoraEntrypoint
+import com.github.cao.awa.kora.entrypoint.KoraEntrypoint
 import com.github.cao.awa.kora.constant.KoraInformation
 import com.github.cao.awa.kora.status.KoraStatus
 import com.github.cao.awa.kora.status.KoraStatus.reload

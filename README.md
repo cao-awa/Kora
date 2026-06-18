@@ -60,7 +60,7 @@ Build your Kora programs, build jar and put it into ``{working_dir}/libs/``, and
 See [HTTP document](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md).
 
 # CLI command
-See [command document](https://github.com/cao-awa/Kora/tree/main/docs/command/README.md).
+See [command document](https://github.com/cao-awa/Kora/tree/main/docs/c ommand/README.md).
 
 # What Kora Is
 
@@ -83,7 +83,7 @@ It is built on Netty for performance and IO efficiency and uses Kotlin coroutine
 Most web frameworks optimize for **runtime flexibility**.
 
 Kora can also be flexible, but it primarily optimizes for **compile-time correctness** and **semantic clarity**.
-
+[exception](src/main/java/com/github/cao/awa/kora/entrypoint/exception)
 * Routes are **values**, not side effects
 * Parameters are **typed**, not string-based
 * Handlers are **functions**, not magic containers

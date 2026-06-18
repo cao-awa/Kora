@@ -1,11 +1,11 @@
-package com.github.cao.awa.kora;
+package com.github.cao.awa.kora.entrypoint;
 
 import com.github.cao.awa.kora.command.KoraCommandExecutor;
 import com.github.cao.awa.kora.entrypoint.exception.KoraEntrypointStageFailedException;
 import com.github.cao.awa.kora.launch.config.KoraLaunchConfig;
 import com.github.cao.awa.kora.constant.KoraInformation;
-import com.github.cao.awa.kora.entrypoint.KoraKotlinEntrypoint;
 import com.github.cao.awa.kora.entrypoint.lib.KoraLibraryLoader;
+import com.github.cao.awa.kora.locker.KoraEntrypointLocker;
 import com.github.cao.awa.kora.plugin.KoraPluginDependenciesManager;
 import com.github.cao.awa.kora.status.KoraStatus;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +19,7 @@ public class KoraEntrypoint {
     public static final KoraPluginDependenciesManager DEPENDENCIES_MANAGER = new KoraPluginDependenciesManager();
     private static String[] launchArgs = new String[0];
     public static final long START_TIME = System.currentTimeMillis();
+    private static final KoraEntrypointLocker LOCKER = new KoraEntrypointLocker();
 
     public static void main(String... args) {
         launchArgs = args;
@@ -44,8 +45,12 @@ public class KoraEntrypoint {
                     KoraEntrypoint.reload();
                 }
 
+                if (scanner.hasNextLine()) {
                 String command = scanner.nextLine();
                 KoraCommandExecutor.executeCommand(command);
+                } else {
+                    LOCKER.waitFor();
+                }
             }
         }
 
@@ -88,6 +93,8 @@ public class KoraEntrypoint {
         LOGGER.info("Reloading Kora({}) server...",
                     KoraInformation.VERSION
         );
+
+        LOCKER.offer();
 
         if (KoraStatus.isReloading()) {
             KoraStatus.completeReload();
