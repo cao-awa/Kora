@@ -271,10 +271,24 @@ fun testError() {
                 abortWith(NullPointerException("Test if logic error occurs NPE"), HttpResponseStatus.BAD_REQUEST, this)
             }.ifAbort(NullPointerException::class) { exception ->
                 LOGGER.error(exception)
-                val httpProtocolVersion: HttpVersion = protocolVersion()
-                LOGGER.error("Http protocol version: $httpProtocolVersion")
-                val status: HttpResponseStatus = status()
-                LOGGER.error("Http status: $status")
+                LOGGER.error("Http protocol version: ${protocolVersion()}")
+                LOGGER.error("Http status: ${status()}")
+
+                // Render HTML page.
+                html {
+                    head {
+                        charset(Charsets.UTF_8)
+                    }
+                    body {
+                        p {
+                            text("Page '/${path()}' occurs error!")
+                        }
+                    }
+                }
+            }
+
+            ifAbort(HttpPathNotRegisteredException::class) {
+
             }
         }
     }

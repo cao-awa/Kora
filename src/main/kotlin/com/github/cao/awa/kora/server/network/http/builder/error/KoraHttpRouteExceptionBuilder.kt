@@ -17,6 +17,9 @@ class KoraHttpRouteExceptionBuilder {
 
     @Suppress("unchecked_cast")
     inline fun <reified T: Throwable, X: Any> ifAbort(target: KClass<T>, noinline handler: KoraAbortHttpContext.(T) -> X): KoraHttpRouteExceptionBuilder {
+        if (this.routes.containsKey(target)) {
+            throw IllegalStateException("Already presenting an exception handler for type '${target.simpleName}'")
+        }
         this.routes[target] = handler as KoraAbortHttpContext.(Throwable) -> Any
         return this
     }

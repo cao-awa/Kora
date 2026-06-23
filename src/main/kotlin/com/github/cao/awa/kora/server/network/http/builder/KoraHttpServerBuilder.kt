@@ -77,7 +77,10 @@ class KoraHttpServerBuilder {
     }
 
     @Suppress("unchecked_cast")
-    fun <T : KoraServerException> ifAbort(type: KClass<out T>, context: KoraAbortHttpContext.(T) -> Any) {
+    fun <T : Throwable> ifAbort(type: KClass<out T>, context: KoraAbortHttpContext.(T) -> Any) {
+        if (this.abortHandlers.containsKey(type)) {
+            throw IllegalStateException("Already presenting an exception handler for type '${type.simpleName}'")
+        }
         this.abortHandlers[type] = context as KoraAbortHttpContext.(Throwable) -> Any
     }
 }
