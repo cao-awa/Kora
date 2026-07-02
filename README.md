@@ -15,7 +15,7 @@ Kora lets you build APIs as ordinary Kotlin values:
 * Type-safe request extraction.
 * Structured control flow.
 
-Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using reflection during startup to [bootstrap users code](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
+Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using reflection during startup to [bootstrap user code](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
 
 ![](https://count.getloli.com/@@cao-awa.kora?name=%40cao-awa.kora&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
 
@@ -43,7 +43,6 @@ This requires the application to be **recompiled** after code changes. Once a ne
 
 This approach keeps reload semantics explicit and predictable while avoiding JVM class redefinition.
 
-
 # Getting started
 Add codes to your ``build.gradle`` file:
 ```groovy
@@ -60,10 +59,10 @@ dependencies {
 
 For the versions, see [JitPack](https://jitpack.io/#cao-awa/Kora).
 
-And creating your Kora programs!
+Now you're ready to build your first Kora application.
 
 # Quick Start
-Use ``./gradlew run`` to launch Kora quickly, Kora will generate a config file when it first startup, it seems like:
+Use ``./gradlew run`` to launch Kora quickly, Kora will generate a config file on first startup, it seems like:
 
 ```json
 {
@@ -74,16 +73,13 @@ Use ``./gradlew run`` to launch Kora quickly, Kora will generate a config file w
 }
 ```
 
-It means Kora will call the entrypoint ``com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry``, this entrypoint method starts a asset manager http server (as mentioned above).
+It means Kora will call the entrypoint ``com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry``, this entrypoint method starts an asset manager http server (as mentioned above).
 
-It can automatically response html or other files in assets path, or redirect path to "path/index.html" file.
+It can automatically serve HTML or other files in assets path, or redirect path to "path/index.html" file.
 
 If you are using gradle task to launch Kora and want to run your codes, you also need to change the entrypoint configuration, please see [entrypoint document](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
 
-## Production environment 
-Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora http server with [Assets manager mode](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md#assets-manager-mode).
-
-Put jars into ``{working_dir}/libs/``, and change the entrypoint config, make your special logics and services!
+Put jars into ``{working_dir}/libs/``, and change the entrypoint config, build your own services.
 
 ## Development environment 
 For details, see [entrypoint document](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
@@ -117,6 +113,9 @@ fun entry() {
 Launch Kora and open ``http://127.0.0.1:12345/hello?username=Kora`` to view the hello page.
 
 For details, see [HTTP document](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md).
+
+## Production environment 
+Use java command ``java -jar Kora-{kora_version}.jar -server`` to run a Kora http server with [Assets manager mode](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md#assets-manager-mode).
 
 # CLI command
 See [command document](https://github.com/cao-awa/Kora/tree/main/docs/command/README.md).
