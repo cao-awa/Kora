@@ -2,9 +2,9 @@
 
 > Kora is still evolving.
 > The runtime and HTTP stack are already usable for real projects, while the surrounding ecosystem is still under active development.\
-> Kora main focus is more FP, more control flow contextualization, and more zero-reflection design.
+> Kora focuses on functional programming, structured control flow, minimal reflection.
 
-Kora is a Kotlin-first HTTP runtime for developers who prefer
+Kora is a Kotlin-first web runtime for developers who prefer
 explicit code over annotations and compile-time safety over runtime magic.
 
 Instead of discovering routes through reflection,
@@ -15,7 +15,7 @@ Kora lets you build APIs as ordinary Kotlin values:
 * Type-safe request extraction.
 * Structured control flow.
 
-Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using the fewest reflection in launch stage to [bootstrap users code](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
+Kora is designed for developers who want correctness, predictability, and explicit behavior over implicit magic, only using reflection during startup to [bootstrap users code](https://github.com/cao-awa/Kora/tree/main/docs/entrypoint/README.md).
 
 ![](https://count.getloli.com/@@cao-awa.kora?name=%40cao-awa.kora&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
 
@@ -27,10 +27,22 @@ everything is defined as explicit Kotlin values.
 
 That means:
 
-* Easier to read
-* Easier to test
-* Better IDE support
-* Fewer runtime surprises
+* Routes are Kotlin values, not runtime registrations.
+* Parameters are extracted with types, not strings.
+* Control flow is explicit through abort scopes.
+
+## Hot Reload
+
+Kora supports reloading without restarting the JVM by **replacing the route graph**, not by redefining loaded classes.
+
+This requires the application to be **recompiled** after code changes. Once a new graph is built, Kora atomically swaps it into service:
+
+* Existing requests continue using the old graph until completion.
+* New requests are dispatched to the new graph immediately.
+* The JVM process itself is never restarted.
+
+This approach keeps reload semantics explicit and predictable while avoiding JVM class redefinition.
+
 
 # Getting started
 Add codes to your ``build.gradle`` file:
@@ -102,21 +114,9 @@ fun entry() {
 }
 ```
 
-Launch Kora and open ``http://127.0.0.1:12345/xxx`` to view the hello page.
+Launch Kora and open ``http://127.0.0.1:12345/hello?username=Kora`` to view the hello page.
 
 For details, see [HTTP document](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md).
 
 # CLI command
 See [command document](https://github.com/cao-awa/Kora/tree/main/docs/command/README.md).
-
-# Hot Reload
-
-Kora supports reloading without restarting the JVM by **replacing the route graph**, not by redefining loaded classes.
-
-This requires the application to be **recompiled** after code changes. Once a new graph is built, Kora atomically swaps it into service:
-
-* Existing requests continue using the old graph until completion.
-* New requests are dispatched to the new graph immediately.
-* The JVM process itself is never restarted.
-
-This approach keeps reload semantics explicit and predictable while avoiding JVM class redefinition.
