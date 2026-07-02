@@ -107,7 +107,7 @@ Launch Kora and open ``http://127.0.0.1:12345/xxx`` to view the hello page.
 For details, see [HTTP document](https://github.com/cao-awa/Kora/tree/main/docs/http/README.md).
 
 # CLI command
-See [command document](https://github.com/cao-awa/Kora/tree/main/docs/c ommand/README.md).
+See [command document](https://github.com/cao-awa/Kora/tree/main/docs/command/README.md).
 
 # Hot Reload
 
