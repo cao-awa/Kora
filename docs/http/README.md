@@ -683,7 +683,7 @@ performance will be reduced.
 ## Error benchmark
 
 If all requests is fetched into errors (such as `404 Not Found`) instead of being correctly handled, performance will be
-reduce.
+reduced.
 
 |          | 1G               | 128M             |
 |----------|------------------|------------------|

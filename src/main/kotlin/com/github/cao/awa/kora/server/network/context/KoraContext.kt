@@ -41,10 +41,10 @@ abstract class KoraContext<B : PathByteBufHolder, C : KoraContext<B, C, A>, A : 
 
     open fun path(): String {
         val path = this.msg.path().split("?")[0]
-        if (path.startsWith("/")) {
-            return path.substringAfter("/")
+        return if (path.startsWith("/")) {
+            path.substringAfter("/")
         } else {
-            return path
+            path
         }
     }
 

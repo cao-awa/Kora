@@ -14,11 +14,34 @@ import java.nio.charset.StandardCharsets
 
 private val LOGGER: Logger = LogManager.getLogger("Test")
 
-// oha -n 10000 -c 128 --latency-correction http://127.0.0.1:12345/test
+// oha -n 100000 -c 128 --latency-correction http://127.0.0.1:12345/test
 fun main() {
-    KoraEntrypoint.main()
+//    KoraEntrypoint.main()
 //    testCombinator()
 //    TestEntry.entry()
+//    val html = html {
+//        head {
+//            charset(StandardCharsets.UTF_8)
+//        }
+//        body {
+//            p {
+//                +"Hello world!"
+//            }
+//        }
+//    }
+//
+//    val api = http {
+//        route("/test") {
+//            get {
+//                html
+//            }
+//        }
+//    }
+//    KoraHttpServer(api).start()
+
+    testAssets()
+
+    Thread.sleep(10000000)
 }
 
 object TestEntry {
