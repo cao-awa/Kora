@@ -1,10 +1,10 @@
 # Argument validator
 Argument validator used in URL argument input parsing and payload parameter parsing.
 
-The validator ensure the data type is match your want to get, if not, ``error(argname, content, dataName)`` method will throw an exception that will be catching by Kora pipeline and convert to a error report to show on browser. 
+The validator ensure the data type is match your want to get, if not, ``error(argname, content, dataName)`` method will throw an exception that will be catching by Kalmia pipeline and convert to a error report to show on browser. 
 
 ## Register
-Kora only supported useful validators like basic types and BigDecimal or ETC. custom validator need registers manually, a lots way to do this:
+Kalmia only supported useful validators like basic types and BigDecimal or ETC. custom validator need registers manually, a lots way to do this:
 
 ### Validator impl
 ```kotlin

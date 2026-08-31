@@ -1,6 +1,0 @@
-{
-    "print_config_details": true,
-    "entrypoint": [
-        "com.github.cao.awa.kora.server.network.http.entrypoint.KoraHttpServerEntrypoint#entry"
-    ]
-}

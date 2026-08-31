@@ -32,7 +32,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
@@ -71,17 +71,17 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
 
 The ``arg`` method has two arguments, first is url argument name, is required, second is missable flag, is optional, if
-missable is true, Kora will return the default value of the type.
+missable is true, Kalmia will return the default value of the type.
 
 ### Default value
 
-When missable flag is true, Kora will get the usually default value, such as ``arg<Int>`` is 0, ``arg<String>`` is an
+When missable flag is true, Kalmia will get the usually default value, such as ``arg<Int>`` is 0, ``arg<String>`` is an
 empty string, or ETC.
 
 You can also setting custom default value manually:
@@ -127,7 +127,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
@@ -164,7 +164,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
@@ -175,7 +175,7 @@ When you visit ``http://127.0.0.1:12345/test/awa?input=1234``, you will see a pa
 ``Input arg 'input' is '1234', placeholder is 'awa'``
 
 The delegate ``arg`` or ``placeholder`` can only access in request scope, cannot access in other locations, otherwise
-Kora will throw a ``IllegalStateException`` to notice it.
+Kalmia will throw a ``IllegalStateException`` to notice it.
 
 ## Placeholder route
 You can use placeholder to create routes, this will save you time from writing ``{xxx}`` several times:
@@ -203,7 +203,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
@@ -238,12 +238,12 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
 
-In Kora you can use ``build`` method to build your custom class in request scope, just input the args and constructor.
+In Kalmia you can use ``build`` method to build your custom class in request scope, just input the args and constructor.
 
 And build method can only input most 7 args or placeholders, if your code ned more input, maybe you need to think is
 there a problem with your design architecture?
@@ -271,7 +271,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
@@ -285,9 +285,9 @@ supports ``build(T1, T2 ... T7, R)``.
 
 ## Abort
 
-Kora uses a scoped abort model where execution and error handling are strictly separated into non-overlapping lifetimes.
+Kalmia uses a scoped abort model where execution and error handling are strictly separated into non-overlapping lifetimes.
 
-In Kora, aborting execution is not an exceptional case.\
+In Kalmia, aborting execution is not an exceptional case.\
 It is a first-class, structured control flow with explicit scope boundaries.
 
 The `abortWith()` or `abortIf()` methods define when to abort, and `.ifAbort { }` defines how aborted execution is
@@ -317,7 +317,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(http).start()
+        KalmiaHttpServer(http).start()
     }
 }
 ```
@@ -330,10 +330,10 @@ The client will receive data similar to:
     "stacktrace": [
         "java.lang.NullPointerException: Test if logic error occurs NPE",
         " - at MainKt.testError$lambda$0$0$0(Main.kt:68)",
-        " - at com.github.cao.awa.kora.server.network.http.handler.KoraHttpRequestHandler.handle(KoraHttpRequestHandler.kt:42)",
-        " - at com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline$handleFull$1.invokeSuspend$lambda$0(KoraHttpRequestPipeline.kt:107)",
-        " - at com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline.abortable(KoraRequestPipeline.kt:22)",
-        " - at com.github.cao.awa.kora.server.network.http.pipeline.KoraHttpRequestPipeline$handleFull$1.invokeSuspend(KoraHttpRequestPipeline.kt:102)",
+        " - at com.github.cao.awa.kalmia.server.network.http.handler.KalmiaHttpRequestHandler.handle(KalmiaHttpRequestHandler.kt:42)",
+        " - at com.github.cao.awa.kalmia.server.network.http.pipeline.KalmiaHttpRequestPipeline$handleFull$1.invokeSuspend$lambda$0(KalmiaHttpRequestPipeline.kt:107)",
+        " - at com.github.cao.awa.kalmia.server.network.pipeline.KalmiaRequestPipeline.abortable(KalmiaRequestPipeline.kt:22)",
+        " - at com.github.cao.awa.kalmia.server.network.http.pipeline.KalmiaHttpRequestPipeline$handleFull$1.invokeSuspend(KalmiaHttpRequestPipeline.kt:102)",
         " - at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)",
         " - at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)",
         " - at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:124)",
@@ -347,11 +347,11 @@ The client will receive data similar to:
     "http_meta": {
         "http_version": "HTTP/1.1"
     },
-    "error": "Server protocol (Kora/1.0.0, HTTP/1.1) error: Internal Server Error"
+    "error": "Server protocol (Kalmia/1.0.0, HTTP/1.1) error: Internal Server Error"
 }
 ```
 
-All abort scopes are copied from the source context, which Kora automatically collects.\
+All abort scopes are copied from the source context, which Kalmia automatically collects.\
 You can modify the scope data in the abort context.
 
 ## Custom combinator
@@ -390,7 +390,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
@@ -421,7 +421,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
@@ -451,7 +451,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
@@ -472,10 +472,10 @@ object TestEntry {
                         body {
                             p {
                                 when (body) {
-                                    is KoraHttpEmptyBody -> {}
-                                    is KoraHttpTextBody -> {}
-                                    is KoraHttpJsonBody -> {}
-                                    is KoraHttpUrlencodedBody -> {}
+                                    is KalmiaHttpEmptyBody -> {}
+                                    is KalmiaHttpTextBody -> {}
+                                    is KalmiaHttpJsonBody -> {}
+                                    is KalmiaHttpUrlencodedBody -> {}
                                     // Or more.
                                     else -> {}
                                 }
@@ -486,17 +486,17 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
 
 # Assets manager mode
 
-Use ``-jar Kora-{kora_version}.jar`` to run a Kora HTTP server will automatically running on assets manager mode, if
-kora running on assets manager mode, when url not fetch (such as ``http://127.0.0.1/test``), then Kora will
+Use ``-jar Kalmia-{kalmia_version}.jar`` to run a Kalmia HTTP server will automatically running on assets manager mode, if
+kalmia running on assets manager mode, when url not fetch (such as ``http://127.0.0.1/test``), then Kalmia will
 automatically redirect to ``http://127.0.0.1/test/index.html``, if still not found, finally, it will get an error
-response, you can modify ``error_page`` config in ``configs/kora_http.json`` config file to custom your 404 page,
+response, you can modify ``error_page`` config in ``configs/kalmia_http.json`` config file to custom your 404 page,
 
 The API code equivalent to:
 
@@ -514,7 +514,7 @@ http {
 
 # PHP
 
-Currently, Kora can execute PHP scripts through PHP-CGI, but support is incomplete and can currently only be used for
+Currently, Kalmia can execute PHP scripts through PHP-CGI, but support is incomplete and can currently only be used for
 single-file PHP scripts.
 
 Simple sample:
@@ -562,11 +562,11 @@ echo '</body></html>';
 
 # Structured Responses and HTTP Metadata
 
-By default, Kora treats HTTP responses as **structured data**.
+By default, Kalmia treats HTTP responses as **structured data**.
 
-When a handler returns a Kotlin object, Kora serializes it and **injects HTTP metadata** into the response payload:
+When a handler returns a Kotlin object, Kalmia serializes it and **injects HTTP metadata** into the response payload:
 
-But Kora does not encourage embedding transport concerns into domain models.\
+But Kalmia does not encourage embedding transport concerns into domain models.\
 HTTP metadata injection is a transport-level concern and is configurable.
 
 ```json
@@ -596,20 +596,20 @@ object TestEntry {
     fun entry() {
         // NOTE: Disable HTTP metadata injection ('instructHttpMetadata')
         // This will automatically disable status code and version injection.
-        KoraHttpServer.instructHttpMetadata = false
-        KoraHttpServer.instructHttpStatusCode = false
-        KoraHttpServer.instructHttpVersionCode = false
+        KalmiaHttpServer.instructHttpMetadata = false
+        KalmiaHttpServer.instructHttpStatusCode = false
+        KalmiaHttpServer.instructHttpVersionCode = false
     }
 }
 ```
 
-Kora automatically serializes Kotlin data classes using [Cason](https://github.com/cao-awa/Cason), a lightweight,
+Kalmia automatically serializes Kotlin data classes using [Cason](https://github.com/cao-awa/Cason), a lightweight,
 type-safe JSON/JSON5 library.
 
 # Total Handlers and 204 No Content
 
-A handler in Kora is a total function from request scope to a single response value.\
-There is no such thing as a “partially constructed response” in Kora.\
+A handler in Kalmia is a total function from request scope to a single response value.\
+There is no such thing as a “partially constructed response” in Kalmia.\
 It may describe response metadata, but it cannot partially construct a response.
 
 To return `204 No Content`, use `NoContentResponse` explicitly:
@@ -626,12 +626,12 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 ```
 
-Or if a return value is missing, Kora will automatically return a `204 NO CONTENT` response.
+Or if a return value is missing, Kalmia will automatically return a `204 NO CONTENT` response.
 
 # Performance
 
@@ -643,7 +643,7 @@ With JVM options (`-server -XX:+UseZGC`)
 
 Using the simplest test case, port on ``12345``, assets manager managed 'assets' directory, use ``GET`` to fetch ``http://127.0.0.1:12345``.
 
-Kora is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although
+Kalmia is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although
 performance will be reduced.
 
 |          | 1G                | 128M             |

@@ -1,1 +1,1 @@
-docker build -t kora-test:latest .
+docker build -t kalmia-test:latest .

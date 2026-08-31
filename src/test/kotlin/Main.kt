@@ -1,9 +1,9 @@
-import com.github.cao.awa.kora.entrypoint.KoraEntrypoint
-import com.github.cao.awa.kora.server.network.http.KoraHttpServer
-import com.github.cao.awa.kora.server.network.http.argument.type.arg
-import com.github.cao.awa.kora.server.network.http.placeholder.url.type.placeholder
-import com.github.cao.awa.kora.server.network.http.builder.http
-import com.github.cao.awa.kora.server.network.http.exception.path.HttpPathNotRegisteredException
+import com.github.cao.awa.kalmia.entrypoint.KalmiaEntrypoint
+import com.github.cao.awa.kalmia.server.network.http.KalmiaHttpServer
+import com.github.cao.awa.kalmia.server.network.http.argument.type.arg
+import com.github.cao.awa.kalmia.server.network.http.placeholder.url.type.placeholder
+import com.github.cao.awa.kalmia.server.network.http.builder.http
+import com.github.cao.awa.kalmia.server.network.http.exception.path.HttpPathNotRegisteredException
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import org.apache.logging.log4j.LogManager
@@ -16,7 +16,7 @@ private val LOGGER: Logger = LogManager.getLogger("Test")
 
 // oha -n 100000 -c 128 --latency-correction http://127.0.0.1:12345/test
 fun main() {
-    KoraEntrypoint.main()
+    KalmiaEntrypoint.main()
 //    testCombinator()
 //    TestEntry.entry()
 //    val html = html {
@@ -37,7 +37,7 @@ fun main() {
 //            }
 //        }
 //    }
-//    KoraHttpServer(api).start()
+//    KalmiaHttpServer(api).start()
 
     Thread.sleep(10000000)
 }
@@ -64,7 +64,7 @@ object TestEntry {
             }
         }
 
-        KoraHttpServer(api).start()
+        KalmiaHttpServer(api).start()
     }
 }
 
@@ -96,7 +96,7 @@ fun testCombinator() {
         }
     }
 
-    KoraHttpServer(api).start()
+    KalmiaHttpServer(api).start()
 }
 
 fun testBuild() {
@@ -128,7 +128,7 @@ fun testBuild() {
         }
     }
 
-    KoraHttpServer(api).start()
+    KalmiaHttpServer(api).start()
 }
 
 fun testSimple() {
@@ -151,7 +151,7 @@ fun testSimple() {
         }
     }
 
-    KoraHttpServer(http).start()
+    KalmiaHttpServer(http).start()
 }
 
 fun testAssets() {
@@ -165,7 +165,7 @@ fun testAssets() {
         }
     }
 
-    KoraHttpServer(http).start()
+    KalmiaHttpServer(http).start()
 }
 
 fun testDataClass() {
@@ -182,7 +182,7 @@ fun testDataClass() {
         }
     }
 
-    KoraHttpServer(http).start()
+    KalmiaHttpServer(http).start()
 }
 
 fun testPlaceholder() {
@@ -243,7 +243,7 @@ fun testPlaceholder() {
         }
     }
 
-    KoraHttpServer(http).start()
+    KalmiaHttpServer(http).start()
 }
 
 fun testNotFound() {
@@ -281,7 +281,7 @@ fun testNotFound() {
         }
     }
 
-    KoraHttpServer(http).start()
+    KalmiaHttpServer(http).start()
 }
 
 fun testError() {
@@ -314,7 +314,7 @@ fun testError() {
         }
     }
 
-    KoraHttpServer(http).start()
+    KalmiaHttpServer(http).start()
 }
 
 fun testRender() {
@@ -353,5 +353,5 @@ fun testRender() {
         }
     }
 
-    KoraHttpServer(http).start()
+    KalmiaHttpServer(http).start()
 }

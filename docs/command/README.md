@@ -3,10 +3,10 @@
 Show all commands and usage.
 
 ## exit / stop
-Stop all services and exit Kora server.
+Stop all services and exit Kalmia server.
 
 ## reload
-Stop all services and reload Kora server. 
+Stop all services and reload Kalmia server. 
 
 ## memory / mem
 Show memory stats, includes: heap, non-heap, direct, metadata
@@ -21,10 +21,10 @@ Show thread information of target thread id, need an integer input <thread_id>.
 Show deadlock information.
 
 ## uptime
-Show the formatted time that Kora running time.
+Show the formatted time that Kalmia running time.
 
 ## pid
-Show the Kora process PID.
+Show the Kalmia process PID.
 
 ## jvmargs
 Show all jvm arguments.
@@ -42,7 +42,7 @@ Show operating system information.
 Try call System.gc() to start once garbage collection.
 
 ## status
-Show basic runtime information for Kora.
+Show basic runtime information for Kalmia.
 
 ## services
 Show  all registered services name and type

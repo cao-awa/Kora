@@ -1,15 +1,15 @@
 # Custom plugin
 
-Kora allows plugin load, you can only depend on Kora, and write code:
+Kalmia allows plugin load, you can only depend on Kalmia, and write code:
 
 ```kotlin
 package com.xxx.plugin.entry
 
-import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
+import com.github.cao.awa.kalmia.launch.config.KalmiaLaunchConfig
 
 object TestPlugin {
     @JvmStatic
-    fun entry(config: KoraLaunchConfig) {
+    fun entry(config: KalmiaLaunchConfig) {
         // Write your codes here!
     }
 }
@@ -24,7 +24,7 @@ and write plugin metadata in ``META-INF/plugin.json``:
 }
 ```
 
-then build jar and put into ``libs/`` directory, your plugin can be automatically load by Kora, your codes in ``entry``
+then build jar and put into ``libs/`` directory, your plugin can be automatically load by Kalmia, your codes in ``entry``
 method will be executed.
 
 Certainly, you also need to define your plugin in ``launch.json``, you can use your plugin name or full method location
@@ -49,7 +49,7 @@ or
 ```
 
 ## Notice
-Resident services like http server or other resident services must call ``KoraStatus.registerLifecycle``,  ``KoraStatus.registerReloadListener``, ``KoraStatus.registerStopListener``, and when stopped, must call ``KoraStatus.completedLifecyle``.
+Resident services like http server or other resident services must call ``KalmiaStatus.registerLifecycle``,  ``KalmiaStatus.registerReloadListener``, ``KalmiaStatus.registerStopListener``, and when stopped, must call ``KalmiaStatus.completedLifecyle``.
 
 If plugin is only simple logics, don't register the lifecycles.
 
@@ -61,11 +61,11 @@ optionally, input arg can choose 3 different way:
 ```kotlin
 package com.xxx.plugin.entry
 
-import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
+import com.github.cao.awa.kalmia.launch.config.KalmiaLaunchConfig
 
 object TestPlugin {
     @JvmStatic
-    fun entrypoint1(config: KoraLaunchConfig) {
+    fun entrypoint1(config: KalmiaLaunchConfig) {
         // First choose, got a launching config.
     }
 
@@ -81,7 +81,7 @@ object TestPlugin {
 }
 ```
 
-If method doesn't match to anyone entrypoint way, Kora cannot execute your codes.
+If method doesn't match to anyone entrypoint way, Kalmia cannot execute your codes.
 
 ## Depends
 
@@ -124,10 +124,10 @@ Incorrectly:
 
 ## Fallback
 > NOTICE:\
-> A plugin can only take once fallback execution, if fallback still errors, Kora will fast-fall shutdown.
+> A plugin can only take once fallback execution, if fallback still errors, Kalmia will fast-fall shutdown.
 
 You can define a fallback method in plugin metadata, when depend on plugins doesn't loaded or your plugin code got an
-exception, Kora will execute the fallback path:
+exception, Kalmia will execute the fallback path:
 
 ```json
 {
@@ -144,32 +144,32 @@ Sample:
 ```kotlin
 package com.xxx.plugin.entry
 
-import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
+import com.github.cao.awa.kalmia.launch.config.KalmiaLaunchConfig
 
 object TestPlugin {
     @JvmStatic
-    fun entry(config: KoraLaunchConfig) {
+    fun entry(config: KalmiaLaunchConfig) {
         throw RuntimeException("Error in main entrypoint")
     }
 
     @JvmStatic
-    fun fallback(config: KoraLaunchConfig) {
+    fun fallback(config: KalmiaLaunchConfig) {
         // Handle others code logic here.
     }
 }
 ```
 
-If stage into fallback path, you can use ``KoraLaunchConfig.error()`` got the exception that last time happened, it may help to complete fallback logics.
+If stage into fallback path, you can use ``KalmiaLaunchConfig.error()`` got the exception that last time happened, it may help to complete fallback logics.
 
 Or use a special signature method, receive a ``Throwable`` instance to got the exception:
 ```kotlin
 package com.xxx.plugin.entry
 
-import com.github.cao.awa.kora.launch.config.KoraLaunchConfig
+import com.github.cao.awa.kalmia.launch.config.KalmiaLaunchConfig
 
 object TestPlugin {
     @JvmStatic
-    fun entry(config: KoraLaunchConfig) {
+    fun entry(config: KalmiaLaunchConfig) {
         throw RuntimeException("Error in main entrypoint")
     }
 
@@ -180,7 +180,7 @@ object TestPlugin {
 ```
 
 ## Resource cleans
-If your plugin has created some static data, your must use ``registerCleaner`` to clear the data when Kora reloading:
+If your plugin has created some static data, your must use ``registerCleaner`` to clear the data when Kalmia reloading:
 ```kotlin
 class Other {
     // Something code here.
@@ -205,7 +205,7 @@ class TestDataClass {
     }
 }
 ```
-When Kora reloading, ``unload`` hook will be trigger, you can write your unload method in plugin metadata: 
+When Kalmia reloading, ``unload`` hook will be trigger, you can write your unload method in plugin metadata: 
 ```kotlin
 package com.xxx.plugin.entry
 
@@ -230,13 +230,13 @@ In metadata:
 And, ``Don't use the 'val' to define an constant that refernce to your custom class``!
 
 ## Shared context
-You can put and get data from ``KoraLaunchConfig``, use ``config[key] = data`` to set data, use ``config[key]`` to get data, data key and value can only is `` String``.
+You can put and get data from ``KalmiaLaunchConfig``, use ``config[key] = data`` to set data, use ``config[key]`` to get data, data key and value can only is `` String``.
 
 ## Repeat definition
 Plugin cannot define twice or more times in ``entrypoint``, it cause fast-fall directly.
 
 ## Unnamed plugin
-You can also don't write ``plugin.json`` metadata, but you need to explicit declare the full method name in ``launch.json``, Kora will load it as unnamed plugin.
+You can also don't write ``plugin.json`` metadata, but you need to explicit declare the full method name in ``launch.json``, Kalmia will load it as unnamed plugin.
 
 But if you want to write ``plugin.json``, the ``name`` and ``entrypoint`` is required, ``depends_on`` and ``fallback`` is optional.
 

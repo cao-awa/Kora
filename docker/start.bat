@@ -1,1 +1,1 @@
-docker run -m 128m -d --ulimit nofile=65535:65535 -p 12345:12345 --name kora-container kora-test:latest
+docker run -m 128m -d --ulimit nofile=65535:65535 -p 12345:12345 --name kalmia-container kalmia-test:latest

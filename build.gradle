@@ -58,7 +58,7 @@ application {
 }
 
 shadowJar {
-    archiveBaseName.set('Kora')
+    archiveBaseName.set('Kalmia')
     archiveVersion.set(project.version_name)
     archiveClassifier.set('')
 }
