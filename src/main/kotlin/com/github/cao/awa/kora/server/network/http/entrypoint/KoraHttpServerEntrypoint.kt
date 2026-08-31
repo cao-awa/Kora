@@ -25,6 +25,7 @@ object KoraHttpServerEntrypoint {
             LOGGER.info("Config 'enable': {}", assetManagerConfig.enable())
             LOGGER.info("Config 'asset_path': {}", assetManagerConfig.assetPath())
             LOGGER.info("Config 'error_page': {}", assetManagerConfig.errorPage())
+            LOGGER.info("Config 'cache': {}", assetManagerConfig.cache())
 
             // Netty configs.
             LOGGER.info("-- Netty configs --")
@@ -38,9 +39,6 @@ object KoraHttpServerEntrypoint {
         }
 
         val http = http {
-            // Setup static asset path.
-            assets(assetManagerConfig.assetPath())
-
             // Redirect all no registered query to 404 page.
             ifAbort(HttpPathNotRegisteredException::class) {
                 withAsset(redirectAsset = assetManagerConfig.errorPage())

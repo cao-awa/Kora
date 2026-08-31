@@ -19,6 +19,9 @@ open class KoraAssetManagerConfig : KoraConfig() {
                 ifString("error_page") {
                     config.errorPage = this
                 }
+                ifBoolean("cache_assets") {
+                    config.cache = this
+                }
 
                 config
             }
@@ -28,6 +31,7 @@ open class KoraAssetManagerConfig : KoraConfig() {
     private var enable: Boolean = true
     private var assetPath: String = "assets/"
     private var errorPage: String = ""
+    private var cache: Boolean = true
 
     fun enable(): Boolean {
         return this.enable
@@ -56,11 +60,21 @@ open class KoraAssetManagerConfig : KoraConfig() {
         return this;
     }
 
+    fun cache(): Boolean {
+        return this.cache
+    }
+
+    open fun cache(cache: Boolean): KoraAssetManagerConfig {
+        this.cache = cache
+        return this
+    }
+
     override fun toJSON(): JSONObject {
         return JSONObject {
             "enable" set enable
             "asset_path" set assetPath
             "error_page" set errorPage
+            "cache" set cache
         }
     }
 }

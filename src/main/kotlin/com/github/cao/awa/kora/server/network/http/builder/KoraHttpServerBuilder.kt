@@ -20,12 +20,16 @@ class KoraHttpServerBuilder {
     fun route(vararg inputs: Any, handler: KoraHttpServerRouteBuilder.() -> Unit) {
         val builder = StringBuilder()
         for (input in inputs) {
-            if (input is String) {
-                builder.append(input)
-            } else if (input is TypedHttpUrlPlaceholder<*>) {
-                builder.append("{${input.name}}")
-            } else {
-                throw IllegalArgumentException("Unsupported input type: ${input::class}, can only input String or TypedHttpUrlPlaceholder")
+            when (input) {
+                is String -> {
+                    builder.append(input)
+                }
+                is TypedHttpUrlPlaceholder<*> -> {
+                    builder.append("{${input.name}}")
+                }
+                else -> {
+                    throw IllegalArgumentException("Unsupported input type: ${input::class}, can only input String or TypedHttpUrlPlaceholder")
+                }
             }
             builder.append("/")
         }
@@ -70,7 +74,9 @@ class KoraHttpServerBuilder {
     }
 
     fun applyRoute(adapter: KoraHttpInboundHandlerAdapter) {
-        adapter.pipeline.setAssetsPath(this.assetsPath)
+        if (this.assetsPath.isNotEmpty()) {
+            adapter.pipeline.setAssetsPath(this.assetsPath)
+        }
         for ((key, builder) in this.routes) {
             builder.applyRoute(adapter)
         }

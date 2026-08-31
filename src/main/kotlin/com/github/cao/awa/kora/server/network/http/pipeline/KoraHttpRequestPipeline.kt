@@ -36,8 +36,6 @@ import com.github.cao.awa.kora.server.network.pipeline.KoraRequestPipeline
 import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.http.FullHttpResponse
-import io.netty.handler.codec.http.HttpHeaderNames
-import io.netty.handler.codec.http.HttpHeaders
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
@@ -117,6 +115,17 @@ class KoraHttpRequestPipeline(
     private val assetsManager: KoraHttpAssetsManager = KoraHttpAssetsManager()
     private val executionScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    init {
+        if (this.assetManagerConfig.enable()) {
+            toggleAssetsCache(this.assetManagerConfig.cache())
+            setAssetsPath(this.assetManagerConfig.assetPath())
+        }
+    }
+
+    fun toggleAssetsCache(cache: Boolean) {
+        this.assetsManager.toggleCache(cache)
+    }
+
     fun setAssetsPath(path: String) {
         this.assetsManager.setAssetsPath(path)
     }
@@ -153,7 +162,7 @@ class KoraHttpRequestPipeline(
                                 val asset: KoraAsset<*>? = if (assetsManager.hasAsset(koraContext)) {
                                     assetsManager.getAsset(koraContext)
                                 } else {
-                                    if (assetsManager.createFileHolder(koraContext.path()).isDirectory) {
+                                    if (assetsManager.createFile(koraContext.path()).isDirectory) {
                                         assetsManager.getAsset(koraContext.path() + "/index.html")
                                     } else {
                                         null
@@ -179,7 +188,7 @@ class KoraHttpRequestPipeline(
                         val abortContext = koraContext.createAbort(httpStatus, koraContext)
 
                         if (e is KoraServerException) {
-                            // Handle server level exception (like 404 NOT_FOUND).
+                            // Handle server level exception.
                             response(
                                 handlerContext,
                                 koraContext,
@@ -200,16 +209,22 @@ class KoraHttpRequestPipeline(
                         }
                     }
                 }
+
+                release(koraContext)
             } else {
+                release(koraContext)
+
                 // Notice user doesn't register this method handler (like POST, GET or ETC.) and let Kora framework handle this error.
                 throw NotSupportedHttpMethodException("${koraContext.method().name()} handler not registered")
             }
-
-            TypedHttpArgument.THREAD_LOCAL.set(null)
-            TypedHttpUrlPlaceholder.THREAD_LOCAL.set(null)
-            // Release the msg let GC could be clears,
-            koraContext.release()
         }
+    }
+
+    fun release(koraContext: KoraHttpContext) {
+        TypedHttpArgument.THREAD_LOCAL.set(null)
+        TypedHttpUrlPlaceholder.THREAD_LOCAL.set(null)
+        // Release the msg let GC could be clears,
+        koraContext.release()
     }
 
     fun responseExceptionOrData(
@@ -231,7 +246,7 @@ class KoraHttpRequestPipeline(
         // Response an error message.
         handlerContext.writeAndFlush(
             KoraHttpErrors.INTERNAL_SERVER_ERROR(
-                HttpVersion.HTTP_1_0,
+                HttpVersion.HTTP_1_1,
                 cause,
                 cause.message ?: "Unhandled internal server error",
                 "{UNKNOWN}",
@@ -310,7 +325,7 @@ class KoraHttpRequestPipeline(
                 response(
                     handlerContext,
                     koraContext,
-                    assetsManager.createResponse(koraContext, data)
+                    this.assetsManager.createResponse(koraContext, data)
                 )
             }
 

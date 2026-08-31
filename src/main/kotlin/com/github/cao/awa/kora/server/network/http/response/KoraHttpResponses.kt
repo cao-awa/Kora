@@ -14,6 +14,16 @@ import io.netty.util.CharsetUtil
 object KoraHttpResponses {
     fun createDefaultResponse(
         httpVersion: HttpVersion,
+        status: HttpResponseStatus
+    ): FullHttpResponse {
+        return DefaultFullHttpResponse(
+            httpVersion,
+            status
+        )
+    }
+
+    fun createDefaultResponse(
+        httpVersion: HttpVersion,
         status: HttpResponseStatus,
         message: String
     ): FullHttpResponse {
@@ -56,6 +66,11 @@ object KoraHttpResponses {
 
     fun FullHttpResponse.setLength(): FullHttpResponse {
         headers().set(HttpHeaderNames.CONTENT_LENGTH, content().readableBytes())
+        return this
+    }
+
+    fun FullHttpResponse.setLength(length: Long): FullHttpResponse {
+        headers().set(HttpHeaderNames.CONTENT_LENGTH, length)
         return this
     }
 

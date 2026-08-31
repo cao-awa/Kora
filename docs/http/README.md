@@ -637,39 +637,11 @@ Or if a return value is missing, Kora will automatically return a `204 NO CONTEN
 
 ## Benchmark Test
 
-Tested by [OHA](https://crates.io/crates/oha) on an `AMD Ryzen 7 8845HS`, Windows 10, with default settings
+Tested by [OHA](https://crates.io/crates/oha) on an ``Intel Ultra 5 125H``, Windows 10, with default settings
 
-With JVM options (`-server -XX:+UseZGC -Xmx1G -Xms1G`)
+With JVM options (`-server -XX:+UseZGC`)
 
-Using the simplest test case:
-
-```kotlin
-object TestEntry {
-    @JvmStatic
-    fun entry() {
-        val html = html {
-            head {
-                charset(StandardCharsets.UTF_8)
-            }
-            body {
-                p {
-                    +"Hello world!"
-                }
-            }
-        }
-
-        val http = http {
-            route("/test") {
-                get {
-                    html
-                }
-            }
-        }
-
-        KoraHttpServer(http).start()
-    }
-}
-```
+Using the simplest test case, port on ``12345``, assets manager managed 'assets' directory, use ``GET`` to fetch ``http://127.0.0.1:12345``.
 
 Kora is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although
 performance will be reduced.

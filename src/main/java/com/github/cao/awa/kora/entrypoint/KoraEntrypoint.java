@@ -24,7 +24,7 @@ public class KoraEntrypoint {
     public static void main(String... args) {
         launchArgs = args;
         LOGGER.info("Starting Kora({}) server...",
-                    KoraInformation.VERSION
+                KoraInformation.VERSION
         );
 
         Scanner scanner = new Scanner(System.in);
@@ -32,12 +32,12 @@ public class KoraEntrypoint {
             while (KoraStatus.isRunning()) {
                 if (KoraStatus.isReloading()) {
                     DEPENDENCIES_MANAGER.getCleaners()
-                                        .forEach((name, cleaner) -> {
-                                            LOGGER.info("Clearing resources for '{}'",
-                                                        name
-                                            );
-                                            cleaner.invoke();
-                                        });
+                            .forEach((name, cleaner) -> {
+                                LOGGER.info("Clearing resources for '{}'",
+                                        name
+                                );
+                                cleaner.invoke();
+                            });
 
                     LOGGER.info("Cleaning cleaners...");
                     DEPENDENCIES_MANAGER.clearCleaners();
@@ -46,8 +46,8 @@ public class KoraEntrypoint {
                 }
 
                 if (scanner.hasNextLine()) {
-                String command = scanner.nextLine();
-                KoraCommandExecutor.executeCommand(command);
+                    String command = scanner.nextLine();
+                    KoraCommandExecutor.executeCommand(command);
                 } else {
                     LOCKER.waitFor();
                 }
@@ -61,7 +61,7 @@ public class KoraEntrypoint {
 
     private static boolean launch(String[] args) {
         LOGGER.info("Kora running on directory '{}'",
-                    new File("").getAbsolutePath()
+                new File("").getAbsolutePath()
         );
 
         try {
@@ -81,8 +81,8 @@ public class KoraEntrypoint {
             return true;
         } catch (KoraEntrypointStageFailedException ex) {
             LOGGER.error("Failed to startup Kora server on entrypoint stage: '{}'",
-                         ex.stage,
-                         ex.cause
+                    ex.stage,
+                    ex.cause
             );
         }
 
@@ -91,7 +91,7 @@ public class KoraEntrypoint {
 
     public static void reload() {
         LOGGER.info("Reloading Kora({}) server...",
-                    KoraInformation.VERSION
+                KoraInformation.VERSION
         );
 
         LOCKER.offer();

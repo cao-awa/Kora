@@ -16,7 +16,7 @@ private val LOGGER: Logger = LogManager.getLogger("Test")
 
 // oha -n 100000 -c 128 --latency-correction http://127.0.0.1:12345/test
 fun main() {
-//    KoraEntrypoint.main()
+    KoraEntrypoint.main()
 //    testCombinator()
 //    TestEntry.entry()
 //    val html = html {
@@ -38,8 +38,6 @@ fun main() {
 //        }
 //    }
 //    KoraHttpServer(api).start()
-
-    testAssets()
 
     Thread.sleep(10000000)
 }

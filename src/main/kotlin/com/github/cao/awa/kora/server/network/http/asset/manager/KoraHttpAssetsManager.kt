@@ -21,20 +21,25 @@ class KoraHttpAssetsManager {
 
     private var path: String = ""
     private var available: Boolean = false
+    private var enableCache: Boolean = true
+    private val caches: MutableMap<String, KoraAsset<*>> = HashMap()
 
     fun setAssetsPath(path: String) {
-        if (this.available) {
-            throw IllegalArgumentException("Assets path already set")
-        } else {
-            this.path = File(path).absolutePath
-            this.available = true
+        this.path = File(path).absolutePath
+        this.available = true
+    }
+
+    fun toggleCache(cache: Boolean) {
+        this.enableCache = cache
+        if (!cache) {
+            this.caches.clear()
         }
     }
 
     fun available(): Boolean = this.available
 
-    fun hasAsset(context: KoraHttpContext):  Boolean{
-        return createFileHolder(context.path()).isFile
+    fun hasAsset(context: KoraHttpContext): Boolean {
+        return createFile(context.path()).isFile
     }
 
     fun getAsset(context: KoraHttpContext): KoraAsset<*> {
@@ -47,14 +52,22 @@ class KoraHttpAssetsManager {
     }
 
     fun getAsset(name: String): KoraAsset<*> {
-        val assetFile = createFileHolder(name)
-        if (assetFile.isFile && assetFile.exists()) {
-            return KoraBinaryAsset(assetFile)
+        val file = createFile(name)
+        if (this.enableCache) {
+            val cache = this.caches[file.absolutePath]
+            if (cache != null) {
+                return cache
+            }
+        }
+        if (file.isFile && file.exists()) {
+            return KoraBinaryAsset(file).also {
+                this.caches[file.absolutePath] = it
+            }
         }
         HttpPathNotRegisteredException.notFound(name, "auto redirect")
     }
 
-    fun createFileHolder(name: String): File {
+    fun createFile(name: String): File {
         return File("${this.path}/${name}")
     }
 

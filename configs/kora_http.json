@@ -3,6 +3,7 @@
     "server_port": 12345,
     "asset_manager": {
         "error_page": "error/404.html",
+        "cache": true,
         "enable": true,
         "asset_path": "assets/"
     },
