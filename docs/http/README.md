@@ -637,28 +637,14 @@ Or if a return value is missing, Kalmia will automatically return a `204 NO CONT
 
 ## Benchmark Test
 
-Tested by [OHA](https://crates.io/crates/oha) on an ``Intel Ultra 5 125H``, Windows 10, with default settings
+Tested by [OHA](https://crates.io/crates/oha) on an ``Intel I5 10600 CPU``, Ubuntu 24.04, with default settings
 
 With JVM options (`-server -XX:+UseZGC`)
 
-Using the simplest test case, port on ``12345``, assets manager managed 'assets' directory, use ``GET`` to fetch ``http://127.0.0.1:12345``.
+Using the simple test case, assets manager managed 'assets' directory, use ``GET`` to fetch ``http://127.0.0.1:12345``.
 
-Kalmia is not can only run in a 1G or more memory environment, it also can run in a 128M memory environment, although
-performance will be reduced.
-
-|          | 1G                | 128M             |
-|----------|-------------------|------------------|
-| NIO      | 100000~120000 RPS | 50000~60000 RPS  |
-| EPOLL    | waiting for test  | waiting for test |
-| IO_URING | waiting for test  | waiting for test |
-
-## Error benchmark
-
-If all requests is fetched into errors (such as `404 Not Found`) instead of being correctly handled, performance will be
-reduced.
-
-|          | 1G               | 128M             |
-|----------|------------------|------------------|
-| NIO      | 70000~80000 RPS  | 20000~30000 RPS  |
-| EPOLL    | waiting for test | waiting for test |
-| IO_URING | waiting for test | waiting for test |
+|          | 128M      |
+|----------|-----------|
+| NIO      | 29000 RPS |
+| EPOLL    | 37000 RPS |
+| IO_URING | 32000 RPS |

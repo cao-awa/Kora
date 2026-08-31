@@ -6,7 +6,7 @@ import com.github.cao.awa.kalmia.constant.KalmiaInformation
 import com.github.cao.awa.kalmia.status.KalmiaStatus
 import com.github.cao.awa.kalmia.status.KalmiaStatus.reload
 import com.github.cao.awa.kalmia.status.KalmiaStatus.stop
-import com.github.cao.awa.kalmia.time.KalmiaTime
+import com.github.cao.awa.kalmia.time.KalmiaDate
 import com.sun.management.HotSpotDiagnosticMXBean
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
@@ -299,7 +299,7 @@ object KalmiaCommandExecutor {
             System.getProperty("os.arch"),
             System.getProperty("os.version")
         )
-        LOGGER.info("Uptime: {}", KalmiaTime.formatTime(System.currentTimeMillis() - KalmiaEntrypoint.START_TIME))
+        LOGGER.info("Uptime: {}", KalmiaDate.formatTime(System.currentTimeMillis() - KalmiaEntrypoint.START_TIME))
         val threads = Thread.getAllStackTraces()
         LOGGER.info("Threads count: {}", threads.size)
         val runningThreadCount = threads.keys.filter {
@@ -415,7 +415,7 @@ object KalmiaCommandExecutor {
         val uptime = System.currentTimeMillis() - KalmiaEntrypoint.START_TIME
         LOGGER.info("-- Uptime --")
 
-        LOGGER.info("Kalmia server has been running {}", KalmiaTime.formatTime(uptime))
+        LOGGER.info("Kalmia server has been running {}", KalmiaDate.formatTime(uptime))
     }
 
     fun handleMemoryCommand() {
