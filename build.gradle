@@ -67,10 +67,6 @@ kotlin {
     jvmToolchain(21)
 }
 
-test {
-    useJUnitPlatform()
-}
-
 tasks.named("distTar") {
     dependsOn shadowJar
 }
