@@ -3,6 +3,7 @@ package com.github.cao.awa.kalmia.server.network.websocket.client.adapter
 import com.github.cao.awa.kalmia.server.network.websocket.client.KalmiaWebSocketClient
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketFrame
 
 class KalmiaWebSocketClientAdapter(
@@ -20,7 +21,11 @@ class KalmiaWebSocketClientAdapter(
         this.client.fireMessage(msg)
     }
 
-    fun sendMessage(msg: Any) {
+    fun sendMessage(raw: Any) {
+        val msg = when (raw) {
+            is String -> TextWebSocketFrame(raw)
+            else -> raw
+        }
         this.currentContext.writeAndFlush(msg)
     }
 }
