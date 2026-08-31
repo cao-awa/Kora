@@ -5,7 +5,13 @@ import kotlin.reflect.KClass
 
 class KalmiaWebSocketClient {
     private val handler: MutableMap<KClass<*>, (Any) -> Unit> = mutableMapOf()
+    private lateinit var connection: KalmiaWebSocketConnection
     private lateinit var adapter: KalmiaWebSocketClientAdapter
+
+    fun connect(host: String, port: Int) {
+        this.connection = KalmiaWebSocketConnection(this)
+        this.connection.connect(host, port)
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> registerHandler(clazz: KClass<T>, handler: (T) -> Unit) {
