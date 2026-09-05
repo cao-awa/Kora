@@ -45,3 +45,5 @@ bin/
 .DS_Store
 
 logs/
+configs/
+libs/

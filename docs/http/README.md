@@ -84,7 +84,7 @@ missable is true, Kalmia will return the default value of the type.
 When missable flag is true, Kalmia will get the usually default value, such as ``arg<Int>`` is 0, ``arg<String>`` is an
 empty string, or ETC.
 
-You can also setting custom default value manually:
+You can also set custom default value manually:
 
 ```kotlin
 object TestEntry {
@@ -243,7 +243,7 @@ object TestEntry {
 }
 ```
 
-In Kalmia you can use ``build`` method to build your custom class in request scope, just input the args and constructor.
+In Kalmia, you can use ``build`` method to build your custom class in request scope, just input the args and constructor.
 
 And build method can only input most 7 args or placeholders, if your code ned more input, maybe you need to think is
 there a problem with your design architecture?
