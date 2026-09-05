@@ -1,6 +1,7 @@
 package com.github.cao.awa.kalmia.server.network.websocket.client
 
 import com.github.cao.awa.kalmia.server.network.websocket.client.adapter.KalmiaWebSocketClientAdapter
+import com.github.cao.awa.kalmia.status.KalmiaStatus
 import kotlin.reflect.KClass
 
 class KalmiaWebSocketClient {
@@ -11,6 +12,13 @@ class KalmiaWebSocketClient {
     fun connect(host: String, port: Int) {
         this.connection = KalmiaWebSocketConnection(this)
         this.connection.connect(host, port)
+        KalmiaStatus.registerReloadListener {
+            disconnect()
+        }
+    }
+
+    fun disconnect() {
+        this.connection.close()
     }
 
     @Suppress("UNCHECKED_CAST")

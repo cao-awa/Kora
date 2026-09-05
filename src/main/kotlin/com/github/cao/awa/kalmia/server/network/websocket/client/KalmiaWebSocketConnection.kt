@@ -16,6 +16,8 @@ import java.net.URI
 class KalmiaWebSocketConnection(
     private val client: KalmiaWebSocketClient
 ) {
+    lateinit var channel: Channel
+
     fun connect(host: String, port: Int) {
         val uri = URI("ws://$host:$port")
         val threadFactory = KalmiaEventLoopGroupFactory.remote()
@@ -70,9 +72,14 @@ class KalmiaWebSocketConnection(
                 })
 
             val channelFuture = bootstrap.connect(uri.host, uri.port).sync()
+            this.channel = channelFuture.channel()
             channelFuture.channel().closeFuture().sync()
         } finally {
             group.shutdownGracefully()
         }
+    }
+
+    fun close() {
+        this.channel.close()
     }
 }

@@ -3,4 +3,3 @@ plugins {
 }
 rootProject.name = 'Kalmia'
 
-include 'external'

@@ -12,8 +12,9 @@ class KalmiaWebSocketClientAdapter(
     private lateinit var currentContext: ChannelHandlerContext
 
     @Override
-    override fun channelActive(ctx: ChannelHandlerContext?) {
+    override fun channelActive(ctx: ChannelHandlerContext) {
         this.client.setAdapter(this)
+        this.currentContext = ctx
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext, msg: WebSocketFrame) {
